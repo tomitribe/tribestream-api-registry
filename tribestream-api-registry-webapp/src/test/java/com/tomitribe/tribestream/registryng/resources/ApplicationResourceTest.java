@@ -22,6 +22,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tomitribe.tribestream.registryng.bootstrap.Bootstrap;
 import com.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import com.tomitribe.tribestream.registryng.domain.EndpointWrapper;
+import com.tomitribe.tribestream.registryng.domain.SearchPage;
+import com.tomitribe.tribestream.registryng.domain.SearchResult;
 import com.tomitribe.tribestream.registryng.repository.Repository;
 import com.tomitribe.tribestream.registryng.service.search.SearchEngine;
 import com.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
@@ -52,8 +54,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.stream.Collectors.toList;
+import static org.hamcrest.CoreMatchers.both;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 @Category(Embedded.class)
 @EnableServices("jaxrs")
@@ -73,6 +79,7 @@ public class ApplicationResourceTest extends AbstractResourceTest {
     @Classes(cdi = true, value = {
         Repository.class, SwaggerJsonMapperProducer.class,
         Bootstrap.class, SearchEngine.class,
+        SearchResource.class,
         ApplicationResource.class, RegistryNgApplication.class
     })
     public WebApp war() throws Exception {
@@ -125,26 +132,46 @@ public class ApplicationResourceTest extends AbstractResourceTest {
     @Test
     public void shouldImportOpenAPIDocument() throws Exception {
 
+        // Given: n Applications are installed and a new Swagger document to import
+        final int oldApplicationCount = loadAllApplications().size();
+
         final Swagger swagger = objectMapper.readValue(getClass().getResourceAsStream("/api-with-examples.json"), Swagger.class);
         final ApplicationWrapper request = new ApplicationWrapper(swagger);
 
+        // When: The Swagger document is posted to the application resource
         WebClient webClient = WebClient.create("http://localhost:" + container.getPort() + "/openejb/api/application", Arrays.asList(new CustomJacksonJaxbJsonProvider()))
             .accept(MediaType.APPLICATION_JSON_TYPE)
             .type(MediaType.APPLICATION_JSON_TYPE);
 
         ApplicationWrapper applicationWrapper = webClient.post(request, ApplicationWrapper.class);
+
+        // Then: The response status 201 and contains the imported document
         assertEquals(201, webClient.getResponse().getStatus());
 
         assertEquals("List API versions", applicationWrapper.getSwagger().getPaths().get("/").getGet().getSummary());
         assertEquals("Show API version details", applicationWrapper.getSwagger().getPaths().get("/v2").getGet().getSummary());
 
+        // And: the response document contains the link to itself
         WebClient endpointWebclient = WebClient.create(applicationWrapper.getLinks().get("self"), Arrays.asList(new CustomJacksonJaxbJsonProvider()))
             .accept(MediaType.APPLICATION_JSON_TYPE)
             .path("get");
-
         EndpointWrapper endpoint = endpointWebclient.get(EndpointWrapper.class);
         assertEquals(Arrays.asList("application/json"), endpoint.getOperation().getProduces());
 
+        // And: When loading all applications the number of applications has increased by 1
+        assertEquals(oldApplicationCount + 1, loadAllApplications().size());
+
+        // And: The search also returns the two imported endpoints
+        SearchPage searchPage = WebClient.create("http://localhost:" + container.getPort() + "/openejb/api/search", Arrays.asList(new CustomJacksonJaxbJsonProvider()))
+            .query("tag", "test")
+            .accept(MediaType.APPLICATION_JSON_TYPE)
+            .get(SearchPage.class);
+
+        assertEquals(2, searchPage.getResults().size());
+        final List<String> foundPaths = searchPage.getResults().stream()
+            .map(SearchResult::getPath)
+            .collect(toList());
+        assertThat(foundPaths, both(hasItem("/")).and(hasItem("/v2")));
     }
 
     private List<ApplicationWrapper> loadAllApplications() {

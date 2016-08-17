@@ -430,7 +430,7 @@ public class SearchEngine {
             final String webCtx = endpoint.getApplication().getSwagger().getBasePath();
             try {
                 final Document eDoc = createDocument(endpoint, webCtx);
-                addFacets(endpoint, webCtx, eDoc);
+                addFacets(endpoint, webCtx != null ? webCtx : "/", eDoc);
                 writer.addDocument(facetsConfig.build(taxonomyWriter, eDoc));
                 writer.commit(); // flush by app
                 writer.waitForMerges();

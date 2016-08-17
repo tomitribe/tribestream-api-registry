@@ -24,6 +24,7 @@ import com.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import com.tomitribe.tribestream.registryng.entities.Endpoint;
 import com.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 import com.tomitribe.tribestream.registryng.repository.Repository;
+import com.tomitribe.tribestream.registryng.service.search.SearchEngine;
 import com.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
@@ -56,12 +57,14 @@ public class ApplicationResource {
 
     private final Repository repository;
 
+    private final SearchEngine searchEngine;
 
     @Inject
     public ApplicationResource(
         Repository repository,
-        @Named(SwaggerJsonMapperProducer.SWAGGER_OBJECT_MAPPER_NAME) ObjectMapper jsonMapper) {
+        SearchEngine searchEngine) {
         this.repository = repository;
+        this.searchEngine = searchEngine;
     }
 
     public ApplicationResource() {
@@ -151,6 +154,8 @@ public class ApplicationResource {
 
         final ApplicationWrapper applicationWrapper = new ApplicationWrapper(shrinkSwagger(mergeSwagger(newDocument.getSwagger(), newDocument.getEndpoints())));
         applicationWrapper.addLink("self", uriInfo.getBaseUriBuilder().path("application").path(document.getId()).build());
+
+        searchEngine.doReindex();
 
         return Response.status(201).entity(applicationWrapper).build();
     }
