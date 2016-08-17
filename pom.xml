@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.tomitribe</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>5</version>
+  </parent>
+
+  <groupId>com.tomitribe.tribestream</groupId>
+  <artifactId>tribestream-api-registry-parent</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>Tribestream API Registry :: Parent</name>
+
+  <scm>
+    <connection>scm:git:git@github.com:tomitribe/tribestream-api-registry.git</connection>
+    <url>scm:git:git@github.com:tomitribe/tribestream-api-registry.git</url>
+    <developerConnection>scm:git:git@github.com:tomitribe/tribestream-api-registry.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
+
+  <prerequisites>
+    <!--Inlined with Jenkins-->
+    <maven>3.3.1</maven>
+  </prerequisites>
+
+
+  <repositories>
+    <repository>
+      <id>apache-snapshot</id>
+      <url>http://repository.apache.org/snapshots/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </repository>
+    <repository>
+      <id>Sonatype-public</id>
+      <name>Sonatype snapshot and release</name>
+      <url>https://oss.sonatype.org/content/groups/public/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </repository>
+  </repositories>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <version.surefire>2.19.1</version.surefire>
+
+
+    <version.tomcat>7.0.69</version.tomcat>
+    <version.tomee-minor>7.4</version.tomee-minor>
+    <version.tomee>1.${version.tomee-minor}</version.tomee>
+    <version.openejb>4.${version.tomee-minor}</version.openejb>
+
+    <version.tomitribe-util>1.2.1</version.tomitribe-util>
+
+    <version.slf4j>1.7.7</version.slf4j>
+    <version.jackson>2.4.5</version.jackson>
+    <version.lucene>4.10.2</version.lucene>
+    <version.hibernate>4.2.21.Final</version.hibernate>
+    <version.swagger>1.5.9</version.swagger>
+    <version.markdown4j>2.2-cj-1.0</version.markdown4j>
+    <version.commons-io>2.4</version.commons-io>
+
+    <version.junit>4.12</version.junit>
+  </properties>
+
+  <modules>
+    <module>tribestream-api-registry-webapp</module>
+  </modules>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${version.junit}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.openejb</groupId>
+        <artifactId>openejb-cxf-rs</artifactId>
+        <version>${version.openejb}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>2.6</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>2.6</version>
+          <configuration>
+            <failOnMissingWebXml>false</failOnMissingWebXml>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.openejb.maven</groupId>
+          <artifactId>tomee-maven-plugin</artifactId>
+          <version>${version.tomee}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <optimize>true</optimize>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>templating-maven-plugin</artifactId>
+        <version>1.0.0</version>
+        <executions>
+          <execution>
+            <id>filter-src</id>
+            <goals>
+              <goal>filter-sources</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>filter-test-src</id>
+            <goals>
+              <goal>filter-test-sources</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <version>0.11</version>
+        <configuration>
+          <includes>
+            <include>src/**/*.java</include>
+            <include>src/**/*.xml</include>
+            <include>pom.xml</include>
+          </includes>
+          <excludes>
+            <exclude>src/main/static/node_modules/**/*</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+
+      <!--
+        - Make a checkstyle violation a compile error. Note that if a compile error occurs,
+        - further information can be found in target/site/checkstyle.html (present even when
+        - just the compile goal and not the site goal has been run). Note also that child
+        - projects may redeclare this plugin and provide different configuration settings
+        - to use different checks (more or less strict than the default).
+
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${maven.checkstyle.plugin.version}</version>
+        <executions>
+          <execution>
+            <id>verify-style</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <logViolationsToConsole>true</logViolationsToConsole>
+          <consoleOutput>true</consoleOutput>
+          <checkstyleRules>
+            <module name="Checker">
+              <module name="SuppressionCommentFilter" />
+
+              <!-- Checks for Size Violations.                    -->
+              <!-- See http://checkstyle.sf.net/config_sizes.html -->
+              <module name="FileLength">
+                <property name="max" value="3500" />
+                <property name="fileExtensions" value="java" />
+              </module>
+
+              <!-- Checks for whitespace                               -->
+              <!-- See http://checkstyle.sf.net/config_whitespace.html -->
+              <module name="FileTabCharacter" />
+
+              <!-- allow usage of CHECKSTYLE:OFF and CHECKSTYLE:ON -->
+              <module name="SuppressionCommentFilter" />
+
+              <module name="TreeWalker">
+                <!-- needed for the SuppressionCommentFilter -->
+                <module name="FileContentsHolder" />
+
+                <!-- Checks for Naming Conventions.                  -->
+                <!-- See http://checkstyle.sf.net/config_naming.html -->
+                <module name="ConstantName">
+                  <!-- 0=Allowed, 1=Disallowed  (see checkConstants.sh in pom source tree)
+                    0 foo
+                    0 fooBar
+                    0 fooBarBaz
+                    0 FOO
+                    0 FOO_BAR
+                    0 FOO_BAR_BAZ
+                    0 _fooBar
+                    0 f9
+                    0 F9_C3
+                    1 FooBar
+                    1 foo_bar
+                    1 FOO__BAR
+                    1 _FOO
+                    1 foo_
+                    1 FOO_
+                     -->
+                  <property name="format" value="^(_?[a-z][a-zA-Z0-9]*|([A-Z](_?[A-Z0-9]+)*))$" />
+                </module>
+
+                <module name="LocalVariableName" />
+                <module name="MethodName">
+                  <property name="format" value="^_?[a-z][a-zA-Z0-9]*$" />
+                </module>
+                <module name="PackageName" />
+                <module name="LocalFinalVariableName" />
+                <module name="ParameterName" />
+                <module name="StaticVariableName" />
+                <module name="TypeName">
+                  <property name="format" value="^_?[A-Z][a-zA-Z0-9]*$" />
+                </module>
+
+                <!-- Checks for imports                              -->
+                <!-- See http://checkstyle.sf.net/config_import.html -->
+                <module name="AvoidStarImport">
+                  <property name="excludes" value="java.io,java.net,java.util,javax.enterprise.inject.spi,javax.enterprise.context" />
+                </module>
+                <module name="IllegalImport" />
+                <module name="RedundantImport" />
+                <module name="UnusedImports" />
+
+
+                <module name="LineLength">
+                  <property name="max" value="180" />
+                  <property name="ignorePattern" value="@version|@see" />
+                </module>
+                <module name="MethodLength">
+                  <property name="max" value="250" />
+                </module>
+                <module name="ParameterNumber">
+                  <property name="max" value="15" />
+                </module>
+
+                <!-- Checks for blocks. You know, those {}'s         -->
+                <!-- See http://checkstyle.sf.net/config_blocks.html -->
+                <module name="EmptyBlock">
+                  <property name="option" value="text" />
+                </module>
+
+                <module name="NeedBraces">
+                  <property name="tokens" value="LITERAL_DO, LITERAL_ELSE, LITERAL_FOR, LITERAL_WHILE" />
+                </module>
+                <module name="LeftCurly">
+                  <property name="option" value="EOL" />
+                </module>
+                <module name="RightCurly">
+                  <property name="option" value="SAME" />
+                </module>
+
+                <!-- Checks for common coding problems               -->
+                <!-- See http://checkstyle.sf.net/config_coding.html -->
+                <module name="EmptyStatement" />
+                <module name="EqualsHashCode" />
+                <module name="DefaultComesLast" />
+                <module name="MissingSwitchDefault" />
+                <module name="FallThrough" />
+                <module name="MultipleVariableDeclarations" />
+
+                <!-- Checks for class design                         -->
+                <!-- See http://checkstyle.sf.net/config_design.html -->
+                <module name="com.puppycrawl.tools.checkstyle.checks.design.DesignForExtensionCheck">
+                  <property name="severity" value="ignore" />
+                </module>
+
+                <module name="HideUtilityClassConstructor" />
+
+                <module name="com.puppycrawl.tools.checkstyle.checks.design.VisibilityModifierCheck">
+                  <property name="packageAllowed" value="false" />
+                  <property name="protectedAllowed" value="true" />
+                  <property name="publicMemberPattern" value="^serialVersionUID" />
+                  <property name="severity" value="warning" />
+                </module>
+
+                <module name="UpperEll" />
+
+                <module name="AnnotationLocation">
+                  <property name="allowSamelineMultipleAnnotations" value="false" />
+                  <property name="allowSamelineSingleParameterlessAnnotation" value="false" />
+                  <property name="allowSamelineParameterizedAnnotation" value="false" />
+                  <property name="tokens" value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, METHOD_DEF, CTOR_DEF, VARIABLE_DEF, ANNOTATION_DEF" />
+                </module>
+              </module>
+
+            </module>
+          </checkstyleRules>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </build>
+
+</project>

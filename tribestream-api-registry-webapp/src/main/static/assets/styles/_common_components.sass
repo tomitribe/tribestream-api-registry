@@ -1,0 +1,151 @@
+@import "variables"
+
+a
+  text-decoration: underline
+
+select, input, select > option
+  height: 34px !important
+
+select[multiple]
+  height: auto !important
+
+select > option
+  padding: 0.5rem
+
+select > option, input
+  font-size: 13px !important
+
+select, input
+  border-color: $app-input-border-color !important
+  &:focus, &:hover
+    border-color: $selected-color !important
+    background-color: transparent
+
+input, select
+  max-width: 600px
+  color: #676A6C
+
+label
+  font-size: 13px
+  font-weight: bold
+  color: #676A6C
+  display: flex
+  align-items: center
+  margin-bottom: 5px
+  > input
+    width: auto
+  input
+    margin: 0 $default-padding 0 0 !important
+
+div.CodeMirror
+  border: solid #F5F5F5 1px
+
+*[flow-btn]
+  > input
+    width: 0
+    top: 0
+    left: 0
+
+select
+  font: inherit
+  background: $app-white url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20version%3D%221.1%22%20width%3D%2232%22%20height%3D%2224%22%20viewBox%3D%220%200%2032%2024%22%3E%3Cpolygon%20points%3D%220%2C0%2032%2C0%2016%2C24%22%20style%3D%22fill%3A%20#000%22%3E%3C/polygon%3E%3C/svg%3E") right 8px center no-repeat
+  background-size: 10px
+  padding: 0
+  margin: 0
+
+select[multiple]
+  height: auto
+
+a.button
+  text-decoration: none
+
+.button
+  text-transform: capitalize
+  margin: 0
+  background-color: $app-button-color !important
+  border: solid 1px $app-button-color
+  border-radius: 3px
+  font-size: 12px
+  font-weight: bold
+
+  &:hover, &:focus, &:active
+    background-color: $app-button-active-color !important
+    border-color: $app-button-active-color !important
+
+  &[disabled]
+    background-color: $app-disabled-button-color !important
+    border-color: $app-disabled-button-color !important
+    &:hover, &:focus, &:active
+      background-color: $app-disabled-button-color !important
+      border-color: $app-disabled-button-color !important
+
+  &.inverted
+    background-color: $app-white !important
+    color: $app-cancel-button-color
+    border: solid 1px $app-cancel-button-color
+    &:hover, &:focus, &:active
+      background-color: $app-white !important
+      color: $app-cancel-button-active-color
+      border-color: $app-cancel-button-active-color
+
+  &.orange
+    background-color: $tomitribe-orange !important
+    border-color: $tomitribe-orange !important
+    &:hover, &:focus, &:active
+      background-color: $tomitribe-orange !important
+      border-color: $tomitribe-orange !important
+
+button
+  @extend .button
+
+// button group inside tables (applications page, for example)
+td
+  ul.button-group
+    margin-bottom: 0
+    button, a.button
+      margin-left: 2px
+      border-right: 1px solid transparent
+    i
+      color: $app-white
+
+div.field-btn
+  margin-bottom: $default-padding
+  display: flex
+  border: solid 1px $app-input-border-color
+  border-radius: 3px
+  > input
+    margin: 0 !important
+    border: 0
+    border-right: solid 1px $app-input-border-color
+  > button
+    color: lighten($app-black, 10%)
+    background-color: lighten($app-input-border-color, 2%) !important
+    border-radius: 0
+    border: 0
+    &:hover
+      border-color: transparent !important
+  > *[disabled]:first-child
+    background-color: $app-white
+  > *
+    margin: 0
+    &:first-child
+      flex-grow: 1
+    &:last-child
+      flex-shrink: 0
+      width: 70px
+      border-bottom-left-radius: 0
+      border-top-left-radius: 0
+
+select, input
+  padding-left: $default-padding
+  padding-right: $default-padding
+
+span.superscript
+  vertical-align: super
+  font-size: 60%
+
+div.tribe-float
+  @extend .clearfix
+
+em
+  white-space: normal

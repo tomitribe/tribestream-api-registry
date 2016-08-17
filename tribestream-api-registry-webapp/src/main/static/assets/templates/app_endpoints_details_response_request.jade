@@ -1,0 +1,34 @@
+div
+  h2
+    span Response status
+    div(x-ng-click="addErrorCode();", app-endpoints-details-toc-anchor="Response codes")
+      i.fa.fa-plus
+  .values
+    table(x-ng-if="endpoint.errors && endpoint.errors.length")
+      thead
+        tr
+          th Code
+          th Description
+          th
+      tbody
+        tr(x-ng-repeat="val in endpoint.errors | orderBy:'statusCode'")
+          td
+            i(data-tribe-editable-number, data-value="val.statusCode")
+          td
+            i(data-tribe-editable-block, data-content="val.description")
+          td
+            div(x-ng-click="removeErrorCode(val);")
+              i.fa.fa-trash-o
+  .samples
+    h2 #[span Example Request]
+    div(zf-tabs)
+      div(zf-tab, title="HTTP")
+        pre {{$parent.endpoint.samples.sampleHttpRequest}}
+      div(zf-tab, title="Curl")
+        pre {{$parent.endpoint.samples.sampleCurlRequest}}
+    h2 #[span Example Result]
+    div(zf-tabs)
+      div(zf-tab, title="JSON")
+        pre {{$parent.endpoint.samples.sampleJsonResponse}}
+      div(zf-tab, title="XML")
+        pre {{$parent.endpoint.samples.sampleXmlResponse}}

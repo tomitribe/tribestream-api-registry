@@ -1,0 +1,5 @@
+div(tabindex=0)
+  span {{value && value.trim() !== '' ? value : '&nbsp;&nbsp;&nbsp;'}}
+  input(type="{{type}}", x-ng-model="value")
+  div
+    i.fa.fa-pencil

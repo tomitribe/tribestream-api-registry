@@ -1,0 +1,77 @@
+@import "../../bower_components/foundation-apps/scss/settings"
+@import "../../bower_components/foundation-apps/scss/foundation"
+@import "variables"
+
+*
+  font-family: "open sans", "Lato", Helvetica, Arial, sans-serif
+  color: $app-black
+  line-height: 1.7
+  font-size: $app-font-size
+
+h1, h2, h3, h4, h5, h6
+  font-family: "open sans", "Montserrat", Helvetica, Arial, sans-serif
+  *
+    font-family: "open sans", "Montserrat", Helvetica, Arial, sans-serif
+
+html
+  box-sizing: border-box
+
+*, *:before, *:after
+  box-sizing: inherit
+
+div.app-loading
+  width: 100%
+  height: 100%
+  background: url("../../app/images/loading.gif") center no-repeat
+
+div[data-app]
+  > div
+    position: relative
+    > div.top-background
+      position: absolute
+      top: 0
+      right: 0
+      left: 0
+      height: 250px
+      z-index: -1000
+
+a
+  color: $tomitribe-orange
+  text-decoration: none
+  &:hover
+    color: $tomitribe-orange
+    text-decoration: underline
+
+[x-ng-click], [ng-click]
+  &:hover
+    cursor: pointer
+
+@import "common_table"
+@import "common_components"
+
+@import "component_editable"
+@import "component_editable_option"
+@import "component_editable_block"
+@import "component_switch"
+@import "component_multiselect"
+@import "component_tabs"
+
+@import "app_header"
+@import "app_footer"
+
+@import "app_confirmation_message"
+
+@import "app_endpoints"
+@import "app_endpoints_header"
+@import "app_endpoints_query_input"
+@import "app_endpoints_list"
+@import "app_endpoints_list_filter_entries"
+@import "app_endpoints_filter"
+@import "app_endpoints_filter_bubble"
+@import "app_endpoints_details"
+@import "app_application_details"
+@import "app_see"
+
+@import "_app_endpoints_selected_filter"
+
+@import "page_login"

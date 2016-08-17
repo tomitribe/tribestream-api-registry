@@ -1,0 +1,57 @@
+@import "variables"
+
+i[data-tribe-editable-block]
+  font-style: normal
+  > div
+    // original text
+    > div.static
+      min-height: 28px
+      display: flex
+      > div:last-of-type
+        flex-shrink: 0
+        display: none
+        width: 20px
+        background-color: #eff0f1
+        flex-direction: column
+        justify-content: center
+        align-items: center
+        > i
+          color: #aaabac
+          font-size: 9px !important
+      > div:first-of-type
+        flex-grow: 1
+        display: block
+        padding: 5px
+        font-size: $app-font-size-h5 !important
+        font-weight: $app-font-weight-h5 !important
+        color: $app-black
+        text-decoration: none
+        &:hover
+          text-decoration: none
+          color: $app-black
+      border: solid transparent 1px
+      border-right: 0
+      &:hover
+        border-color: #f2f0f0
+        > div
+          display: flex
+    // textarea
+    > div.dynamic
+      display: none
+      textarea
+        padding: 5px
+        font-size: $app-font-size-h5 !important
+        font-weight: $app-font-weight-h5 !important
+        color: $app-black
+        resize: none
+        margin: 0
+        &:focus
+          border: solid #efefef 1px
+  &.editing
+    > div
+      // original text
+      > div:first-of-type
+        display: none
+      // textarea
+      > div:last-of-type
+        display: block
