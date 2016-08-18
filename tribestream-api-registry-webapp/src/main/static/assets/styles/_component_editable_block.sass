@@ -1,0 +1,31 @@
+@import "variables"
+
+i[data-tribe-editable-block]
+  font-style: normal
+  > div
+    position: relative
+    .icon
+      display: none
+      position: absolute
+      top: 0
+      bottom: 0
+      right: 0
+      width: 20px
+      background-color: #eff0f1
+      > div
+        display: flex
+        flex-direction: column
+        justify-content: center
+        align-items: center
+        height: 100%
+        > i
+          color: #aaabac
+          font-size: 9px !important
+    .CodeMirror
+      height: auto
+      border-color: transparent
+    &:hover
+      .CodeMirror
+        border-color: #f2f0f0
+      .icon
+        display: block

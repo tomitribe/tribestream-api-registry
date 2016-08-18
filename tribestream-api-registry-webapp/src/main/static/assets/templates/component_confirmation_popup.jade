@@ -1,0 +1,8 @@
+.app-confirmation-message
+  div(x-ng-show="title !== ''")
+    h1 {{title}}
+  div
+    p {{message}}
+  div
+    button.inverted(x-ng-click="noClick()") {{no}}
+    button(x-ng-click="yesClick()") {{yes}}

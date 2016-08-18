@@ -1,0 +1,97 @@
+@import "variables"
+
+body
+  > i[data-app-ng-click-confirm-el]
+    z-index: 3000
+    position: absolute
+    top: 0
+    bottom: 0
+    left: 0
+    right: 0
+    display: flex
+    flex-direction: column
+    justify-content: center
+    align-items: center
+    background: rgba(black, 0.5)
+    > div.app-confirmation-message
+      margin: 0 $default-padding
+      border: medium none
+      border-top: 5px solid #e6e6e6
+      border-radius: 0 0 3px 3px
+      box-shadow: 0 0 3px rgba(86, 96, 117, 0.7)
+      background-color: $app-white
+      > div
+        padding: ($default-padding * 2) ($default-padding * 2) 0 ($default-padding * 2)
+        margin-top: 20px
+        &:first-child
+          border-bottom: 2px solid #e6e6e6
+          margin-top: 0
+          padding-top: 6px
+          > h1
+            font-size: 20px
+            color: lighten($app-black, 5%)
+        &:last-child
+          display: flex
+          justify-content: flex-end
+          padding-bottom: ($default-padding * 2)
+          > button
+            margin-left: $default-padding
+        p
+          margin: 0
+
+  div[data-app-closable-messages]
+    > div
+      position: absolute
+      right: $default-padding
+      bottom: $default-padding
+      z-index: 3000
+      width: 350px
+
+      // message item
+      > div
+        position: relative
+        > div
+          border: medium none
+          border-radius: 0
+          box-shadow: 0 0 3px rgba(86, 96, 117, 0.7)
+          background-color: $app-white
+          > div
+            display: flex
+            justify-content: center
+            border-top: 5px solid $app-message-color-info
+            > i
+              font-size: 35px !important
+              color: $app-message-color-info !important
+              margin: $default-padding
+            &.app-message-error
+              border-top: 5px solid $app-message-color-error
+              > i
+                color: $app-message-color-error !important
+            &.app-message-warning
+              border-top: 5px solid $app-message-color-warning
+              > i
+                color: $app-message-color-warning !important
+          > h1
+            text-transform: uppercase
+            text-align: center
+            font-weight: bold
+            font-size: 14px
+            margin: 0
+          > p
+            text-align: center
+            font-size: 12px
+            padding: $default-padding ($default-padding * 6)
+            margin-bottom: $default-padding * 3
+        > i
+          position: absolute
+          font-size: 15px !important
+          font-weight: 100
+          top: $default-padding
+          right: $default-padding
+          color: $app-black !important
+          &:hover
+            cursor: pointer
+      flex-direction: column
+      @media (max-width: 320px)
+        left: $default-padding
+        width: auto
