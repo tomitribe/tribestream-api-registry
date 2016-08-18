@@ -65,7 +65,7 @@ public class EndpointWrapper {
     public Map<String, String> getLinks() {
         return links;
     }
-    
+
 
     public String getHttpMethod() {
         return httpMethod;

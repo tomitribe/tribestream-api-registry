@@ -8,12 +8,15 @@ i[data-tribe-editable-option]
     outline: none
     display: inline-block
   .value
-    padding: 5px 8px
-    display: flex
-    align-items: center
+    padding: 5px 12px 5px 8px
+    position: relative
     border: solid transparent 1px
     border-radius: $radius
     > div
+      position: absolute
+      top: 50%
+      right: 5px
+      transform: translateY(-50%)
       display: flex
       flex-direction: column
       justify-content: center
@@ -43,8 +46,6 @@ i[data-tribe-editable-option]
       > div > i
         opacity: 1
   &.visible
-    > div
-      position: relative
     .value
       border-bottom-left-radius: 0
     .options

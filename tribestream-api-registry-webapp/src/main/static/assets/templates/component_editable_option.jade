@@ -1,11 +1,9 @@
 div(tabindex=0)
   .value
-    span(x-ng-if="!selectedText || selectedText.length === 0") &nbsp
-    span(x-ng-if="selectedText && selectedText.length > 0") {{selectedText}}
+    span {{valueText}}
     div
       i.fa.fa-caret-up
       i.fa.fa-caret-down
   .options
     div(x-ng-repeat="opt in options", x-ng-click="selectOption(opt)", tabindex=0)
-      span(x-ng-if="opt.text !== undefined") {{opt.text}}
-      span(x-ng-if="opt.text === undefined") {{opt}}
+      span {{opt.text ? opt.text : opt}}

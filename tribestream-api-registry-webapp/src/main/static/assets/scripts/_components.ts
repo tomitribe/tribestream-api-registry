@@ -3,7 +3,10 @@
 
 module basecomponents {
 
-    angular.module('website-components', [])
+    angular.module('website-components', [
+        'ui.codemirror',
+        'hc.marked'
+    ])
 
         .filter('tribeHtml', ['$sce', function ($sce) {
             return function (input) {
@@ -29,6 +32,74 @@ module basecomponents {
             };
         }])
 
+        .directive('tribeEditableMd', [function () {
+            return {
+                restrict: 'A',
+                scope: {
+                    content: '='
+                },
+                templateUrl: 'app/templates/component_editable_md.html',
+                controller: ['$scope', '$timeout', '$element', function ($scope, $timeout, $element) {
+                    $scope.editorHolder = {
+                        editor: null
+                    };
+                    $scope.cmOption = {
+                        lineNumbers: false,
+                        viewportMargin: Infinity,
+                        mode: 'markdown',
+                        onLoad: function (editor) {
+                            $timeout(function () {
+                                $scope.$apply(function () {
+                                    $scope.editorHolder.editor = editor;
+                                });
+                            });
+                        }
+                    };
+                    $scope.$watch('content', function () {
+                        $timeout(function () {
+                            $scope.$apply(function () {
+                                if (!$scope.content) {
+                                    $scope.compiledContent = '';
+                                } else {
+                                    $scope.compiledContent = marked($scope.content);
+                                }
+                            });
+                        });
+                    });
+                    $scope.codemirrorLoaded = function (_editor) {
+                        _editor.on("blur", function () {
+                            $element.removeClass('edit');
+                        });
+                    };
+                }],
+                link: function (scope, el, attr, controller) {
+                    scope.$watch('content', function () {
+                        if (!el.hasClass('edit')) {
+                            if (!scope.content) {
+                                el.addClass('edit');
+                            }
+                        }
+                    });
+                    scope.$watch('editorHolder.editor', function () {
+                        var editor = scope.$eval('editorHolder.editor');
+                        if (editor) {
+                            el.on('click', function () {
+                                el.addClass('edit');
+                                editor.refresh();
+                                editor.focus();
+                            });
+                            editor.on('blur', function () {
+                                if (scope.content) {
+                                    el.removeClass('edit');
+                                }
+                            });
+                        }
+                    });
+
+                }
+            };
+        }])
+
         .directive('tribeEditableBlock', [function () {
             return {
                 restrict: 'A',
@@ -36,21 +107,12 @@ module basecomponents {
                     content: '='
                 },
                 templateUrl: 'app/templates/component_editable_block.html',
-                link: function (scope, el, attr, controller) {
-                    var textareaQ = '> div > div > textarea';
-                    var initEdit = function () {
-                        var txt = el.find(textareaQ);
-                        var parent = el.find('> div');
-                        txt.height(parent.height());
-                        el.addClass('editing');
-                        txt.focus();
+                controller: ['$scope', function ($scope) {
+                    $scope.cmOption = {
+                        lineNumbers: false,
+                        viewportMargin: Infinity
                     };
-                    el.on('click focus', initEdit);
-                    el.find(textareaQ).on('blur', function () {
-                        el.removeClass('editing');
-                    });
-                    el.find('> div').on('focus', initEdit);
-                }
+                }]
             };
         }])
 
@@ -115,76 +177,40 @@ module basecomponents {
                 },
                 templateUrl: 'app/templates/component_editable_option.html',
                 controller: ['$scope', '$timeout', function ($scope, $timeout) {
-                    $scope.selectOption = function (opt) {
+                    var selectOption = function (opt) {
                         $timeout(function () {
                             $scope.$apply(function () {
-                                if (opt.value === undefined) {
-                                    $scope.value = opt;
-                                } else {
-                                    $scope.value = opt.value;
-                                }
+                                $scope.value = opt;
                             });
                         });
                     };
-                    this.selectOption = $scope.selectOption;
+                    $scope.selectOption = selectOption;
                     $scope.$watch('value', function () {
                         if (!$scope.value) {
-                            return;
-                        }
-                        $timeout(function () {
-                            $scope.$apply(function () {
-                                var selectedOption = $scope.options.find(function (loopVal) {
-                                    if (loopVal.value === undefined) {
-                                        return loopVal === $scope.value;
-                                    } else {
-                                        return loopVal.value === $scope.value;
-                                    }
+                            $timeout(function () {
+                                $scope.$apply(function () {
+                                    $scope.valueText = '';
                                 });
-                                $scope.selectedText = selectedOption.text === undefined ? selectedOption : selectedOption.text;
                             });
-                        });
+                        } else {
+                            $timeout(function () {
+                                $scope.$apply(function () {
+                                    for (let opt of $scope.options) {
+                                        if (opt === $scope.value || opt.value === $scope.value) {
+                                            $scope.valueText = opt.text ? opt.text : opt;
+                                            return;
+                                        }
+                                    }
+                                    $scope.valueText = '';
+                                });
+                            });
+                        }
                     });
                 }],
                 link: function (scope, el, attrs, controller) {
                     $timeout(function () {
-                        var closeTask = null;
-                        var cancelTask = function () {
-                            if (closeTask) {
-                                $timeout.cancel(closeTask);
-                            }
-                        };
-                        var container = el.find('> div');
-                        var options = el.find('> div > div.options');
-                        var openComponent = function () {
-                            cancelTask();
-                            options.css({top: container.css('height')});
-                            el.addClass('visible');
-                            options.find('> div').each(function (index, rawEl) {
-                                var angularEl = angular.element(rawEl);
-                                angularEl.focus();
-                                if (angularEl.scope().opt === scope.value) {
-                                    return false;
-                                }
-                            })
-                        };
-                        container.on('click', openComponent);
-                        container.on('focus', openComponent);
-                        options.find('> div').on('focus', function () {
-                            cancelTask();
-                            el.addClass('visible');
-                        });
-                        options.find('> div').on('click', function (event) {
-                            var angularEl = angular.element(event.target);
-                            var elScope = angularEl.scope();
-                            controller.selectOption(elScope.opt);
-                            angularEl.focus();
-                            el.removeClass('visible');
-                        });
-                        options.find('> div').on('blur', function () {
-                            cancelTask();
-                            closeTask = $timeout(function () {
-                                el.removeClass('visible');
-                            }, 200);
+                        el.on('click', function () {
+                            el.toggleClass('visible');
                         });
                     });
                 }

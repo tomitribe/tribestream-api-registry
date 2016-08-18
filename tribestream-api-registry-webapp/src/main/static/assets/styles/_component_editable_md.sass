@@ -1,7 +1,6 @@
 @import "variables"
 
-i[data-tribe-editable-block]
-  font-style: normal
+div[data-tribe-editable-md]
   > div
     position: relative
     .icon
@@ -22,10 +21,19 @@ i[data-tribe-editable-block]
           color: #aaabac
           font-size: 9px !important
     .CodeMirror
+      min-height: 30px
       height: auto
       border-color: transparent
-    &:hover
-      .CodeMirror
-        border-color: #f2f0f0
-      .icon
+    div.dyn
+      display: none
+  &.edit
+    > div
+      div.static
+        display: none
+      div.dyn
         display: block
+  &:hover
+    .CodeMirror
+      border-color: #f2f0f0
+    .icon
+      display: block

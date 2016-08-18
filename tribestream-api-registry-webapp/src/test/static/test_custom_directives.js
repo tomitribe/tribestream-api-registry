@@ -22,16 +22,15 @@ describe('it tests our custom password strength directive', function () {
             '<div data-tribe-editable-block data-content="myContent"></div>'
         ].join(''))($rootScope);
         $rootScope.$digest();
-        expect(element.find('textarea').val()).toBe("Lalala lilili.");
+        var codeMirror = element.find('div.CodeMirror');
+        console.log(codeMirror.html());
+        expect(codeMirror.html()).toContain('Lalala lilili.');
         $rootScope.$apply(function () {
             $rootScope.myContent = "Lelele.";
         });
-        expect(element.find('textarea').val()).toBe("Lelele.");
-        expect(element.hasClass('editing')).toBe(false);
-        element.triggerHandler('click');
-        expect(element.hasClass('editing')).toBe(true);
-        element.find('textarea').blur();
-        expect(element.hasClass('editing')).toBe(false);
+
+        expect(codeMirror.html()).not.toContain('Lalala lilili.');
+        expect(codeMirror.html()).toContain('Lelele.');
     });
 
 });
