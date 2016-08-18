@@ -18,21 +18,18 @@
  */
 package com.tomitribe.tribestream.registryng.resources;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import com.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import com.tomitribe.tribestream.registryng.entities.Endpoint;
 import com.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 import com.tomitribe.tribestream.registryng.repository.Repository;
 import com.tomitribe.tribestream.registryng.service.search.SearchEngine;
-import com.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;

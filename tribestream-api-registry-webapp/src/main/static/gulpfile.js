@@ -125,7 +125,12 @@ gulp.task('js-third-party', function () {
         './bower_components/foundation-apps/dist/js/foundation-apps.min.js',
         './bower_components/ngstorage/ngStorage.min.js',
         './bower_components/angular-cookies/angular-cookies.min.js',
-        './bower_components/angular-resource/angular-resource.min.js'
+        './bower_components/angular-resource/angular-resource.min.js',
+        './bower_components/codemirror/lib/codemirror.js',
+        './bower_components/angular-ui-codemirror/ui-codemirror.min.js',
+        './bower_components/codemirror/mode/markdown/markdown.js',
+        './bower_components/marked/lib/marked.js',
+        './bower_components/angular-marked/dist/angular-marked.min.js'
     ]).pipe(concat('_3.js')).pipe(gulp.dest('../../../target/static-resources/app/third-party/'));
     // internet explorer has a file size limit of around 280kb (Yeah... no idea why)
     return es.concat(_1, _2, _3);

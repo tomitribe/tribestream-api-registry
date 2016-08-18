@@ -32,3 +32,6 @@ div
         pre {{$parent.endpoint.samples.sampleJsonResponse}}
       div(zf-tab, title="XML")
         pre {{$parent.endpoint.samples.sampleXmlResponse}}
+  .resp-body
+    h2 #[span Response Body]
+    div(data-tribe-editable-md, data-content="endpoint.respBody")

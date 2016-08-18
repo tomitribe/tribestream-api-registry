@@ -1,7 +1,5 @@
 div(tabindex=0)
-  .static
-    div(x-ng-bind-html="content | tribeHtml", tabindex="{{tabindex}}")
+  textarea(x-ui-codemirror="cmOption", x-ng-model="content")
+  .icon
     div
       i.fa.fa-pencil
-  .dynamic
-    textarea(x-ng-model="content")
