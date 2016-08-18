@@ -1,0 +1,5 @@
+div(x-ng-if="list")
+  div(x-ng-repeat="entry in list", x-ng-click="removeFilter(entry)", title="Click to remove filter")
+    div
+      span {{entry}}
+      i.fa.fa-times

@@ -1,0 +1,10 @@
+div(x-ng-if="selectedApps.length || selectedCategories.length || selectedTags.length || selectedRoles.length")
+  h1
+    i.fa.fa-tag
+    span Selected tags
+    span ({{selectedApps.length + selectedCategories.length + selectedTags.length + selectedRoles.length}})
+  div(data-app-endpoints-list-filter-entries, data-title="Applications", data-list="selectedApps", data-key="a")
+  div(data-app-endpoints-list-filter-entries, data-title="Categories", data-list="selectedCategories", data-key="c")
+  div(data-app-endpoints-list-filter-entries, data-title="Tags", data-list="selectedTags", data-key="t")
+  div(data-app-endpoints-list-filter-entries, data-title="Roles", data-list="selectedRoles", data-key="r")
+  div

@@ -1,0 +1,7 @@
+div(x-ng-show="list.length")
+  h1
+    span {{title}}
+    span ({{list.length}})
+  div
+  div
+    i(data-app-endpoints-filter-bubble, x-ng-repeat="entry in list", data-name="entry.text", data-length="entry.weight", data-qfield="qfield")

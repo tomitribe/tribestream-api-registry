@@ -1,0 +1,15 @@
+div
+  div.content
+    div.title
+      div
+        div
+          i.fa.fa-list
+        h3 Table of contents
+      div
+    div.body
+      ul
+        li(x-ng-repeat="anchor in anchors| orderBy:getIndex", data-app-endpoints-details-toc-item="anchor")
+  div.collapse-icon
+    i.fa.fa-caret-left
+    i.fa.fa-bars
+    i.fa.fa-caret-right

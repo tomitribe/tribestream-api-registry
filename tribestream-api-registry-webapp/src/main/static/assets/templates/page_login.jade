@@ -1,0 +1,13 @@
+.app-login(app-login)
+  div
+  form(x-ng-submit="login()")
+    img(src="app/images/logo-header-login.svg")
+    h1 Welcome to Registry.
+    h2 Login to see it in action.
+    div
+      input(type="text", placeholder="username", x-ng-model="username", name="username", autofocus)
+      input(type="password", placeholder="password", x-ng-model="password", name="password")
+      button.orange(type="submit") login
+      h3 or login as guest
+      button(x-ng-click="loginAsGuest()") guest
+  div(data-app-footer)

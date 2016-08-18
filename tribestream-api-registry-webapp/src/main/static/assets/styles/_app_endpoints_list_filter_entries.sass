@@ -1,0 +1,26 @@
+@import "variables"
+
+div[data-app-endpoints-list-filter-entries]
+  > div
+    max-width: 250px
+    > div[x-ng-repeat]
+      margin: 5px 5px 0 0
+      display: inline-block
+      background-color: transparent
+      padding: 2px 6px
+      border-radius: 5px
+      border: solid #e6e6e6 1px
+      > div
+        display: flex
+        align-items: center
+        > i
+          margin-left: 3px
+          font-size: 7px
+        > span
+          font-size: 10px
+          white-space: nowrap
+      &:hover
+        cursor: pointer
+        > div
+          > span, > i
+            color: $tomitribe-orange

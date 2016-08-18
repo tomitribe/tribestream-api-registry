@@ -1,0 +1,39 @@
+@import "variables"
+
+div[data-tribe-editable-md]
+  > div
+    position: relative
+    .icon
+      display: none
+      position: absolute
+      top: 0
+      bottom: 0
+      right: 0
+      width: 20px
+      background-color: #eff0f1
+      > div
+        display: flex
+        flex-direction: column
+        justify-content: center
+        align-items: center
+        height: 100%
+        > i
+          color: #aaabac
+          font-size: 9px !important
+    .CodeMirror
+      min-height: 30px
+      height: auto
+      border-color: transparent
+    div.dyn
+      display: none
+  &.edit
+    > div
+      div.static
+        display: none
+      div.dyn
+        display: block
+  &:hover
+    .CodeMirror
+      border-color: #f2f0f0
+    .icon
+      display: block
