@@ -1,9 +1,32 @@
 div
-  h2
-    span Response status
-    div(x-ng-click="addErrorCode();", app-endpoints-details-toc-anchor="Response codes")
-      i.fa.fa-plus
+  .resp-body
+    h2 #[span Response Body]
+    div(data-tribe-editable-md, data-content="endpoint.respBody")
+  .expected
+    h2
+      span Expected values
+      div(x-ng-click="")
+        i.fa.fa-plus
+    table(x-ng-if="endpoint.expectedvalues && endpoint.expectedValues.length")
+      thead
+        tr
+          th Attribute
+          th Expected Values
+          th
+      tbody
+        tr(x-ng-repeat="val in endpoint.expectedValues")
+          td
+            i(data-tribe-editable-text, data-value="val.name")
+          td
+            i(data-tribe-editable-block, data-content="val.values")
+          td
+            div(x-ng-click="removeValue(val);")
+              i.fa.fa-trash-o
   .values
+    h2
+      span Response codes
+      div(x-ng-click="addErrorCode();", app-endpoints-details-toc-anchor="Response codes")
+        i.fa.fa-plus
     table(x-ng-if="endpoint.errors && endpoint.errors.length")
       thead
         tr
@@ -32,6 +55,3 @@ div
         pre {{$parent.endpoint.samples.sampleJsonResponse}}
       div(zf-tab, title="XML")
         pre {{$parent.endpoint.samples.sampleXmlResponse}}
-  .resp-body
-    h2 #[span Response Body]
-    div(data-tribe-editable-md, data-content="endpoint.respBody")

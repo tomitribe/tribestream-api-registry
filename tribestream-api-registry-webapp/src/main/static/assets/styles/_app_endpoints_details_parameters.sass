@@ -25,17 +25,8 @@ div[data-app-endpoints-details-parameters]
           color: #ffffff
     > div.app-epd-params
       $limit-table-threshold: 1000px
-      @media (max-width: $limit-table-threshold)
-        position: relative
-        height: 300px
       > div
-        @media (max-width: $limit-table-threshold)
-          position: absolute
-          top: 0
-          bottom: 0
-          left: 0
-          right: 0
-          overflow: auto
+        overflow: auto
         > table
           table-layout: fixed
           width: 100%

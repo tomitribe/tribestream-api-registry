@@ -58,7 +58,7 @@ module basecomponents {
                     $scope.$watch('content', function () {
                         $timeout(function () {
                             $scope.$apply(function () {
-                                if (!$scope.content) {
+                                if (!$scope.content || $scope.content.trim() === '') {
                                     $scope.compiledContent = '';
                                 } else {
                                     $scope.compiledContent = marked($scope.content);
@@ -73,13 +73,6 @@ module basecomponents {
                     };
                 }],
                 link: function (scope, el, attr, controller) {
-                    scope.$watch('content', function () {
-                        if (!el.hasClass('edit')) {
-                            if (!scope.content) {
-                                el.addClass('edit');
-                            }
-                        }
-                    });
                     scope.$watch('editorHolder.editor', function () {
                         var editor = scope.$eval('editorHolder.editor');
                         if (editor) {
@@ -89,9 +82,7 @@ module basecomponents {
                                 editor.focus();
                             });
                             editor.on('blur', function () {
-                                if (scope.content) {
-                                    el.removeClass('edit');
-                                }
+                                el.removeClass('edit');
                             });
                         }
                     });
@@ -107,11 +98,27 @@ module basecomponents {
                     content: '='
                 },
                 templateUrl: 'app/templates/component_editable_block.html',
-                controller: ['$scope', function ($scope) {
+                controller: ['$scope', '$timeout', function ($scope, $timeout) {
+                    $scope.editorHolder = {
+                        editor: null
+                    };
                     $scope.cmOption = {
                         lineNumbers: false,
-                        viewportMargin: Infinity
+                        viewportMargin: Infinity,
+                        onLoad: function (editor) {
+                            $timeout(function () {
+                                $scope.$apply(function () {
+                                    $scope.editorHolder.editor = editor;
+                                });
+                            });
+                        }
                     };
+                    $scope.$watch('editorHolder.editor', function () {
+                        var editor = $scope.$eval('editorHolder.editor');
+                        if (editor) {
+                            editor.refresh();
+                        }
+                    });
                 }]
             };
         }])
@@ -177,14 +184,13 @@ module basecomponents {
                 },
                 templateUrl: 'app/templates/component_editable_option.html',
                 controller: ['$scope', '$timeout', function ($scope, $timeout) {
-                    var selectOption = function (opt) {
+                    $scope.selectOption = function (opt) {
                         $timeout(function () {
                             $scope.$apply(function () {
                                 $scope.value = opt;
                             });
                         });
                     };
-                    $scope.selectOption = selectOption;
                     $scope.$watch('value', function () {
                         if (!$scope.value) {
                             $timeout(function () {
