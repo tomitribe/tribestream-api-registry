@@ -1,0 +1,44 @@
+@import "variables"
+
+div.tribe-table
+  overflow-y: auto
+  overflow-x: hidden
+  a
+    color: $app-black !important
+    span
+      color: $app-black !important
+    &:hover
+      color: $tomitribe-orange !important
+      span
+        color: $tomitribe-orange !important
+  > table
+    width: 100%
+    background-color: $app-white
+    > thead
+      > tr
+        > th[x-ng-click]:hover
+          cursor: pointer
+
+        > th
+          padding: 12px
+          text-align: left
+
+    > tbody
+      > tr
+        $color: $table-hover-color
+        border-top: 1px solid $color
+        &:last-child
+          border-bottom: 1px solid $color
+        &:hover
+          background-color: $color
+          input
+            background-color: $color
+        > td
+          padding: 12px
+          div.app-component-text
+            > input
+              font-size: $app-font-size !important
+              border: 0
+              margin: 0
+              padding: 0
+              height: 22px

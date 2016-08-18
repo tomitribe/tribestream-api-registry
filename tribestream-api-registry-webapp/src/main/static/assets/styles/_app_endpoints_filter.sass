@@ -1,0 +1,33 @@
+@import "variables"
+
+div[data-app-endpoints-filter]
+  > div
+    $spacing: 20px
+    padding: 0 0 $spacing $spacing
+    @media (max-width: $mobile-threshold)
+      padding-left: 0
+
+    > div:first-of-type
+      width: 80px
+      height: 1px
+      background-color: $tomitribe-orange
+      margin: 0 0 15px 0
+
+    > div:last-of-type
+      display: flex
+      flex-wrap: wrap
+      > i
+        margin: 2px
+        > div
+          margin: 0
+    > h1
+      margin: 0 0 5px 0
+      line-height: .4
+      > span
+        font-size: 18px
+        font-weight: 600
+        text-transform: uppercase
+        &:first-of-type
+          color: #000000
+          margin-right: 5px
+

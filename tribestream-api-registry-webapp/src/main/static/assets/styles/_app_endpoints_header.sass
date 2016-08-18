@@ -1,0 +1,39 @@
+@import "variables"
+
+div[data-app-endpoints-header]
+  $wrapping-width: 925px
+
+  > div
+    display: flex
+    align-items: center
+    margin: 20px 0
+    overflow: hidden
+    @media (max-width: $wrapping-width)
+      flex-direction: column
+      align-items: flex-start
+    > h1
+      margin: 0 10px 20px 20px
+      flex-shrink: 0
+      display: flex
+      align-items: center
+      flex-wrap: wrap
+      > img
+        width: auto
+        height: 35px
+      > span
+        text-transform: uppercase
+        font-size: 23px
+        color: #000000
+        &:first-of-type
+          font-weight: 700
+        &:last-of-type
+          color: #cacaca
+          margin-left: 5px
+          font-weight: 600
+    > i
+      margin: 0 60px 0 10px
+      @media (max-width: $wrapping-width)
+        margin-left: 20px
+        align-self: stretch
+      flex-grow: 1
+      max-width: 400px

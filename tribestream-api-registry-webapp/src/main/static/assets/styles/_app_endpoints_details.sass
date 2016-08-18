@@ -1,0 +1,75 @@
+@import "variables"
+
+div[data-app-endpoints-details]
+  *
+    font-weight: 400 !important
+  p
+    margin: 0
+  div[x-ng-click]
+    &:hover
+      cursor: pointer
+
+div[data-app-endpoints-details]
+  > div
+    position: fixed
+    top: 55px
+    bottom: 0
+    left: 0
+    right: 0
+    overflow: auto
+
+    $header-size: 66px
+    // header
+    > div:first-of-type
+      position: absolute
+      top: 0
+      left: 0
+      right: 0
+      height: $header-size
+      border-bottom: solid #efefef 1px
+      padding: 20px
+      display: flex
+      align-items: center
+      flex-wrap: wrap
+      > *
+        margin: 0 10px 0 0
+        color: #c1c2c4
+      > i.fa-home, > span, > a
+        font-size: 12px
+      > i.fa-chevron-right
+        font-size: 10px
+      > a > i.fa-home, > a
+        color: $tomitribe-orange
+      > span, > a
+        font-weight: 700 !important
+        white-space: nowrap
+      > a
+        text-decoration: none
+        &:hover
+          text-decoration: underline
+    // body
+    > div:last-of-type
+      position: absolute
+      top: $header-size
+      left: 0
+      right: 0
+      bottom: 0
+      // body wrapper -> non-footer
+      > div:first-of-type
+        display: flex
+        > div
+          flex-shrink: 0
+          border-right: solid #efefef 1px
+        > article
+          flex-grow: 1
+          background-color: $app-white
+          min-width: 500px
+          padding: 0 10px 0 20px
+
+@import "app_endpoints_details_header"
+@import "app_endpoints_details_toc"
+@import "app_endpoints_details_toc_item"
+@import "app_endpoints_details_parameters"
+@import "app_endpoints_details_resource_information"
+@import "app_endpoints_details_response_request"
+@import "app_endpoints_details_see"

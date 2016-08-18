@@ -1,0 +1,36 @@
+div
+  h2
+    span Parameters
+    .add-param(tabindex=0, x-ng-click="addParam()", app-endpoints-details-toc-anchor="Parameters")
+      i.fa.fa-plus
+  div.app-epd-params
+    div(ng-show="params.length")
+      table
+        thead
+          tr
+            th
+              span name
+            th
+              span placement
+            th
+              span required
+            th.description
+              span description
+            th
+        tbody
+          tr(x-ng-repeat="param in params | orderBy:'param.name'")
+            td
+              i(data-tribe-editable-text, data-value="param.name")
+            td
+              i(data-tribe-editable-option, data-value="param.style", data-options="['template', 'query']")
+            td
+              i(data-tribe-editable-option, data-value="param.required", data-options="[{text: 'Yes', value: true}, {text: 'No', value: false}]")
+            td.description
+              div
+                i(data-tribe-editable-block, data-content="param.doc")
+                //div
+                //  span valid values
+                //  i(data-tribe-editable-button-text, data-value="param.sampleValues")
+            td
+              div
+                i.fa.fa-trash-o(x-ng-click="removeParam(param);")

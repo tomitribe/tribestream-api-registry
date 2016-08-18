@@ -1,0 +1,70 @@
+@import "variables"
+@import "app_endpoints_details_common"
+
+div[data-app-endpoints-details-toc]
+  $panel-width: 350px
+  > div
+    position: relative
+    width: $panel-width
+    transition: width .5s ease
+    height: 100%
+    > div.content
+      padding: 40px
+      position: absolute
+      top: 0
+      bottom: 0
+      right: 0
+      width: $panel-width
+      > div.body
+        > ul
+          margin: 20px 0 0 0
+        ul
+          list-style: none
+      > div.title
+        > div:first-of-type
+          display: flex
+          align-items: center
+          margin: 0 0 10px 0
+          > div
+            display: flex
+            flex-direction: column
+            justify-content: center
+            align-items: center
+            $size: 30px
+            width: $size
+            height: $size
+            border-radius: $size / 2
+            background-color: #33383d
+            > i
+              color: #ffffff
+          > h3
+            font-size: 14px
+            margin: 0 0 0 10px
+            text-transform: uppercase
+            font-weight: 700 !important
+        > div:last-of-type
+          background-color: $tomitribe-orange
+          height: 1px
+          width: 70px
+
+    > div.collapse-icon
+      position: absolute
+      top: 10px
+      right: 10px
+      display: flex
+      align-items: center
+      > i
+        margin-left: 2px
+        &:last-of-type
+          display: none
+      &:hover
+        cursor: pointer
+  &.collapsed
+    > div
+      width: 40px
+      > div.collapse-icon
+        > i
+          &:first-of-type
+            display: none
+          &:last-of-type
+            display: block

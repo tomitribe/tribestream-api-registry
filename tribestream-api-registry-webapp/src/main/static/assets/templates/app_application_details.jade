@@ -1,0 +1,62 @@
+div
+  div
+    div
+      a(href=".")
+        i.fa.fa-home
+      i.fa.fa-chevron-right
+      a(x-ng-href="application/{{app}}") {{app}}
+    article
+      div
+        h1
+          i(data-tribe-editable-text, data-value="details.name")
+        i(data-tribe-editable-block, data-content="details.doc")
+        .see(x-ng-if="details.sees.length")
+          span See:
+          div
+            p(x-ng-repeat="see in details.sees | orderBy:['seeOrder', 'title']")
+              a(x-ng-if="see.href",  x-ng-href="{{see.href}}", x-ng-bind-html="(see.title | tribeHtml) || (see.href | tribeHtml)")
+              a(x-ng-if="!see.href", x-ng-href="see/{{ see.aggregatedId }}", x-ng-bind-html="(see.title | tribeHtml) || (see.href | tribeHtml)")
+      div
+        h2 Resource Information
+        table
+          tbody
+            tr
+              td Resources
+              td
+                a(x-ng-href=".?a={{details.name}}") {{endpoints.length}}
+            tr(x-ng-if="consumes.length")
+              td Request formats
+              td
+                .tribe-float
+                  span(x-ng-repeat="format in consumes") {{format}}
+            tr(x-ng-if="produces.length")
+              td Response formats
+              td
+                .tribe-float
+                  span(x-ng-repeat="format in produces") {{format}}
+            tr
+              td Requires authentication
+              td {{requiresAuthentication}}
+            tr
+              td Rate limited
+              td {{rateLimited}}
+            tr(x-ng-if="roles.length")
+              td Roles
+              td
+                .tags
+                  span(x-ng-repeat="role in roles", x-ng-click="filterByRole(role.text)") {{role.text}}
+            tr(x-ng-if="categories.length")
+              td Categories
+              td
+                .tags
+                  span(x-ng-repeat="category in categories", x-ng-click="filterByCategory(category.text)") {{category.text}}
+            tr(x-ng-if="tags.length")
+              td Tags
+              td
+                .tags
+                  span(x-ng-repeat="tag in tags", x-ng-click="filterByTag(tag.text)") {{tag.text}}
+            tr
+              td WADL
+              td
+                a(x-ng-href="{{details.baseUrl}}?_wadlx" target="_blank") See WADL
+  div(data-app-footer)

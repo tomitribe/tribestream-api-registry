@@ -1,0 +1,78 @@
+@import "variables"
+
+div[data-app-application-details]
+  > div
+    > div:first-of-type
+      > div
+        border-bottom: solid #efefef 1px
+        padding: 20px
+        height: 66px
+        display: flex
+        align-items: center
+        flex-wrap: wrap
+        > *
+          margin: 0 10px 0 0
+          color: #c1c2c4
+        > i.fa-home, > span, > a
+          font-size: 12px
+        > i.fa-chevron-right
+          font-size: 10px
+        > a > i.fa-home, > a
+          color: $tomitribe-orange
+        > span, > a
+          font-weight: 700 !important
+          white-space: nowrap
+        > a
+          text-decoration: none
+          &:hover
+            text-decoration: underline
+
+      > article
+        background-color: $app-white
+        padding: 0 40px
+        > div:first-of-type
+          padding-bottom: 20px
+          border-bottom: dashed $app-input-border-color 1px
+        > div:last-of-type
+          margin-top: 20px
+        h1
+          transform: translate(-5px, 0)
+          input
+            font-size: 30px !important
+            color: #000000
+        h2
+          margin: 0 0 20px 0
+          text-transform: uppercase
+          font-weight: 700 !important
+          font-size: 20px
+          color: #000000
+        div.see
+          display: flex
+          margin: 20px 0
+          > div
+            margin-left: 10px
+            > p
+              margin: 0
+        td
+          padding: 10px 0 0 0
+        td:first-of-type
+          margin-bottom: 10px
+          font-weight: 500 !important
+          font-size: 15px
+          color: #000000
+          white-space: nowrap
+          padding-right: 20px
+        i[data-tribe-editable-block]
+          div
+            font-weight: 400 !important
+        div.tags
+          display: flex
+          flex-wrap: wrap
+          > span
+            margin: 0 5px 5px 0
+            background-color: transparent
+            border: solid #e6e6e6 1px
+            padding: 3px 8px
+            border-radius: 5px
+            font-size: 10px
+            white-space: nowrap

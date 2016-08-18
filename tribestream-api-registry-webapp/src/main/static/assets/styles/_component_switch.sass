@@ -1,0 +1,42 @@
+@import "variables"
+
+i[data-tribe-switch]
+  $component-width: 60px
+  $component-height: 25px
+  $indicator-width: $component-height
+  span
+    font-style: normal
+  > div
+    height: $component-height
+    border-radius: $component-height / 2
+    display: flex
+    align-items: center
+    > input
+      display: none
+      &:checked + span + div
+        background-color: lighten($tomitribe-orange, 20%)
+        > div
+          left: $component-width - $indicator-width
+          background-color: $tomitribe-orange
+          box-shadow: 0 0 3px 3px transparentize($tomitribe-orange, .5)
+        & + span
+          color: $tomitribe-orange
+    > div
+      position: relative
+      border-radius: $component-height / 2
+      background-color: #e5e5e5
+      height: 100%
+      width: $component-width
+      margin: 0 10px
+      &:hover
+        cursor: pointer
+      > div
+        position: absolute
+        left: 0
+        transition: left .15s ease-out
+        background-color: #f1eff0
+        width: $indicator-width
+        height: 100%
+        border-radius: $component-height / 2
+        box-shadow: 0 0 3px 3px transparentize(#ccc, .5)
+

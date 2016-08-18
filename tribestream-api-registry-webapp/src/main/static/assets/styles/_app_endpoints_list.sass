@@ -1,0 +1,35 @@
+@import "variables"
+
+div[data-app-endpoints-list]
+  $color: #e87326
+  a, span[x-ng-click]
+    color: $color
+    text-decoration: none
+    &:hover
+      cursor: pointer
+      text-decoration: underline
+      color: $color
+  > div
+    > div[data-app-endpoints-list-application] > div
+      margin: 0 0 30px 0
+      > h2
+        > a
+          font-size: 22px
+        > span
+          font-size: 22px !important
+          color: #cccccc
+          margin-left: 5px
+      > div // endpoints
+        padding: 20px
+        border-top: dashed #cccccc 1px
+        overflow: hidden
+        > i, > span
+          color: #bbbbbb
+        > i.fa-unlock
+          color: $color
+        > *
+          margin-left: 10px
+          &:first-child
+            margin-left: 0
+
+

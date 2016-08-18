@@ -1,0 +1,43 @@
+@import "variables"
+@import "app_endpoints_details_common"
+
+li[data-app-endpoints-details-toc-item]
+  margin: 0
+  > div
+    h4
+      padding: 15px 0
+      margin: 0
+      font-size: 12px
+      text-decoration: none
+      color: $app-black
+      text-transform: uppercase
+      font-weight: 700 !important
+      &.selected
+        font-weight: 900 !important
+      &:hover
+        cursor: pointer
+    > ul
+      margin: 0
+      position: relative
+      > div
+        position: absolute
+        left: 0
+        top: 0
+        bottom: 0
+        width: 1px
+        background-color: $tomitribe-orange
+      > li
+        position: relative
+        padding: 0 0 0 20px
+        margin: 0
+        > h4.selected + div
+          position: absolute
+          $size: 10px
+          left: - ($size /2)
+          top: 50%
+          margin-top: - ($size /2)
+          width: $size
+          height: $size
+          background-color: $tomitribe-orange
+          border: solid #ffffff 2px
+          border-radius: $size

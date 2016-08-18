@@ -1,0 +1,53 @@
+@import "variables"
+
+$color: #f2f0f0
+
+i[data-tribe-editable-option]
+  $radius: 3px
+  > div
+    outline: none
+    display: inline-block
+  .value
+    padding: 5px 12px 5px 8px
+    position: relative
+    border: solid transparent 1px
+    border-radius: $radius
+    > div
+      position: absolute
+      top: 50%
+      right: 5px
+      transform: translateY(-50%)
+      display: flex
+      flex-direction: column
+      justify-content: center
+      align-items: center
+      margin: 0 0 0 5px
+      > i
+        height: 6px
+        line-height: 6px
+        opacity: 0
+        color: $tomitribe-orange
+  .options
+    background-color: transparentize(#ffffff, 0.05)
+    position: absolute
+    display: none
+    border: solid white 1px
+    box-shadow: 00 2px 5px 3px $table-hover-color
+    border-top-width: 0
+    border-bottom-right-radius: $radius
+    border-bottom-left-radius: $radius
+    > div
+      padding: 5px 8px
+  &:hover
+    cursor: pointer
+  &:hover, &.visible
+    .value
+      border-color: $tomitribe-orange
+      > div > i
+        opacity: 1
+  &.visible
+    .value
+      border-bottom-left-radius: 0
+    .options
+      display: block
+      z-index: 4000

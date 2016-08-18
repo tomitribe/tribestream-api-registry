@@ -1,0 +1,7 @@
+div(x-ng-if="endpoint.metadata.sees.length")
+  div
+    span See:
+  div
+    p(x-ng-repeat="see in endpoint.metadata.sees | orderBy:['seeOrder', 'title']")
+      a(x-ng-if="see.href",  x-ng-href="{{see.href}}", x-ng-bind-html="(see.title | tribeHtml) || (see.href | tribeHtml)")
+      a(x-ng-if="!see.href", x-ng-href="see/{{ see.aggregatedId }}/{{ applicationName }}/{{ see.title }}", x-ng-bind-html="(see.title | tribeHtml) || (see.href | tribeHtml)")

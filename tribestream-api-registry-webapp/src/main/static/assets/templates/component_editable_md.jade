@@ -1,0 +1,7 @@
+div(tabindex=0)
+  .static(x-ng-bind-html="compiledContent | tribeHtml")
+  .dyn
+    textarea(x-ui-codemirror="cmOption", x-ng-model="content")
+    .icon
+      div
+        i.fa.fa-pencil

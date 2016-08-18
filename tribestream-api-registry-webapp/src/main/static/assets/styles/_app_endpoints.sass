@@ -1,0 +1,31 @@
+@import "variables"
+
+div[data-app-endpoints]
+  $wrapping-width: 925px
+  > div
+    div.body
+      border-top: solid #ebebeb 1px
+      display: flex
+      @media (max-width: $wrapping-width)
+        flex-direction: column
+      div.list
+        position: relative
+        > div:first-of-type
+          position: absolute
+          left: 0
+          right: 0
+          top: 0
+          height: 20px
+          background: linear-gradient(#f9fbfa, #ffffff)
+          z-index: 1
+        > div:last-of-type
+          padding: 20px 60px
+          @media (max-width: $wrapping-width)
+            padding: 20px
+      div.filters
+        padding: 20px 0 0 0
+        border-left: solid #ebebeb 1px
+        min-width: 400px
+        @media (max-width: $wrapping-width)
+          min-width: inherit
+          padding: 20px
