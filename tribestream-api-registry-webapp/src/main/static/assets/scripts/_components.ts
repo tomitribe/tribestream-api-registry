@@ -175,7 +175,7 @@ module basecomponents {
             };
         }])
 
-        .directive('tribeEditableOption', ['$timeout', function ($timeout) {
+        .directive('tribeEditableOption', ['$timeout', '$document', function ($timeout, $document) {
             return {
                 restrict: 'A',
                 scope: {
@@ -215,8 +215,29 @@ module basecomponents {
                 }],
                 link: function (scope, el, attrs, controller) {
                     $timeout(function () {
+                        var optionsDiv = el.find('.options');
+                        optionsDiv.detach();
+                        var body = $document.find('body');
                         el.on('click', function () {
-                            el.toggleClass('visible');
+                            if(el.hasClass('visible')) {
+                                optionsDiv.detach();
+                                el.removeClass('visible');
+                            } else {
+                                var pos = el.find('> div').offset();
+                                optionsDiv.css({
+                                    top: `${pos.top + el.find('> div').height()}px`,
+                                    left: `${pos.left}px`
+                                });
+                                body.append(optionsDiv);
+                                el.addClass('visible');
+                            }
+                        });
+                        optionsDiv.on('click', function () {
+                            optionsDiv.detach();
+                            el.removeClass('visible');
+                        });
+                        scope.$on('$destroy', function() {
+                            optionsDiv.remove();
                         });
                     });
                 }
