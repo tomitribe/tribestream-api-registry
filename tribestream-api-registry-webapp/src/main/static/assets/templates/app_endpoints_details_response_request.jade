@@ -30,13 +30,19 @@ div
     table(x-ng-if="endpoint.errors && endpoint.errors.length")
       thead
         tr
-          th Code
+          th HTTP Status
+          th Error Code
+          th Message
           th Description
           th
       tbody
         tr(x-ng-repeat="val in endpoint.errors | orderBy:'statusCode'")
           td
             i(data-tribe-editable-number, data-value="val.statusCode")
+          td
+            i(data-tribe-editable-number, data-content="val.errorCode")
+          td
+            i(data-tribe-editable-block, data-content="val.message")
           td
             i(data-tribe-editable-block, data-content="val.description")
           td
