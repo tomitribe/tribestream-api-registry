@@ -49,15 +49,13 @@ div
             div(x-ng-click="removeErrorCode(val);")
               i.fa.fa-trash-o
   .samples
-    h2 #[span Example Request]
-    div(zf-tabs)
-      div(zf-tab, title="HTTP")
-        pre {{$parent.endpoint.samples.sampleHttpRequest}}
-      div(zf-tab, title="Curl")
-        pre {{$parent.endpoint.samples.sampleCurlRequest}}
-    h2 #[span Example Result]
-    div(zf-tabs)
-      div(zf-tab, title="JSON")
-        pre {{$parent.endpoint.samples.sampleJsonResponse}}
-      div(zf-tab, title="XML")
-        pre {{$parent.endpoint.samples.sampleXmlResponse}}
+    h2 #[span Request Headers]
+    div(data-tribe-editable-md, data-content="endpoint.samples.requestHeaders")
+    h2 #[span Response Parameters]
+    div(data-tribe-editable-md, data-content="endpoint.samples.responseParameters")
+
+
+    h2 #[span Response Body]
+    div(data-tribe-editable-md, data-content="endpoint.samples.responseBody")
+    h2 #[span Response Body Sample Error]
+    div(data-tribe-editable-md, data-content="endpoint.samples.responseBodyError")
