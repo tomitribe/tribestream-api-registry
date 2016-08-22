@@ -93,6 +93,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -341,21 +342,26 @@ public class SearchEngine {
 //        SystemInstance.get().addObserver(observer);
     }
 
-    public void resetIndex() {
+    public Future<?> resetIndex() {
         waitForWrites();
 
         final Future<?> future = ctx.getBusinessObject(SearchEngine.class).doReindex();
         // doReindex() does both
         pendingRemove.add(future);
         pendingAdd.add(future);
+        return future;
 
     }
 
     @Asynchronous
     @Lock(LockType.WRITE)
     public Future<?> doReindex() {
-        removeIndex();
-        doIndex();
+        try {
+            removeIndex().get();
+            doIndex().get();
+        } catch (InterruptedException | ExecutionException e) {
+            LOGGER.error("Unexpected exception while reindexing", e);
+        }
         return new AsyncResult<Void>(null);
     }
 
@@ -418,6 +424,10 @@ public class SearchEngine {
         }
 
         if (writer == null) {
+            return new AsyncResult<Object>(true);
+        }
+
+        if (taxonomyWriter == null) {
             return new AsyncResult<Object>(true);
         }
 

@@ -57,7 +57,9 @@ import java.util.Map;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.both;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 @Category(Embedded.class)
 @EnableServices("jaxrs")
@@ -101,10 +103,6 @@ public class ApplicationResourceTest extends AbstractResourceTest {
         final ApplicationWrapper directApplicationResponse = getClient().target(apps.get(1).getLinks().get("self"))
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(ApplicationWrapper.class);
-//        final ApplicationWrapper directApplicationResponse = directAppClient.get(ApplicationWrapper.class);
-//        final WebClient directAppClient = WebClient.create(apps.get(1).getLinks().get("self"), Arrays.asList(new CustomJacksonJaxbJsonProvider()))
-//            .accept(MediaType.APPLICATION_JSON_TYPE);
-//        final ApplicationWrapper directApplicationResponse = directAppClient.get(ApplicationWrapper.class);
 
         assertEquals(apps.get(1).getSwagger().getInfo().getTitle(), directApplicationResponse.getSwagger().getInfo().getTitle());
         assertEquals(apps.get(1).getSwagger().getInfo().getVersion(), directApplicationResponse.getSwagger().getInfo().getVersion());
