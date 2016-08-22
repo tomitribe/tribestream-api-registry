@@ -39,13 +39,11 @@ div[data-app-endpoints-details-response-request]
         font-weight: 600 !important
 
       th:last-of-type, td:last-of-type
-        width: 30px
-      td:nth-of-type(1)
-        > i, > i > div
-          width: 50px
-      td:nth-of-type(2)
-        > i > div
-          margin-right: 5px
+        width: 35px
+      td
+        > i
+          > div
+            width: 100%
       td:last-of-type
         > div
           display: none
@@ -63,7 +61,11 @@ div[data-app-endpoints-details-response-request]
             font-size: 18px
           &:hover
             background-color: #404142
+      td
+        padding: 5px 0 0 0
+
       tr:hover
         td:last-of-type
           > div
             display: flex
+            margin: 0 5px
