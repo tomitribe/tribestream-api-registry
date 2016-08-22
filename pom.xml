@@ -29,7 +29,7 @@
     <version>5</version>
   </parent>
 
-  <groupId>com.tomitribe.tribestream</groupId>
+  <groupId>org.tomitribe.tribestream</groupId>
   <artifactId>tribestream-api-registry-parent</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
@@ -79,17 +79,16 @@
     <version.surefire>2.19.1</version.surefire>
 
 
-    <version.tomcat>7.0.69</version.tomcat>
-    <version.tomee-minor>7.4</version.tomee-minor>
-    <version.tomee>1.${version.tomee-minor}</version.tomee>
-    <version.openejb>4.${version.tomee-minor}</version.openejb>
+    <version.tomcat>8.5.3</version.tomcat>
+    <version.tomee-minor>0.1</version.tomee-minor>
+    <version.tomee>7.${version.tomee-minor}</version.tomee>
 
     <version.tomitribe-util>1.2.1</version.tomitribe-util>
 
     <version.slf4j>1.7.7</version.slf4j>
-    <version.jackson>2.4.5</version.jackson>
+    <version.jackson>2.8.1</version.jackson>
     <version.lucene>4.10.2</version.lucene>
-    <version.hibernate>4.2.21.Final</version.hibernate>
+    <version.hibernate>4.3.11.Final</version.hibernate>
     <version.swagger>1.5.9</version.swagger>
     <version.markdown4j>2.2-cj-1.0</version.markdown4j>
     <version.commons-io>2.4</version.commons-io>
@@ -107,12 +106,6 @@
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>${version.junit}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.openejb</groupId>
-        <artifactId>openejb-cxf-rs</artifactId>
-        <version>${version.openejb}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

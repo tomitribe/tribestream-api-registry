@@ -18,24 +18,24 @@
  */
 package com.tomitribe.tribestream.registryng.resources;
 
+import com.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
 import org.apache.openejb.jee.JaxbJavaee;
-import org.apache.openejb.jee.WebApp;
 import org.apache.openejb.jee.jpa.unit.Persistence;
 import org.apache.openejb.jee.jpa.unit.PersistenceUnit;
-import org.apache.openejb.testing.Configuration;
 import org.apache.openejb.testing.Module;
-import org.apache.openejb.testng.PropertiesBuilder;
-import org.apache.openejb.util.Join;
-import org.apache.openejb.util.NetworkUtil;
-import org.hibernate.ejb.packaging.NamedInputStream;
-import org.hibernate.ejb.packaging.Scanner;
+import org.hibernate.jpa.boot.scan.spi.ScanOptions;
+import org.hibernate.jpa.boot.scan.spi.ScanResult;
+import org.hibernate.jpa.boot.scan.spi.Scanner;
+import org.hibernate.jpa.boot.spi.ClassDescriptor;
+import org.hibernate.jpa.boot.spi.MappingFileDescriptor;
+import org.hibernate.jpa.boot.spi.PackageDescriptor;
+import org.hibernate.jpa.boot.spi.PersistenceUnitDescriptor;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.net.URL;
 import java.util.Collections;
-import java.util.Properties;
 import java.util.Set;
 
 public abstract class AbstractResourceTest {
@@ -53,28 +53,31 @@ public abstract class AbstractResourceTest {
 
     public static class NoScanning implements Scanner {
         @Override
-        public Set<Package> getPackagesInJar(URL jartoScan, Set<Class<? extends Annotation>> annotationsToLookFor) {
-            return Collections.emptySet();
-        }
+        public ScanResult scan(PersistenceUnitDescriptor persistenceUnitDescriptor, ScanOptions scanOptions) {
+            return new ScanResult() {
+                @Override
+                public Set<PackageDescriptor> getLocatedPackages() {
+                    return Collections.emptySet();
+                }
 
-        @Override
-        public Set<Class<?>> getClassesInJar(URL jartoScan, Set<Class<? extends Annotation>> annotationsToLookFor) {
-            return Collections.emptySet();
-        }
+                @Override
+                public Set<ClassDescriptor> getLocatedClasses() {
+                    return Collections.emptySet();
+                }
 
-        @Override
-        public Set<NamedInputStream> getFilesInJar(URL jartoScan, Set<String> filePatterns) {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public Set<NamedInputStream> getFilesInClasspath(Set<String> filePatterns) {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public String getUnqualifiedJarName(URL jarUrl) {
-            return null;
+                @Override
+                public Set<MappingFileDescriptor> getLocatedMappingFiles() {
+                    return Collections.emptySet();
+                }
+            };
         }
     }
+
+    protected Client getClient() {
+        return ClientBuilder.newBuilder()
+                .property("skip.default.json.provider.registration", true)
+                .register(new CustomJacksonJaxbJsonProvider())
+                .build();
+    }
+
 }
