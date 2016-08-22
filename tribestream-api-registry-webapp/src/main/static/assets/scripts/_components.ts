@@ -175,7 +175,7 @@ module basecomponents {
             };
         }])
 
-        .directive('tribeEditableOption', ['$timeout', '$document', function ($timeout, $document) {
+        .directive('tribeEditableOption', ['$timeout', '$document', '$window', function ($timeout, $document, $window) {
             return {
                 restrict: 'A',
                 scope: {
@@ -218,10 +218,16 @@ module basecomponents {
                         var optionsDiv = el.find('.options');
                         optionsDiv.detach();
                         var body = $document.find('body');
+                        var clear = function () {
+                            el.removeClass('visible');
+                            optionsDiv.detach();
+                        };
+                        var elWin = $($document.find('div[data-app-endpoints-details] > div'));
                         el.on('click', function () {
-                            if(el.hasClass('visible')) {
+                            if (el.hasClass('visible')) {
                                 optionsDiv.detach();
                                 el.removeClass('visible');
+                                elWin.off('scroll', clear);
                             } else {
                                 var pos = el.find('> div').offset();
                                 optionsDiv.css({
@@ -230,14 +236,17 @@ module basecomponents {
                                 });
                                 body.append(optionsDiv);
                                 el.addClass('visible');
+                                elWin.on('scroll', clear);
                             }
                         });
                         optionsDiv.on('click', function () {
                             optionsDiv.detach();
                             el.removeClass('visible');
+                            elWin.off('scroll', clear);
                         });
-                        scope.$on('$destroy', function() {
+                        scope.$on('$destroy', function () {
                             optionsDiv.remove();
+                            elWin.off('scroll', clear);
                         });
                     });
                 }
