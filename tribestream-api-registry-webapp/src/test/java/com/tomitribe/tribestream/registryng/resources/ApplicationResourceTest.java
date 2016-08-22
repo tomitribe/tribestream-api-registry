@@ -48,8 +48,8 @@ import org.junit.experimental.categories.Category;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -57,9 +57,7 @@ import java.util.Map;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.both;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 @Category(Embedded.class)
 @EnableServices("jaxrs")
@@ -100,9 +98,13 @@ public class ApplicationResourceTest extends AbstractResourceTest {
 
         final List<ApplicationWrapper> apps = loadAllApplications();
 
-        final WebClient directAppClient = WebClient.create(apps.get(1).getLinks().get("self"), Arrays.asList(new CustomJacksonJaxbJsonProvider()))
-            .accept(MediaType.APPLICATION_JSON_TYPE);
-        final ApplicationWrapper directApplicationResponse = directAppClient.get(ApplicationWrapper.class);
+        final ApplicationWrapper directApplicationResponse = getClient().target(apps.get(1).getLinks().get("self"))
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(ApplicationWrapper.class);
+//        final ApplicationWrapper directApplicationResponse = directAppClient.get(ApplicationWrapper.class);
+//        final WebClient directAppClient = WebClient.create(apps.get(1).getLinks().get("self"), Arrays.asList(new CustomJacksonJaxbJsonProvider()))
+//            .accept(MediaType.APPLICATION_JSON_TYPE);
+//        final ApplicationWrapper directApplicationResponse = directAppClient.get(ApplicationWrapper.class);
 
         assertEquals(apps.get(1).getSwagger().getInfo().getTitle(), directApplicationResponse.getSwagger().getInfo().getTitle());
         assertEquals(apps.get(1).getSwagger().getInfo().getVersion(), directApplicationResponse.getSwagger().getInfo().getVersion());
@@ -119,13 +121,11 @@ public class ApplicationResourceTest extends AbstractResourceTest {
 
         final Map.Entry<HttpMethod, Operation> operationEntry = pathEntry.getValue().getOperationMap().entrySet().iterator().next();
 
-        final WebClient endpointClient = WebClient.create(apps.get(0).getLinks().get("self"), Arrays.asList(new CustomJacksonJaxbJsonProvider()))
-            .path(operationEntry.getKey().name().toLowerCase())
-            .path(path.substring(1))
-            .accept(MediaType.APPLICATION_JSON_TYPE);
-
-        EndpointWrapper ep = endpointClient.get(EndpointWrapper.class);
-        assertEquals(200, endpointClient.getResponse().getStatus());
+        EndpointWrapper ep = getClient().target(apps.get(0).getLinks().get("self"))
+                .path(operationEntry.getKey().name().toLowerCase())
+                .path(path.substring(1))
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(EndpointWrapper.class);
         assertNotNull(ep);
     }
 
@@ -152,10 +152,10 @@ public class ApplicationResourceTest extends AbstractResourceTest {
         assertEquals("Show API version details", applicationWrapper.getSwagger().getPaths().get("/v2").getGet().getSummary());
 
         // And: the response document contains the link to itself
-        WebClient endpointWebclient = WebClient.create(applicationWrapper.getLinks().get("self"), Arrays.asList(new CustomJacksonJaxbJsonProvider()))
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .path("get");
-        EndpointWrapper endpoint = endpointWebclient.get(EndpointWrapper.class);
+        EndpointWrapper endpoint = getClient().target(applicationWrapper.getLinks().get("self")).path("get")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(EndpointWrapper.class);
+
         assertEquals(Arrays.asList("application/json"), endpoint.getOperation().getProduces());
 
         // And: When loading all applications the number of applications has increased by 1
@@ -175,10 +175,12 @@ public class ApplicationResourceTest extends AbstractResourceTest {
     }
 
     private List<ApplicationWrapper> loadAllApplications() {
-        WebClient webClient = WebClient.create("http://localhost:" + container.getPort(), Arrays.asList(new CustomJacksonJaxbJsonProvider()))
-            .accept(MediaType.APPLICATION_JSON_TYPE);
+        List<ApplicationWrapper> result = getClient().target("http://localhost:" + container.getPort() + "/openejb/api/application")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(new GenericType<List<ApplicationWrapper>>() {
+                });
 
-        return new ArrayList<>(webClient.path("/openejb/api/application").getCollection(ApplicationWrapper.class));
+        return result;
     }
 
 }

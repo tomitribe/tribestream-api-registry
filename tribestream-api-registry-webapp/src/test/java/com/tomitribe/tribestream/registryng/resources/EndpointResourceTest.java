@@ -20,11 +20,9 @@ package com.tomitribe.tribestream.registryng.resources;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tomitribe.tribestream.registryng.bootstrap.Bootstrap;
-import com.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import com.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import com.tomitribe.tribestream.registryng.domain.SearchPage;
 import com.tomitribe.tribestream.registryng.domain.SearchResult;
-import com.tomitribe.tribestream.registryng.entities.Endpoint;
 import com.tomitribe.tribestream.registryng.repository.Repository;
 import com.tomitribe.tribestream.registryng.service.search.SearchEngine;
 import com.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
@@ -32,9 +30,6 @@ import com.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMap
 import com.tomitribe.tribestream.registryng.webapp.RegistryNgApplication;
 import com.tomitribe.tribestream.test.registryng.category.Embedded;
 import com.tomitribe.tribestream.test.registryng.util.DefaultContainer;
-import io.swagger.models.HttpMethod;
-import io.swagger.models.Operation;
-import io.swagger.models.Path;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.openejb.jee.WebApp;
 import org.apache.openejb.junit.ApplicationComposerRule;
@@ -50,12 +45,8 @@ import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -100,11 +91,9 @@ public class EndpointResourceTest extends AbstractResourceTest {
 
         for (SearchResult result: results) {
             final String expectedLink = "http://localhost:" + container.getPort() + "/openejb/api/endpoint/" + result.getEndpointId();
-            final WebClient webClient = WebClient.create(expectedLink, Arrays.asList(new CustomJacksonJaxbJsonProvider()))
-                .accept(MediaType.APPLICATION_JSON_TYPE);
-            final EndpointWrapper endpointWrapper = webClient.get(EndpointWrapper.class);
-            final Response response = webClient.getResponse();
-            assertEquals(200, response.getStatus());
+            final EndpointWrapper endpointWrapper = getClient().target(expectedLink)
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .get(EndpointWrapper.class);
 
             assertEquals(expectedLink, endpointWrapper.getLinks().get("self"));
             assertEquals("http://localhost:" + container.getPort() + "/openejb/api/application/" + result.getDeployableId(), endpointWrapper.getLinks().get("application"));

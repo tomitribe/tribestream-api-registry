@@ -83,7 +83,6 @@ public class SingleHashRegistryResource extends RegistryResourceBase {
                                @QueryParam("format")
                                @DefaultValue("html")
                                final String format) {
-        System.out.println(">>>> SingleHashRegistryResource.seeDetail");
         throw new UnsupportedOperationException();
 //        final DeployableInfo deployable = idService.findSeeDeployable(seeId);
 //        final SeeInfo see = idService.findSee(seeId);
