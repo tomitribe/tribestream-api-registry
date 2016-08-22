@@ -16,7 +16,7 @@ div
       tbody
         tr(x-ng-repeat="val in endpoint.expectedValues")
           td
-            i(data-tribe-editable-text, data-value="val.name")
+            i(data-tribe-editable-text, data-adjust="false", data-value="val.name")
           td
             i(data-tribe-editable-block, data-content="val.values")
           td
@@ -38,9 +38,9 @@ div
       tbody
         tr(x-ng-repeat="val in endpoint.errors | orderBy:'statusCode'")
           td
-            i(data-tribe-editable-number, data-value="val.statusCode")
+            i(data-tribe-editable-number, data-adjust="false", data-value="val.statusCode")
           td
-            i(data-tribe-editable-number, data-value="val.errorCode")
+            i(data-tribe-editable-number, data-adjust="false", data-value="val.errorCode")
           td
             i(data-tribe-editable-block, data-content="val.message")
           td

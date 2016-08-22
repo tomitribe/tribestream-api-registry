@@ -127,7 +127,8 @@ module basecomponents {
             return {
                 restrict: 'A',
                 scope: {
-                    value: '='
+                    value: '=',
+                    adjust: '@?'
                 },
                 templateUrl: 'app/templates/component_editable_number.html',
                 link: function (scope, el, attrs, controller) {
@@ -136,7 +137,9 @@ module basecomponents {
                         var width = span.width();
                         el.addClass('edit');
                         var input = el.find('input');
-                        input.width(width);
+                        if(scope.adjust !== 'false') {
+                            input.width(width);
+                        }
                         input.focus();
                     };
                     el.on('click', activate);
@@ -152,7 +155,8 @@ module basecomponents {
             return {
                 restrict: 'A',
                 scope: {
-                    value: '='
+                    value: '=',
+                    adjust: '@?'
                 },
                 templateUrl: 'app/templates/component_editable_text.html',
                 link: function (scope, el) {
@@ -162,7 +166,9 @@ module basecomponents {
                             var width = span.width();
                             el.addClass('edit');
                             var input = el.find('input');
-                            input.width(width);
+                            if(scope.adjust !== 'false') {
+                                input.width(width);
+                            }
                             input.focus();
                         };
                         el.on('click', activate);
