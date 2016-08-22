@@ -76,11 +76,13 @@ module basecomponents {
                     scope.$watch('editorHolder.editor', function () {
                         var editor = scope.$eval('editorHolder.editor');
                         if (editor) {
-                            el.on('click', function () {
+                            var activate = function () {
                                 el.addClass('edit');
                                 editor.refresh();
                                 editor.focus();
-                            });
+                            };
+                            el.on('click', activate);
+                            el.find('> div').on('focus', activate);
                             editor.on('blur', function () {
                                 el.removeClass('edit');
                             });
