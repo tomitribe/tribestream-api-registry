@@ -137,7 +137,7 @@ module basecomponents {
                         var width = span.width();
                         el.addClass('edit');
                         var input = el.find('input');
-                        if(scope.adjust !== 'false') {
+                        if (scope.adjust !== 'false') {
                             input.width(width);
                         }
                         input.focus();
@@ -166,7 +166,7 @@ module basecomponents {
                             var width = span.width();
                             el.addClass('edit');
                             var input = el.find('input');
-                            if(scope.adjust !== 'false') {
+                            if (scope.adjust !== 'false') {
                                 input.width(width);
                             }
                             input.focus();
@@ -186,10 +186,14 @@ module basecomponents {
                 restrict: 'A',
                 scope: {
                     value: '=',
-                    options: '='
+                    options: '=',
+                    emptyText: '@?'
                 },
                 templateUrl: 'app/templates/component_editable_option.html',
                 controller: ['$scope', '$timeout', function ($scope, $timeout) {
+                    if (!$scope.emptyText) {
+                        $scope.emptyText = 'empty';
+                    }
                     $scope.selectOption = function (opt) {
                         $timeout(function () {
                             $scope.$apply(function () {
