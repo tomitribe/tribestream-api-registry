@@ -8,14 +8,10 @@ div
       table
         thead
           tr
-            th
-              span name
-            th
-              span placement
-            th
-              span required
-            th.description
-              span description
+            th name
+            th placement
+            th required
+            th.description description
             th
         tbody
           tr(x-ng-repeat="param in params | orderBy:'param.name'")

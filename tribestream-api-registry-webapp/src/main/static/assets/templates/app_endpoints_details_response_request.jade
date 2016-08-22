@@ -5,9 +5,9 @@ div
   .expected
     h2
       span Expected values
-      div(x-ng-click="")
+      div(x-ng-click="addExpectedValue();")
         i.fa.fa-plus
-    table(x-ng-if="endpoint.expectedvalues && endpoint.expectedValues.length")
+    table(x-ng-if="endpoint.expectedValues && endpoint.expectedValues.length")
       thead
         tr
           th Attribute
@@ -20,7 +20,7 @@ div
           td
             i(data-tribe-editable-block, data-content="val.values")
           td
-            div(x-ng-click="removeValue(val);")
+            div(x-ng-click="removeExpectedValue(val);")
               i.fa.fa-trash-o
   .values
     h2
@@ -40,7 +40,7 @@ div
           td
             i(data-tribe-editable-number, data-value="val.statusCode")
           td
-            i(data-tribe-editable-number, data-content="val.errorCode")
+            i(data-tribe-editable-number, data-value="val.errorCode")
           td
             i(data-tribe-editable-block, data-content="val.message")
           td
