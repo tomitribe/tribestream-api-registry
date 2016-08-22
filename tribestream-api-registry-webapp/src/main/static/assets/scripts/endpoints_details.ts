@@ -371,7 +371,12 @@ angular.module('tribe-endpoints-details', [
                     }
                     $timeout(function () {
                         $scope.$apply(function () {
-                            $scope.errors = $scope.endpoint.errors;
+                            if (!$scope.endpoint.errors) {
+                                $scope.endpoint.errors = [];
+                            }
+                            if (!$scope.endpoint.expectedValues) {
+                                $scope.endpoint.expectedValues = [];
+                            }
                         });
                     });
                 });
@@ -379,19 +384,35 @@ angular.module('tribe-endpoints-details', [
                     $timeout(function () {
                         $scope.$apply(function () {
                             $scope.endpoint.errors = _.without($scope.endpoint.errors, code);
-                            $scope.errors = $scope.endpoint.errors;
                         });
                     });
                 };
                 $scope.addErrorCode = function () {
-                    var errors = $scope.errors;
-                    if (!errors) {
-                        errors = [];
-                    }
                     $timeout(function () {
                         $scope.$apply(function () {
-                            errors.push({});
-                            $scope.errors = errors;
+                            $scope.endpoint.errors.push({
+                                statusCode: 0,
+                                errorCode: 0,
+                                message: '',
+                                description: ''
+                            });
+                        });
+                    });
+                };
+                $scope.removeExpectedValue = function (value) {
+                    $timeout(function () {
+                        $scope.$apply(function () {
+                            $scope.endpoint.expectedValues = _.without($scope.endpoint.expectedValues, value);
+                        });
+                    });
+                };
+                $scope.addExpectedValue = function () {
+                    $timeout(function () {
+                        $scope.$apply(function () {
+                            $scope.endpoint.expectedValues.push({
+                                name: '',
+                                values: ''
+                            });
                         });
                     });
                 };

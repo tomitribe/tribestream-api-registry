@@ -19,23 +19,14 @@ div[data-app-endpoints-details-parameters]
         text-transform: uppercase
       > div.add-param
         background-color: #d6d6d6
-        padding: 2px 8px
+        padding: 0 5px
         margin-left: 10px
         > i
           color: #ffffff
     > div.app-epd-params
       $limit-table-threshold: 1000px
-      @media (max-width: $limit-table-threshold)
-        position: relative
-        height: 300px
       > div
-        @media (max-width: $limit-table-threshold)
-          position: absolute
-          top: 0
-          bottom: 0
-          left: 0
-          right: 0
-          overflow: auto
+        overflow: auto
         > table
           table-layout: fixed
           width: 100%
@@ -45,11 +36,13 @@ div[data-app-endpoints-details-parameters]
             background-color: #f9f9f9
             th
               text-align: left
-              padding: 5px 8px
-            span
-              text-transform: uppercase
-              font-weight: 700 !important
+              background-color: #f8f9fa
               color: #000000
+              padding: 5px
+              text-transform: uppercase
+              font-size: 15px
+              font-weight: 600 !important
+
           th, td
             $column-width: 120px
             width: $column-width
@@ -81,6 +74,12 @@ div[data-app-endpoints-details-parameters]
               > div
                 display: flex
                 flex-direction: column
+          td
+            padding: 5px 0 0 0
+          td
+            > i
+              > div
+                width: 100%
           tr:hover
             td
               &:last-of-type

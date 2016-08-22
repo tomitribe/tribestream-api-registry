@@ -6,6 +6,8 @@ div
     a(x-ng-href="application/{{app}}") {{app}}
     i.fa.fa-chevron-right
     span {{method}} {{endpoint.uri.path}}
+    .actions
+      i(data-tribe-editable-option, data-empty-text="Actions", data-value="action", data-options="['Copy...', 'Release...', 'Export...', 'Share link...']")
   div
     div
       div(data-app-endpoints-details-toc).collapsed

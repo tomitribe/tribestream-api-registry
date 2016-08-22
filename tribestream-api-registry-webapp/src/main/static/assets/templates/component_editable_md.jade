@@ -1,7 +1,9 @@
 div(tabindex=0)
-  .static(x-ng-bind-html="compiledContent | tribeHtml")
+  .static(x-ng-show="compiledContent && compiledContent.trim() !== ''", x-ng-bind-html="compiledContent | tribeHtml")
+  .empty(x-ng-show="!compiledContent || compiledContent.trim() === ''")
+    span empty
   .dyn
     textarea(x-ui-codemirror="cmOption", x-ng-model="content")
-    .icon
-      div
-        i.fa.fa-pencil
+  .icon
+    div
+      i.fa.fa-pencil
