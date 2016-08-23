@@ -47,6 +47,7 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+@org.junit.Ignore("Not fully ported yet")
 @Category(Embedded.class)
 public class ApplicationResourceTest {
 
