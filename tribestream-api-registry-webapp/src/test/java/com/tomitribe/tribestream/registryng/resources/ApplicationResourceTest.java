@@ -18,36 +18,24 @@
  */
 package com.tomitribe.tribestream.registryng.resources;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tomitribe.tribestream.registryng.bootstrap.Bootstrap;
 import com.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import com.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import com.tomitribe.tribestream.registryng.domain.SearchPage;
 import com.tomitribe.tribestream.registryng.domain.SearchResult;
-import com.tomitribe.tribestream.registryng.repository.Repository;
-import com.tomitribe.tribestream.registryng.service.search.SearchEngine;
 import com.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
-import com.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
-import com.tomitribe.tribestream.registryng.webapp.RegistryNgApplication;
 import com.tomitribe.tribestream.test.registryng.category.Embedded;
-import com.tomitribe.tribestream.test.registryng.util.DefaultContainer;
 import io.swagger.models.HttpMethod;
+import io.swagger.models.Info;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.Swagger;
 import org.apache.cxf.jaxrs.client.WebClient;
-import org.apache.openejb.jee.WebApp;
 import org.apache.openejb.junit.ApplicationComposerRule;
-import org.apache.openejb.testing.Classes;
-import org.apache.openejb.testing.EnableServices;
-import org.apache.openejb.testing.JaxrsProviders;
-import org.apache.openejb.testing.Module;
-import org.junit.Rule;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import javax.ws.rs.client.Client;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import java.util.Arrays;
@@ -55,42 +43,25 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
-import static org.hamcrest.CoreMatchers.both;
-import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 @Category(Embedded.class)
-@EnableServices("jaxrs")
-public class ApplicationResourceTest extends AbstractResourceTest {
+public class ApplicationResourceTest {
 
-    private final DefaultContainer container = new DefaultContainer(true);
-
-    @Inject
-    @Named(SwaggerJsonMapperProducer.SWAGGER_OBJECT_MAPPER_NAME)
-    private ObjectMapper objectMapper;
-
-    @Rule
-    public final ApplicationComposerRule app = new ApplicationComposerRule(this, container);
-
-    @Module
-    @JaxrsProviders(CustomJacksonJaxbJsonProvider.class)
-    @Classes(cdi = true, value = {
-        Repository.class, SwaggerJsonMapperProducer.class,
-        Bootstrap.class, SearchEngine.class,
-        SearchResource.class,
-        ApplicationResource.class, RegistryNgApplication.class
-    })
-    public WebApp war() throws Exception {
-        return new WebApp();
-    }
+    @ClassRule
+    public final static ApplicationComposerRule app = new ApplicationComposerRule(new Application());
 
     @Test
     public void shouldLoadAllApplications() throws Exception {
-        List<ApplicationWrapper> apps = loadAllApplications();
+        List<String> applicationNames =
+                loadAllApplications().stream()
+                .map(ApplicationWrapper::getSwagger)
+                .map(Swagger::getInfo)
+                .map(Info::getTitle)
+                .collect(toList());
 
-        assertEquals(2, apps.size());
-        assertEquals("Swagger Petstore", apps.get(0).getSwagger().getInfo().getTitle());
-        assertEquals("Uber API", apps.get(1).getSwagger().getInfo().getTitle());
+        assertThat(applicationNames, hasItems("Swagger Petstore", "Uber API"));
     }
 
     @Test
@@ -98,13 +69,9 @@ public class ApplicationResourceTest extends AbstractResourceTest {
 
         final List<ApplicationWrapper> apps = loadAllApplications();
 
-        final ApplicationWrapper directApplicationResponse = getClient().target(apps.get(1).getLinks().get("self"))
+        final ApplicationWrapper directApplicationResponse = getApp().getClient().target(apps.get(1).getLinks().get("self"))
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(ApplicationWrapper.class);
-//        final ApplicationWrapper directApplicationResponse = directAppClient.get(ApplicationWrapper.class);
-//        final WebClient directAppClient = WebClient.create(apps.get(1).getLinks().get("self"), Arrays.asList(new CustomJacksonJaxbJsonProvider()))
-//            .accept(MediaType.APPLICATION_JSON_TYPE);
-//        final ApplicationWrapper directApplicationResponse = directAppClient.get(ApplicationWrapper.class);
 
         assertEquals(apps.get(1).getSwagger().getInfo().getTitle(), directApplicationResponse.getSwagger().getInfo().getTitle());
         assertEquals(apps.get(1).getSwagger().getInfo().getVersion(), directApplicationResponse.getSwagger().getInfo().getVersion());
@@ -135,11 +102,11 @@ public class ApplicationResourceTest extends AbstractResourceTest {
         // Given: n Applications are installed and a new Swagger document to import
         final int oldApplicationCount = loadAllApplications().size();
 
-        final Swagger swagger = objectMapper.readValue(getClass().getResourceAsStream("/api-with-examples.json"), Swagger.class);
+        final Swagger swagger = app.getInstance(Application.class).getObjectMapper().readValue(getClass().getResourceAsStream("/api-with-examples.json"), Swagger.class);
         final ApplicationWrapper request = new ApplicationWrapper(swagger);
 
         // When: The Swagger document is posted to the application resource
-        WebClient webClient = WebClient.create("http://localhost:" + container.getPort() + "/openejb/api/application", Arrays.asList(new CustomJacksonJaxbJsonProvider()))
+        WebClient webClient = WebClient.create("http://localhost:" + getPort() + "/openejb/api/application", Arrays.asList(new CustomJacksonJaxbJsonProvider()))
             .accept(MediaType.APPLICATION_JSON_TYPE)
             .type(MediaType.APPLICATION_JSON_TYPE);
 
@@ -162,7 +129,7 @@ public class ApplicationResourceTest extends AbstractResourceTest {
         assertEquals(oldApplicationCount + 1, loadAllApplications().size());
 
         // And: The search also returns the two imported endpoints
-        SearchPage searchPage = WebClient.create("http://localhost:" + container.getPort() + "/openejb/api/search", Arrays.asList(new CustomJacksonJaxbJsonProvider()))
+        SearchPage searchPage = WebClient.create("http://localhost:" + getPort() + "/openejb/api/search", Arrays.asList(new CustomJacksonJaxbJsonProvider()))
             .query("tag", "test")
             .accept(MediaType.APPLICATION_JSON_TYPE)
             .get(SearchPage.class);
@@ -175,7 +142,7 @@ public class ApplicationResourceTest extends AbstractResourceTest {
     }
 
     private List<ApplicationWrapper> loadAllApplications() {
-        List<ApplicationWrapper> result = getClient().target("http://localhost:" + container.getPort() + "/openejb/api/application")
+        List<ApplicationWrapper> result = getClient().target("http://localhost:" + getPort() + "/openejb/api/application")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(new GenericType<List<ApplicationWrapper>>() {
                 });
@@ -183,4 +150,15 @@ public class ApplicationResourceTest extends AbstractResourceTest {
         return result;
     }
 
+    private Application getApp() {
+        return app.getInstance(Application.class);
+    }
+
+    private int getPort() {
+        return getApp().getPort();
+    }
+
+    public Client getClient() {
+        return getApp().getClient();
+    }
 }

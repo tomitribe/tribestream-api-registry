@@ -18,32 +18,18 @@
  */
 package com.tomitribe.tribestream.registryng.resources;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tomitribe.tribestream.registryng.bootstrap.Bootstrap;
 import com.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import com.tomitribe.tribestream.registryng.domain.SearchPage;
 import com.tomitribe.tribestream.registryng.domain.SearchResult;
-import com.tomitribe.tribestream.registryng.repository.Repository;
-import com.tomitribe.tribestream.registryng.service.search.SearchEngine;
 import com.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
-import com.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
-import com.tomitribe.tribestream.registryng.webapp.RegistryNgApplication;
 import com.tomitribe.tribestream.test.registryng.category.Embedded;
-import com.tomitribe.tribestream.test.registryng.util.DefaultContainer;
 import org.apache.cxf.jaxrs.client.WebClient;
-import org.apache.openejb.jee.WebApp;
 import org.apache.openejb.junit.ApplicationComposerRule;
-import org.apache.openejb.testing.Classes;
-import org.apache.openejb.testing.EnableServices;
-import org.apache.openejb.testing.JaxrsProviders;
-import org.apache.openejb.testing.Module;
-import org.junit.Rule;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import javax.ejb.EJB;
-import javax.inject.Inject;
-import javax.inject.Named;
+import javax.ws.rs.client.Client;
 import javax.ws.rs.core.MediaType;
 import java.util.Arrays;
 import java.util.Collection;
@@ -52,32 +38,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @Category(Embedded.class)
-@EnableServices("jaxrs")
-public class EndpointResourceTest extends AbstractResourceTest {
+public class EndpointResourceTest {
 
-    private final DefaultContainer container = new DefaultContainer(true);
-
-    @Inject
-    @Named(SwaggerJsonMapperProducer.SWAGGER_OBJECT_MAPPER_NAME)
-    private ObjectMapper objectMapper;
-
-    @Rule
-    public final ApplicationComposerRule app = new ApplicationComposerRule(this, container);
-
-    @Module
-    @JaxrsProviders(CustomJacksonJaxbJsonProvider.class)
-    @Classes(cdi = true, value = {
-        Repository.class, SwaggerJsonMapperProducer.class,
-        Bootstrap.class, SearchEngine.class,
-        RegistryResource.class, EndpointResource.class,
-        RegistryNgApplication.class
-    })
-    public WebApp war() throws Exception {
-        return new WebApp();
-    }
-
-    @EJB
-    private Repository repository;
+    @ClassRule
+    public final static ApplicationComposerRule app = new ApplicationComposerRule(new Application());
 
     @Test
     public void shouldLoadAllApplications() throws Exception {
@@ -90,21 +54,33 @@ public class EndpointResourceTest extends AbstractResourceTest {
         assertTrue(results.size() > 0);
 
         for (SearchResult result: results) {
-            final String expectedLink = "http://localhost:" + container.getPort() + "/openejb/api/endpoint/" + result.getEndpointId();
+            final String expectedLink = "http://localhost:" + getPort() + "/openejb/api/endpoint/" + result.getEndpointId();
             final EndpointWrapper endpointWrapper = getClient().target(expectedLink)
                     .request(MediaType.APPLICATION_JSON_TYPE)
                     .get(EndpointWrapper.class);
 
             assertEquals(expectedLink, endpointWrapper.getLinks().get("self"));
-            assertEquals("http://localhost:" + container.getPort() + "/openejb/api/application/" + result.getDeployableId(), endpointWrapper.getLinks().get("application"));
+            assertEquals("http://localhost:" + getPort() + "/openejb/api/application/" + result.getDeployableId(), endpointWrapper.getLinks().get("application"));
         }
     }
 
     private SearchPage loadDefaultSearchPage() {
-        WebClient webClient = WebClient.create("http://localhost:" + container.getPort(), Arrays.asList(new CustomJacksonJaxbJsonProvider()))
+        WebClient webClient = WebClient.create("http://localhost:" + getPort(), Arrays.asList(new CustomJacksonJaxbJsonProvider()))
             .accept(MediaType.APPLICATION_JSON_TYPE);
 
         return webClient.path("openejb/api/registry").get(SearchPage.class);
+    }
+
+    private Application getApp() {
+        return app.getInstance(Application.class);
+    }
+
+    private int getPort() {
+        return getApp().getPort();
+    }
+
+    public Client getClient() {
+        return getApp().getClient();
     }
 
 }
