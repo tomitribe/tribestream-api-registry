@@ -18,11 +18,22 @@
  */
 package com.tomitribe.tribestream.registryng.resources;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tomitribe.tribestream.registryng.bootstrap.Bootstrap;
+import com.tomitribe.tribestream.registryng.repository.Repository;
+import com.tomitribe.tribestream.registryng.service.search.SearchEngine;
 import com.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
+import com.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
+import com.tomitribe.tribestream.registryng.webapp.RegistryNgApplication;
 import org.apache.openejb.jee.JaxbJavaee;
+import org.apache.openejb.jee.WebApp;
 import org.apache.openejb.jee.jpa.unit.Persistence;
 import org.apache.openejb.jee.jpa.unit.PersistenceUnit;
+import org.apache.openejb.testing.Classes;
+import org.apache.openejb.testing.EnableServices;
+import org.apache.openejb.testing.JaxrsProviders;
 import org.apache.openejb.testing.Module;
+import org.apache.openejb.testing.RandomPort;
 import org.hibernate.jpa.boot.scan.spi.ScanOptions;
 import org.hibernate.jpa.boot.scan.spi.ScanResult;
 import org.hibernate.jpa.boot.scan.spi.Scanner;
@@ -31,6 +42,8 @@ import org.hibernate.jpa.boot.spi.MappingFileDescriptor;
 import org.hibernate.jpa.boot.spi.PackageDescriptor;
 import org.hibernate.jpa.boot.spi.PersistenceUnitDescriptor;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import java.io.FileInputStream;
@@ -38,7 +51,28 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.Set;
 
-public abstract class AbstractResourceTest {
+/**
+ * Contains the configuration for the various tests in this package
+ */
+@EnableServices("jaxrs")
+public class Application {
+
+    @Inject
+    @Named(SwaggerJsonMapperProducer.SWAGGER_OBJECT_MAPPER_NAME)
+    private ObjectMapper objectMapper;
+
+    @Module
+    @JaxrsProviders(CustomJacksonJaxbJsonProvider.class)
+    @Classes(cdi = true, value = {
+            Repository.class, SwaggerJsonMapperProducer.class,
+            Bootstrap.class, SearchEngine.class,
+            SearchResource.class, RegistryResource.class,
+            EndpointResource.class, ApplicationResource.class,
+            RegistryNgApplication.class
+    })
+    public WebApp war() throws Exception {
+        return new WebApp();
+    }
 
     @Module
     public PersistenceUnit jpa() throws Exception {
@@ -71,6 +105,17 @@ public abstract class AbstractResourceTest {
                 }
             };
         }
+    }
+
+    @RandomPort("http")
+    private int port;
+
+    public int getPort() {
+        return port;
+    }
+
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
     }
 
     protected Client getClient() {
