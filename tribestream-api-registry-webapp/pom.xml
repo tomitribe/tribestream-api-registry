@@ -69,6 +69,13 @@
     </dependency>
 
     <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>${version.commons-codec}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>io.swagger</groupId>
       <artifactId>swagger-core</artifactId>
       <version>1.5.9</version>
@@ -275,7 +282,6 @@
       <plugin>
         <groupId>org.apache.tomee.maven</groupId>
         <artifactId>tomee-maven-plugin</artifactId>
-        <version>${version.tomee}</version>
         <configuration>
           <simpleLog>true</simpleLog>
           <args>-Xmx512m -XX:MaxPermSize=256m -Djava.security.auth.login.config=${catalina.home}/conf/jaas.config -Dtomitribe.console.dev=true</args>

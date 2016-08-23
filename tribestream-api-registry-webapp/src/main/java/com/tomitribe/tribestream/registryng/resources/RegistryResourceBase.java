@@ -26,6 +26,7 @@ import com.tomitribe.tribestream.registryng.domain.SeeSummary;
 import com.tomitribe.tribestream.registryng.entities.Endpoint;
 import com.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 import com.tomitribe.tribestream.registryng.repository.Repository;
+import com.tomitribe.tribestream.registryng.service.PathTransformUtil;
 import io.swagger.models.ExternalDocs;
 import io.swagger.models.Response;
 import io.swagger.models.Swagger;
@@ -51,7 +52,8 @@ public abstract class RegistryResourceBase {
 
     protected ApplicationDetail applicationDetail(final OpenApiDocument openApiDocument, final String lang, final UriInfo uriInfo, final HttpHeaders headers) {
         final Swagger swagger = openApiDocument.getSwagger();
-        final String base = "http://" + swagger.getHost() + swagger.getBasePath();
+        final String protocol = swagger.getSchemes().contains("https") ? "https" : "http";
+        final String base = protocol + "://" + swagger.getHost() + swagger.getBasePath();
 
         final ExternalDocs seeAlso = swagger.getExternalDocs();
         final List<SeeSummary> sees = new ArrayList<SeeSummary>();
@@ -72,7 +74,12 @@ public abstract class RegistryResourceBase {
     }
 
     protected EndpointDetail endpointDetail(final Endpoint endpoint, final String lang, final UriInfo uriInfo, final HttpHeaders headers) {
-        final String base = endpoint.getApplication().getSwagger().getHost() + endpoint.getApplication().getSwagger().getBasePath();
+        String basePath = endpoint.getApplication().getSwagger().getBasePath();
+        if (basePath.endsWith("/")) {
+            basePath = basePath.substring(0, basePath.length() - 1);
+        }
+        //final String protocol = endpoint.getApplication().getSwagger().getSchemes().contains("https") ? "https" : "http";
+        final String base = endpoint.getApplication().getSwagger().getHost() + basePath;
 
         final List<Parameter> parameters = endpoint.getOperation().getParameters();
         final List<ParameterDetail> params = new ArrayList<>();
@@ -158,8 +165,8 @@ public abstract class RegistryResourceBase {
                 ),
                 new EndpointDetail.Uri(
                         endpoint.getVerb(), //uri.getHttpMethod(),
-                        endpoint.getPath(), //strings.removeLeadingSlash(uri.getPath()),
-                        endpoint.getPath() // uri.getUri()
+                        PathTransformUtil.bracesToColon(endpoint.getPath()), //strings.removeLeadingSlash(uri.getPath()),
+                        base + PathTransformUtil.bracesToColon(endpoint.getPath()) // uri.getUri()
                 ),
                 new EndpointDetail.Samples(
                         null,
@@ -194,7 +201,7 @@ public abstract class RegistryResourceBase {
 //                        tomcatSecurityInfo.getAuthMethod(), tomcatSecurityInfo.getTransportGuarantee(),
 //                        new ArrayList<>(asList(tomcatSecurityInfo.getMandatoryHeaders()))) : null,
                 null,
-                endpoint.getPath());
+                PathTransformUtil.bracesToColon(endpoint.getPath()));
     }
 /*
     private List<EndpointDetail.Throttling> toThrottlings(final List<ThrottlingInfo> throttlingInfos) {

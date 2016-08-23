@@ -21,6 +21,7 @@ package com.tomitribe.tribestream.registryng.resources;
 import com.tomitribe.tribestream.registryng.domain.ApplicationDetail;
 import com.tomitribe.tribestream.registryng.domain.EndpointDetail;
 import com.tomitribe.tribestream.registryng.repository.Repository;
+import com.tomitribe.tribestream.registryng.service.PathTransformUtil;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -77,7 +78,7 @@ public class AliasRegistryResource extends RegistryResourceBase {
 
                                          @Context final UriInfo uriInfo, @Context final HttpHeaders headers) {
         return endpointDetail(
-                repository.findEndpoint(deployable, httpMethod, path),
+                repository.findEndpoint(deployable, httpMethod, PathTransformUtil.colonToBraces(path)),
                 lang, uriInfo, headers);
     }
 /*

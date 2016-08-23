@@ -29,6 +29,7 @@ import io.swagger.models.Info;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.Swagger;
+import org.apache.commons.codec.net.URLCodec;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.openejb.junit.ApplicationComposerRule;
 import org.junit.ClassRule;
@@ -90,7 +91,7 @@ public class ApplicationResourceTest {
 
         EndpointWrapper ep = getClient().target(apps.get(0).getLinks().get("self"))
                 .path(operationEntry.getKey().name().toLowerCase())
-                .path(path.substring(1))
+                .path(new URLCodec("utf-8").encode(path.substring(1)))
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(EndpointWrapper.class);
         assertNotNull(ep);

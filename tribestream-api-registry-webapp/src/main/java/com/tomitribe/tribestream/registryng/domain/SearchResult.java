@@ -18,6 +18,7 @@
  */
 package com.tomitribe.tribestream.registryng.domain;
 
+import com.tomitribe.tribestream.registryng.service.PathTransformUtil;
 import java.util.Set;
 
 public class SearchResult {
@@ -47,7 +48,7 @@ public class SearchResult {
         this.endpointId = endpointId;
         this.application = application;
         this.httpMethod = httpMethod;
-        this.path = path;
+        this.path = PathTransformUtil.bracesToColon(path);
         this.description = description;
         this.consumes = consumes;
         this.produces = produces;
@@ -151,4 +152,5 @@ public class SearchResult {
     public void setProduces(Set<String> produces) {
         this.produces = produces;
     }
+
 }

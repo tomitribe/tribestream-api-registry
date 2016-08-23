@@ -92,6 +92,7 @@
     <version.swagger>1.5.9</version.swagger>
     <version.markdown4j>2.2-cj-1.0</version.markdown4j>
     <version.commons-io>2.4</version.commons-io>
+    <version.commons-codec>1.10</version.commons-codec>
 
     <version.junit>4.12</version.junit>
   </properties>
@@ -128,7 +129,7 @@
           </configuration>
         </plugin>
         <plugin>
-          <groupId>org.apache.openejb.maven</groupId>
+          <groupId>org.apache.tomee.maven</groupId>
           <artifactId>tomee-maven-plugin</artifactId>
           <version>${version.tomee}</version>
         </plugin>
