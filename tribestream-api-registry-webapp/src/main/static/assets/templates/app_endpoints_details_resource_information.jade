@@ -29,36 +29,18 @@ div
       div(data-submenu="true", app-endpoints-details-toc-anchor="Tags")
         span Tags
         i(data-tribe-multiselect, data-selected-options="endpoint.metadata.tags")
+  .app-rates(data-submenu="true", app-endpoints-details-toc-anchor="Rates")
     div
-      .app-rates(data-submenu="true", app-endpoints-details-toc-anchor="Application rates")
-        div
-          span Application rates
-          div(x-ng-click="addAppRate()", x-ng-if="!endpoint.throttlings.application", tabindex=0)
-            i.fa.fa-plus
-        div(x-ng-if="endpoint.throttlings.application").values
-          i(data-tribe-editable-number, data-value="endpoint.throttlings.application.rateLimit")
-          span requests /
-          i(data-tribe-editable-number, data-value="endpoint.throttlings.application.rateWindow")
-          i(data-tribe-editable-option, data-value="endpoint.throttlings.application.rateUnit", data-options="rateUnits")
-          div
-            i(data-tribe-editable-number, data-value="endpoint.throttlings.application.concurrentLimit")
-            span concurrent requests
-          div(x-ng-click="removeAppRate()")
-            i.fa.fa-trash
-    div
-      .user-rates(data-submenu="true", app-endpoints-details-toc-anchor="User rates")
-        div
-          span User rates
-          div(x-ng-click="addUserRate()", tabindex=0)
-            i.fa.fa-plus
-        .rates(x-ng-repeat="rl in endpoint.throttlings.user")
-          i(data-tribe-editable-text, data-value="rl.user")
-          i(data-tribe-editable-number, data-value="rl.rateLimit")
-          span requests /
-          i(data-tribe-editable-number, data-value="rl.rateWindow")
-          i(data-tribe-editable-option, data-value="rl.rateUnit", data-options="rateUnits")
-          div
-            i(data-tribe-editable-number, data-value="rl.concurrentLimit")
-            span concurrent requests
-          div(x-ng-click="removeUserRate(rl)")
-            i.fa.fa-trash
+      span Rate Limit
+      div(x-ng-click="addRate()", tabindex=0)
+        i.fa.fa-plus
+    .rates(x-ng-repeat="rl in endpoint.rates")
+      i(data-tribe-editable-number, data-value="rl.rateLimit")
+      span requests /
+      i(data-tribe-editable-number, data-value="rl.rateWindow")
+      i(data-tribe-editable-option, data-value="rl.rateUnit", data-options="rateUnits")
+      div
+        span Description
+        i(data-tribe-editable-text, data-value="rl.description")
+      div(x-ng-click="removeRate(rl)")
+        i.fa.fa-trash

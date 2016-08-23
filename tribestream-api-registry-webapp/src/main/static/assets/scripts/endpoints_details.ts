@@ -23,7 +23,7 @@ angular.module('tribe-endpoints-details', [
                     $timeout(function () {
                         $scope.$apply(function () {
                             $scope.endpointProtocol = aux.protocol.replace(/:$/, '');
-                            $scope.resourceUrl = $scope.endpoint.resourceUrl.substring($scope.endpointProtocol.length);
+                            $scope.resourceUrl = `${aux.host}${$scope.endpoint.resourceUrl}`;;
                         });
                     });
                 });
@@ -301,20 +301,17 @@ angular.module('tribe-endpoints-details', [
 
                         });
                     });
-                    $scope.addUserRate = function () {
+                    $scope.addRate = function () {
                         $timeout(function () {
                             $scope.$apply(function () {
-                                if (!$scope.endpoint.throttlings) {
-                                    $scope.endpoint.throttlings = {};
+                                if (!$scope.endpoint.rates) {
+                                    $scope.endpoint.rates = [];
                                 }
-                                if (!$scope.endpoint.throttlings.user) {
-                                    $scope.endpoint.throttlings.user = [];
-                                }
-                                $scope.endpoint.throttlings.user.push({});
+                                $scope.endpoint.rates.push({});
                             });
                         });
                     };
-                    $scope.removeUserRate = function (rate) {
+                    $scope.removeRate = function (rate) {
                         $timeout(function () {
                             $scope.$apply(function () {
                                 if (!$scope.endpoint.throttlings) {
@@ -324,31 +321,6 @@ angular.module('tribe-endpoints-details', [
                                     return;
                                 }
                                 $scope.endpoint.throttlings.user = _.without($scope.endpoint.throttlings.user, rate);
-                            });
-                        });
-                    };
-                    $scope.addAppRate = function () {
-                        $timeout(function () {
-                            $scope.$apply(function () {
-                                if (!$scope.endpoint.throttlings) {
-                                    $scope.endpoint.throttlings = {};
-                                }
-                                if (!$scope.endpoint.throttlings.application) {
-                                    $scope.endpoint.throttlings.application = {};
-                                }
-                            });
-                        });
-                    };
-                    $scope.removeAppRate = function () {
-                        $timeout(function () {
-                            $scope.$apply(function () {
-                                if (!$scope.endpoint.throttlings) {
-                                    return;
-                                }
-                                if (!$scope.endpoint.throttlings.application) {
-                                    return;
-                                }
-                                delete $scope.endpoint.throttlings.application;
                             });
                         });
                     };
