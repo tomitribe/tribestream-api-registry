@@ -23,7 +23,7 @@ angular.module('tribe-endpoints-details', [
                     $timeout(function () {
                         $scope.$apply(function () {
                             $scope.endpointProtocol = aux.protocol.replace(/:$/, '');
-                            $scope.resourceUrl = `${aux.host}${$scope.endpoint.resourceUrl}`;;
+                            $scope.resourceUrl = `${aux.host}${$scope.endpoint.resourceUrl}`;
                         });
                     });
                 });
@@ -398,7 +398,27 @@ angular.module('tribe-endpoints-details', [
             templateUrl: 'app/templates/app_endpoints_details_see.html',
             scope: {
                 'endpoint': '='
-            }
+            },
+            controller: ['$scope', '$timeout', function ($scope, $timeout) {
+                $scope.addLink = function () {
+                    $timeout(function () {
+                        $scope.$apply(function () {
+                            $scope.endpoint.metadata = $scope.endpoint.metadata || {};
+                            $scope.endpoint.metadata.sees = $scope.endpoint.metadata.sees || [];
+                            $scope.endpoint.metadata.sees.push({});
+                        });
+                    });
+                };
+                $scope.removeLink = function (link) {
+                    $timeout(function () {
+                        $scope.$apply(function () {
+                            if ($scope.endpoint.metadata && $scope.endpoint.metadata.sees) {
+                                $scope.endpoint.metadata.sees = _.without($scope.endpoint.metadata.sees, link);
+                            }
+                        });
+                    });
+                };
+            }]
         };
     }])
 

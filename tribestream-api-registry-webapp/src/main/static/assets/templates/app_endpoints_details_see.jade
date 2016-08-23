@@ -1,7 +1,10 @@
-div(x-ng-if="endpoint.metadata.sees.length")
+div
   div
-    span See:
-  div
-    p(x-ng-repeat="see in endpoint.metadata.sees | orderBy:['seeOrder', 'title']")
-      a(x-ng-if="see.href",  x-ng-href="{{see.href}}", x-ng-bind-html="(see.title | tribeHtml) || (see.href | tribeHtml)")
-      a(x-ng-if="!see.href", x-ng-href="see/{{ see.aggregatedId }}/{{ applicationName }}/{{ see.title }}", x-ng-bind-html="(see.title | tribeHtml) || (see.href | tribeHtml)")
+    span See
+    div(x-ng-click="addLink();")
+      i.fa.fa-plus
+  ul
+    li(x-ng-repeat="see in endpoint.metadata.sees | orderBy:['seeOrder', 'title']")
+      i(data-tribe-editable-link, data-href="see.href", data-title="see.title")
+      div(x-ng-click="removeLink(see);")
+        i.fa.fa-trash
