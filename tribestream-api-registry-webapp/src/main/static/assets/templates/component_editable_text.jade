@@ -1,5 +1,5 @@
 div(tabindex=0)
-  span(x-ng-if="!value || value.trim() === ''").empty {{emptyText}}
+  span(x-ng-if="!value || value.trim() === ''").empty {{emptyText ? emptyText : '&nbsp;&nbsp;&nbsp;'}}
   span(x-ng-if="value && value.trim() !== ''") {{value}}
   input(type="{{type}}", x-ng-model="value")
   div

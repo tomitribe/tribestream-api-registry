@@ -1,6 +1,6 @@
 div
   .resp-body
-    h2 #[span Response Body]
+    h2 #[span Request Body]
     div(data-tribe-editable-md, data-content="endpoint.respBody")
   .expected
     h2
@@ -49,13 +49,5 @@ div
             div(x-ng-click="removeErrorCode(val);")
               i.fa.fa-trash-o
   .samples
-    h2 #[span Request Headers]
-    div(data-tribe-editable-md, data-content="endpoint.samples.requestHeaders")
-    h2 #[span Response Parameters]
-    div(data-tribe-editable-md, data-content="endpoint.samples.responseParameters")
-
-
     h2 #[span Response Body]
     div(data-tribe-editable-md, data-content="endpoint.samples.responseBody")
-    h2 #[span Response Body Sample Error]
-    div(data-tribe-editable-md, data-content="endpoint.samples.responseBodyError")

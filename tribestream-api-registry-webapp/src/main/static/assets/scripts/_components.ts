@@ -212,11 +212,6 @@ module basecomponents {
                     emptyText: '@?'
                 },
                 templateUrl: 'app/templates/component_editable_text.html',
-                controller: ['$scope', function ($scope) {
-                    if (!$scope.emptyText || $scope.emptyText.trim() === '') {
-                        $scope.emptyText = '&nbsp;&nbsp;&nbsp;'
-                    }
-                }],
                 link: function (scope, el) {
                     $timeout(function () {
                         var activate = function () {
