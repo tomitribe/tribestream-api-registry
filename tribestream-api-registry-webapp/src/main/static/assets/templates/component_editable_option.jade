@@ -1,9 +1,10 @@
 div(tabindex=0)
   .value
-    span {{valueText}}
+    span(ng-show="valueText && valueText.trim() !== ''") {{valueText}}
+    span.empty(ng-show="!valueText || valueText.trim() === ''") {{emptyText}}
     div
       i.fa.fa-caret-up
       i.fa.fa-caret-down
-  .options
+  .options.floating-menu
     div(x-ng-repeat="opt in options", x-ng-click="selectOption(opt)", tabindex=0)
       span {{opt.text ? opt.text : opt}}

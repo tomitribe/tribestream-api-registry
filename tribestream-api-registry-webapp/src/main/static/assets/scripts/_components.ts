@@ -58,7 +58,7 @@ module basecomponents {
                     $scope.$watch('content', function () {
                         $timeout(function () {
                             $scope.$apply(function () {
-                                if (!$scope.content) {
+                                if (!$scope.content || $scope.content.trim() === '') {
                                     $scope.compiledContent = '';
                                 } else {
                                     $scope.compiledContent = marked($scope.content);
@@ -73,25 +73,18 @@ module basecomponents {
                     };
                 }],
                 link: function (scope, el, attr, controller) {
-                    scope.$watch('content', function () {
-                        if (!el.hasClass('edit')) {
-                            if (!scope.content) {
-                                el.addClass('edit');
-                            }
-                        }
-                    });
                     scope.$watch('editorHolder.editor', function () {
                         var editor = scope.$eval('editorHolder.editor');
                         if (editor) {
-                            el.on('click', function () {
+                            var activate = function () {
                                 el.addClass('edit');
                                 editor.refresh();
                                 editor.focus();
-                            });
+                            };
+                            el.on('click', activate);
+                            el.find('> div').on('focus', activate);
                             editor.on('blur', function () {
-                                if (scope.content) {
-                                    el.removeClass('edit');
-                                }
+                                el.removeClass('edit');
                             });
                         }
                     });
@@ -107,11 +100,27 @@ module basecomponents {
                     content: '='
                 },
                 templateUrl: 'app/templates/component_editable_block.html',
-                controller: ['$scope', function ($scope) {
+                controller: ['$scope', '$timeout', function ($scope, $timeout) {
+                    $scope.editorHolder = {
+                        editor: null
+                    };
                     $scope.cmOption = {
                         lineNumbers: false,
-                        viewportMargin: Infinity
+                        viewportMargin: Infinity,
+                        onLoad: function (editor) {
+                            $timeout(function () {
+                                $scope.$apply(function () {
+                                    $scope.editorHolder.editor = editor;
+                                });
+                            });
+                        }
                     };
+                    $scope.$watch('editorHolder.editor', function () {
+                        var editor = $scope.$eval('editorHolder.editor');
+                        if (editor) {
+                            editor.refresh();
+                        }
+                    });
                 }]
             };
         }])
@@ -120,7 +129,8 @@ module basecomponents {
             return {
                 restrict: 'A',
                 scope: {
-                    value: '='
+                    value: '=',
+                    adjust: '@?'
                 },
                 templateUrl: 'app/templates/component_editable_number.html',
                 link: function (scope, el, attrs, controller) {
@@ -129,7 +139,9 @@ module basecomponents {
                         var width = span.width();
                         el.addClass('edit');
                         var input = el.find('input');
-                        input.width(width);
+                        if (scope.adjust !== 'false') {
+                            input.width(width);
+                        }
                         input.focus();
                     };
                     el.on('click', activate);
@@ -145,7 +157,8 @@ module basecomponents {
             return {
                 restrict: 'A',
                 scope: {
-                    value: '='
+                    value: '=',
+                    adjust: '@?'
                 },
                 templateUrl: 'app/templates/component_editable_text.html',
                 link: function (scope, el) {
@@ -155,7 +168,9 @@ module basecomponents {
                             var width = span.width();
                             el.addClass('edit');
                             var input = el.find('input');
-                            input.width(width);
+                            if (scope.adjust !== 'false') {
+                                input.width(width);
+                            }
                             input.focus();
                         };
                         el.on('click', activate);
@@ -168,23 +183,26 @@ module basecomponents {
             };
         }])
 
-        .directive('tribeEditableOption', ['$timeout', function ($timeout) {
+        .directive('tribeEditableOption', ['$timeout', '$document', '$window', function ($timeout, $document, $window) {
             return {
                 restrict: 'A',
                 scope: {
                     value: '=',
-                    options: '='
+                    options: '=',
+                    emptyText: '@?'
                 },
                 templateUrl: 'app/templates/component_editable_option.html',
                 controller: ['$scope', '$timeout', function ($scope, $timeout) {
-                    var selectOption = function (opt) {
+                    if (!$scope.emptyText) {
+                        $scope.emptyText = 'empty';
+                    }
+                    $scope.selectOption = function (opt) {
                         $timeout(function () {
                             $scope.$apply(function () {
                                 $scope.value = opt;
                             });
                         });
                     };
-                    $scope.selectOption = selectOption;
                     $scope.$watch('value', function () {
                         if (!$scope.value) {
                             $timeout(function () {
@@ -209,8 +227,38 @@ module basecomponents {
                 }],
                 link: function (scope, el, attrs, controller) {
                     $timeout(function () {
+                        var optionsDiv = el.find('.options');
+                        optionsDiv.detach();
+                        var body = $document.find('body');
+                        var clear = function () {
+                            el.removeClass('visible');
+                            optionsDiv.detach();
+                        };
+                        var elWin = $($document.find('div[data-app-endpoints-details] > div'));
                         el.on('click', function () {
-                            el.toggleClass('visible');
+                            if (el.hasClass('visible')) {
+                                optionsDiv.detach();
+                                el.removeClass('visible');
+                                elWin.off('scroll', clear);
+                            } else {
+                                var pos = el.find('> div').offset();
+                                optionsDiv.css({
+                                    top: `${pos.top + el.find('> div').height()}px`,
+                                    left: `${pos.left}px`
+                                });
+                                body.append(optionsDiv);
+                                el.addClass('visible');
+                                elWin.on('scroll', clear);
+                            }
+                        });
+                        optionsDiv.on('click', function () {
+                            optionsDiv.detach();
+                            el.removeClass('visible');
+                            elWin.off('scroll', clear);
+                        });
+                        scope.$on('$destroy', function () {
+                            optionsDiv.remove();
+                            elWin.off('scroll', clear);
                         });
                     });
                 }

@@ -22,11 +22,18 @@ div[data-app-endpoints-details-header]
             input, span
               color: #000000
         > i[data-tribe-editable-option]
+          &.visible
+            div.value
+              padding-right: 20px
           div.value
+            padding-right: 8px
             span
               text-transform: capitalize
               font-style: normal
-              color: $app-black
+              color: #000000
+              font-size: 25px
+            &:hover
+              padding-right: 20px
           > div
             margin-right: 5px
         div.value span, a, i[data-tribe-editable-text] input, i[data-tribe-editable-text] span
@@ -36,8 +43,6 @@ div[data-app-endpoints-details-header]
           max-width: none !important
           &:last-of-type
             margin-right: 0
-        i[data-tribe-editable-option] > div > div:last-of-type span
-          font-size: 13px !important // method options menu
         div.value span
           margin-right: 5px !important
           color: #000000
@@ -51,12 +56,17 @@ div[data-app-endpoints-details-header]
     div.resourceUrl
       margin-top: 15px
       > div
+        > i[data-tribe-editable-option]
+          &.visible
+            div.value
+              padding-right: 20px
+          div.value
+            padding-right: 0
+            &:hover
+              padding-right: 20px
         > a
           display: inline-block
-          transform: translate(-5px, 0)
           color: $app-black
-
-
       > h2
         margin: 0
         text-transform: uppercase

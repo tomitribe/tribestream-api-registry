@@ -4,11 +4,17 @@ $color: #f2f0f0
 
 i[data-tribe-editable-option]
   $radius: 3px
+  font-style: normal
+  span.empty
+    font-style: italic
+    font-size: 12px
+    color: #d9d4d7 !important
+    font-weight: 600 !important
   > div
     outline: none
     display: inline-block
   .value
-    padding: 5px 12px 5px 8px
+    padding: 5px 20px 5px 8px
     position: relative
     border: solid transparent 1px
     border-radius: $radius
@@ -28,16 +34,7 @@ i[data-tribe-editable-option]
         opacity: 0
         color: $tomitribe-orange
   .options
-    background-color: transparentize(#ffffff, 0.05)
-    position: absolute
     display: none
-    border: solid white 1px
-    box-shadow: 00 2px 5px 3px $table-hover-color
-    border-top-width: 0
-    border-bottom-right-radius: $radius
-    border-bottom-left-radius: $radius
-    > div
-      padding: 5px 8px
   &:hover
     cursor: pointer
   &:hover, &.visible
@@ -48,6 +45,3 @@ i[data-tribe-editable-option]
   &.visible
     .value
       border-bottom-left-radius: 0
-    .options
-      display: block
-      z-index: 4000

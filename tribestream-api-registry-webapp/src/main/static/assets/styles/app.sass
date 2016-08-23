@@ -46,6 +46,19 @@ a
   &:hover
     cursor: pointer
 
+.floating-menu
+  background-color: transparentize(#ffffff, 0.05)
+  position: absolute
+  z-index: 3000
+  border: solid white 1px
+  box-shadow: 00 2px 5px 3px $table-hover-color
+  border-top-width: 0
+  $radius: 3px
+  border-bottom-right-radius: $radius
+  border-bottom-left-radius: $radius
+  > div
+    padding: 5px 8px
+
 @import "common_table"
 @import "common_components"
 
