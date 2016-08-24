@@ -24,7 +24,7 @@ angular.module('tribe-endpoints-details', [
                     $timeout(function () {
                         $scope.$apply(function () {
                             $scope.endpointProtocol = aux.protocol.replace(/:$/, '');
-                            $scope.resourceUrl = `${aux.host}${$scope.endpoint.resourceUrl}`;
+                            $scope.resourceUrl = `${$scope.endpoint.resourceUrl}`;
                         });
                     });
                 });

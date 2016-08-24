@@ -97,8 +97,12 @@ public class Bootstrap {
                 Swagger.class
             );
 
-            OpenApiDocument openApiDocument = repository.insert(swagger);
-            LOGGER.info("Persisted application {}-{}", openApiDocument.getName(), openApiDocument.getVersion());
+            if (repository.findApplicationByNameAndVersion(swagger.getInfo().getTitle(), swagger.getInfo().getVersion()) == null) {
+                OpenApiDocument openApiDocument = repository.insert(swagger);
+                LOGGER.info("Persisted application {}-{}", openApiDocument.getName(), openApiDocument.getVersion());
+            } else {
+                LOGGER.info("Application {}-{} already available in DB ", swagger.getInfo().getTitle(), swagger.getInfo().getVersion());
+            }
 
         } catch (Exception e) {
             LOGGER.warn("Seeding {} failed!", e, swaggerFile.getName());
