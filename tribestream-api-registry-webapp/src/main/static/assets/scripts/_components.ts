@@ -95,6 +95,7 @@ module basecomponents {
                     };
                     $scope.cmOption = {
                         lineNumbers: false,
+                        lineWrapping: true,
                         viewportMargin: Infinity,
                         mode: 'markdown',
                         onLoad: function (editor) {
@@ -156,6 +157,7 @@ module basecomponents {
                     };
                     $scope.cmOption = {
                         lineNumbers: false,
+                        lineWrapping: true,
                         viewportMargin: Infinity,
                         onLoad: function (editor) {
                             $timeout(function () {
@@ -165,13 +167,26 @@ module basecomponents {
                             });
                         }
                     };
-                    $scope.$watch('editorHolder.editor', function () {
-                        var editor = $scope.$eval('editorHolder.editor');
+                }],
+                link: function (scope, el, attr, controller) {
+                    scope.$watch('editorHolder.editor', function () {
+                        var editor = scope.$eval('editorHolder.editor');
                         if (editor) {
                             editor.refresh();
+                            var activate = function () {
+                                el.addClass('edit');
+                                editor.refresh();
+                                editor.focus();
+                            };
+                            el.on('click', activate);
+                            el.find('> div').on('focus', activate);
+                            editor.on('blur', function () {
+                                el.removeClass('edit');
+                            });
                         }
                     });
-                }]
+
+                }
             };
         }])
 
