@@ -2,7 +2,7 @@ div
   .title
     h1
       i(data-tribe-editable-option, data-value="endpoint.uri.httpMethod", data-options="['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT']")
-      i(data-tribe-editable-text, data-value="endpoint.uri.path")
+      i(data-tribe-editable-text, data-adjust="false", data-value="endpoint.uri.path")
   h2 Description
   i(data-tribe-editable-block, data-content="endpoint.doc.doc")
   div(data-app-endpoints-details-see, data-endpoint="endpoint")
@@ -11,4 +11,4 @@ div
     div
       i(data-tribe-editable-option, data-value="endpointProtocol", data-options="['http', 'https']")
       span ://
-      a(x-ng-href="{{endpointProtocol + resourceUrl}}") {{resourceUrl}}
+      a(x-ng-href="{{endpointProtocol + '://' + resourceUrl}}") {{resourceUrl}}

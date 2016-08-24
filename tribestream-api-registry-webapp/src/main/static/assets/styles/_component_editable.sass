@@ -16,8 +16,13 @@ i[data-tribe-editable-text], i[data-tribe-editable-number]
 i[data-tribe-editable-text], i[data-tribe-editable-number]
   > div
     max-width: 100%
+    overflow: hidden
     > span
       white-space: nowrap
+      &.empty
+        font-style: italic
+        font-size: 12px
+        color: #d9d4d7 !important
     > input
       display: none
       max-width: 100%
