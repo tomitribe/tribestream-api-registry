@@ -48,7 +48,7 @@ public class EndpointResourceTest {
 
         SearchPage allEndpoints = loadDefaultSearchPage();
 
-        assertEquals(4, allEndpoints.getApplications().size());
+        assertEquals(3, allEndpoints.getApplications().size());
         final Collection<SearchResult> results = allEndpoints.getResults();
 
         assertTrue(results.size() > 0);
