@@ -18,6 +18,11 @@
  */
 package org.tomitribe.tribestream.registryng.resources;
 
+import io.swagger.models.ExternalDocs;
+import io.swagger.models.Response;
+import io.swagger.models.Swagger;
+import io.swagger.models.parameters.AbstractSerializableParameter;
+import io.swagger.models.parameters.Parameter;
 import org.tomitribe.tribestream.registryng.domain.ApplicationDetail;
 import org.tomitribe.tribestream.registryng.domain.EndpointDetail;
 import org.tomitribe.tribestream.registryng.domain.ErrorDetail;
@@ -27,11 +32,6 @@ import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 import org.tomitribe.tribestream.registryng.repository.Repository;
 import org.tomitribe.tribestream.registryng.service.PathTransformUtil;
-import io.swagger.models.ExternalDocs;
-import io.swagger.models.Response;
-import io.swagger.models.Swagger;
-import io.swagger.models.parameters.AbstractSerializableParameter;
-import io.swagger.models.parameters.Parameter;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.HttpHeaders;
@@ -43,12 +43,20 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 
 import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.toList;
 
 public abstract class RegistryResourceBase {
+
+    public static final String VENDOR_EXTENSION_KEY = "x-tribestream-api-registry";
+
+    public static final String VENDOR_EXT_STATUS = "status";
+
+    public static final String VENDOR_EXT_RESPONSE_CODES = "response-codes";
 
     @Inject
     private Repository repository;
@@ -116,16 +124,25 @@ public abstract class RegistryResourceBase {
             ));
         }
 
-        final Map<String, Response> errorMappings = endpoint.getOperation().getResponses();
-        final List<ErrorDetail> errors = new ArrayList<>();
-        for (final Map.Entry<String, Response> info : errorMappings.entrySet()) {
-            if ("default".equals(info.getKey())) {
-                continue;
+        List<ErrorDetail> errors = Collections.emptyList();
+        String status = null;
+        // TODO: Fork swagger model and add explicit getter?
+        Map<String, Object> vendorExtension = (Map<String, Object>) endpoint.getOperation().getVendorExtensions().get(VENDOR_EXTENSION_KEY);
+        if (vendorExtension != null) {
+
+            List<Map<String, Object>> errorCodeMaps = (List<Map<String, Object>>) vendorExtension.get(VENDOR_EXT_RESPONSE_CODES);
+            if (errorCodeMaps != null) {
+                errors = errorCodeMaps.stream()
+                        .map((Map<String, Object> errorCodeMap) ->
+                                new ErrorDetail(
+                                        Integer.parseInt(Optional.ofNullable((String) errorCodeMap.get("http_status")).orElse("500")),
+                                        (String) errorCodeMap.get("error_code"),
+                                        (String) errorCodeMap.get("message"),
+                                        (String) errorCodeMap.get("description")))
+                        .collect(toList());
             }
-            errors.add(new ErrorDetail(
-                    Integer.valueOf(info.getKey()),
-                    (info.getValue().getExamples() == null || info.getValue().getExamples().isEmpty()) ? null : info.getValue().getExamples().values().iterator().next().toString(),
-                    info.getValue().getDescription()));
+
+            status = (String) vendorExtension.get(VENDOR_EXT_STATUS);
         }
 
         final Collection<SeeSummary> sees = new ArrayList<SeeSummary>();
@@ -188,8 +205,8 @@ public abstract class RegistryResourceBase {
                         Collections.<String>emptyList(), //metadata.getCategories(),
                         sees,
                         endpoint.getOperation().getTags() == null ? new HashSet<String>() : new HashSet<>(endpoint.getOperation().getTags()), //metadata.getTags(),
-                    Arrays.asList(endpoint.getApplication().getSwagger().getInfo().getVersion()), //metadata.getApiVersions(),
-                        null // metadata.getStatus() != null && metadata.getStatus().getType() != null ? metadata.getStatus().getType().name() : null
+                        Arrays.asList(endpoint.getApplication().getSwagger().getInfo().getVersion()), //metadata.getApiVersions(),
+                        status
                 ),
                 new TreeSet<String>(), // rolesAllowed
                 new EndpointDetail.Mime(
@@ -206,6 +223,8 @@ public abstract class RegistryResourceBase {
 //                        new ArrayList<>(asList(tomcatSecurityInfo.getMandatoryHeaders()))) : null,
                 null,
                 PathTransformUtil.bracesToColon(endpoint.getPath()));
+
+        // $scope.statusOptions = ['PROPOSAL', 'STUB', 'DRAFT', 'TEST', 'VALIDATION', 'ACCEPTED', 'CONFIDENTIAL'];
     }
 
     protected String getSampleResponse(final Endpoint endpoint, final String mimePart) {
