@@ -81,11 +81,22 @@ public class Repository {
         }
     }
 
-    public OpenApiDocument findByApplicationIdWithEndpoints(String applicationId) throws NoResultException {
+    public OpenApiDocument findByApplicationIdWithEndpoints(String applicationId) {
         try {
             return em.createNamedQuery(OpenApiDocument.QRY_FIND_BY_APPLICATIONID_WITH_ENDPOINTS, OpenApiDocument.class)
                 .setParameter("applicationId", applicationId)
                 .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+
+    public OpenApiDocument findApplicationByNameAndVersion(final String name, final String version) {
+        try {
+            return em.createNamedQuery(OpenApiDocument.QRY_FIND_BY_NAME_AND_VERSION, OpenApiDocument.class)
+                    .setParameter("name", name)
+                    .setParameter("version", version)
+                    .getSingleResult();
         } catch (NoResultException e) {
             return null;
         }

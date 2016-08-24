@@ -1,0 +1,39 @@
+@import "variables"
+
+i[data-tribe-editable-link], div[data-tribe-editable-link]
+  font-style: normal
+  $color: #f1eff0
+  > div
+    border: solid transparent 1px
+    padding: 8px
+    div.view
+      display: flex
+      align-items: center
+      span.empty
+        font-style: italic
+        font-size: 12px
+        font-weight: 700 !important
+        color: #d9d4d7 !important
+      div.edit-trigger
+        margin-left: 10px
+        opacity: 0
+        &:hover
+          cursor: pointer
+        flex-direction: column
+        justify-content: center
+        align-items: center
+        > i
+          font-size: 10px
+      &:hover
+        div.edit-trigger
+          opacity: 1
+    div.value
+      display: none
+    &:hover
+      border-color: $color
+  &.visible
+    > div
+      border-color: $color
+      div.view
+        div.edit-trigger
+          opacity: 1
