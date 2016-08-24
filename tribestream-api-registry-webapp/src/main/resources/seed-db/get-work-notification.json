@@ -332,7 +332,7 @@
               }
             },
             "examples": {
-              "application/xml": "<result>\n              <paging>\n              <total>245</total>\n              <offset>0</offset>\n              <limit>10</limit>\n              <returned>2</returned>\n              </paging>\n              </workNotifications>\n              <workNotification>\n              <workNotificationId>911123</workNotificationId>\n              <actionableInd>true</actionable>\n              <requestor>\n              <userId>JGARDNER</userId>\n              <name>GARDNER,JONATHAN</code>\n              </requestor>\n              <type>purchaseOrder</type>\n              <statusCode>open</statusCode>\n              <description>STARBUCKS MFG US - Standard Purchase Order 70007067,0 for USD 10,120.00 requires your approval.</description>\n              <createdDate>2016-13-06T08:15:30-05:00</createdDate>\n              <dueDate>2016-14-06T08:15:30-05:00</dueDate>\n              <notificationDetails>\n              <notificationDetail>\n              <code>documentNumber</code>\n              <name>PO Document Number</name>\n              <value>70007061</value>\n              </notificationDetail>\n              <notificationDetail>\n              <code>preparerName</code>\n              <name>Preparer Display code</name>\n              <value>MORGAN, MICHAEL</value>\n              </notificationDetail>\n              <notificationDetail>\n              <code>forwardFromname</code>\n              <name>Forward From Display code</name>\n              <value>GARDNER, JONATHAN</value>\n              </notificationDetail>\n              <notificationDetail>\n              <code>poAmountDsp</code>\n              <name>PO Amount Display</name>\n              <value>20109.599999999999</value>\n              </notificationDetail>\n              <notificationDetail>\n              <code>functionalCurrency</code>\n              <name>Functional Currency</name>\n              <value>USD</value>\n              </notificationDetail>\n              <notificationDetail>\n              <code>documentTypeDisp</code>\n              <name>Document Type Display</name>\n              <value>Standard Purchase Order</value>\n              </notificationDetail>\n              <notificationDetail>\n              <code>requiresApprovalMsg</code>\n              <name>Requires Approval Translated Message</name>\n              <value>requires your approval.</value>\n              </notificationDetail>\n              <notificationDetail>\n              <code>totalAmountDsp</code>\n              <name>Total Amount Display</name>\n              <value>20109.599999999999</value>\n              </notificationDetail>\n              <notificationDetail>\n              <code>taxAmountDsp</code>\n              <name>Tax Amount Display</name>\n              <value>0</value>\n              </notificationDetail>\n              <notificationDetail>\n              <code>#fromRole</code>\n              <name>From Role</name>\n              <value>JGARDNER</value>\n              </notificationDetail>\n              <notificationDetail>\n              <code>operatingUnitcode</code>\n              <name>Operating Unit code</name>\n              <value>STARBUCKS MFG US</value>\n              </notificationDetail>\n              <notificationDetail>\n              <code>supplier</code>\n              <name>Supplier</name>\n              <value>FRESCO SYSTEM USA INCORPORATED</value>\n              </notificationDetail>\n              <notificationDetail>\n              <code>supplieSite</code>\n              <name>Supplier Site</name>\n              <value>REDOAK01</value>\n              </notificationDetail>\n              </notificationDetails>\n              </workNotification>\n              </workNotifications>\n              </result>"
+              "application/xml": "<result>\n <paging>\n  <total>245</total>\n  <offset>0</offset>\n  <limit>10</limit>\n  <returned>2</returned>\n </paging>\n <workNotifications>\n  <workNotification>\n   <workNotificationId>911123</workNotificationId>\n   <actionableInd>true</actionableInd>\n   <requestor>\n    <userId>JGARDNER</userId>\n    <name>GARDNER,JONATHAN</name>\n   </requestor>\n   <type>purchaseOrder</type>\n   <statusCode>open</statusCode>\n   <description>STARBUCKS MFG US - Standard Purchase Order 70007067,0 for USD 10,120.00 requires your approval.</description>\n   <createdDate>2016-13-06T08:15:30-05:00</createdDate>\n   <dueDate>2016-14-06T08:15:30-05:00</dueDate>\n   <notificationDetails>\n    <notificationDetail>\n     <code>documentNumber</code>\n     <name>PO Document Number</name>\n     <value>70007061</value>\n    </notificationDetail>\n    <notificationDetail>\n     <code>preparerName</code>\n     <name>Preparer Display code</name>\n     <value>MORGAN, MICHAEL</value>\n    </notificationDetail>\n    <notificationDetail>\n     <code>forwardFromname</code>\n     <name>Forward From Display code</name>\n     <value>GARDNER, JONATHAN</value>\n    </notificationDetail>\n    <notificationDetail>\n     <code>poAmountDsp</code>\n     <name>PO Amount Display</name>\n     <value>20109.599999999999</value>\n    </notificationDetail>\n    <notificationDetail>\n     <code>functionalCurrency</code>\n     <name>Functional Currency</name>\n     <value>USD</value>\n    </notificationDetail>\n    <notificationDetail>\n     <code>documentTypeDisp</code>\n     <name>Document Type Display</name>\n     <value>Standard Purchase Order</value>\n    </notificationDetail>\n    <notificationDetail>\n     <code>requiresApprovalMsg</code>\n     <name>Requires Approval Translated Message</name>\n     <value>requires your approval.</value>\n    </notificationDetail>\n    <notificationDetail>\n     <code>totalAmountDsp</code>\n     <name>Total Amount Display</name>\n     <value>20109.599999999999</value>\n    </notificationDetail>\n    <notificationDetail>\n     <code>taxAmountDsp</code>\n     <name>Tax Amount Display</name>\n     <value>0</value>\n    </notificationDetail>\n    <notificationDetail>\n     <code>#fromRole</code>\n     <name>From Role</name>\n     <value>JGARDNER</value>\n    </notificationDetail>\n    <notificationDetail>\n     <code>operatingUnitcode</code>\n     <name>Operating Unit code</name>\n     <value>STARBUCKS MFG US</value>\n    </notificationDetail>\n    <notificationDetail>\n     <code>supplier</code>\n     <name>Supplier</name>\n     <value>FRESCO SYSTEM USA INCORPORATED</value>\n    </notificationDetail>\n    <notificationDetail>\n     <code>supplieSite</code>\n     <name>Supplier Site</name>\n     <value>REDOAK01</value>\n    </notificationDetail>\n   </notificationDetails>\n  </workNotification>\n </workNotifications>\n</result>"
             }
           },
           "default": {
@@ -349,10 +349,50 @@
               }
             },
             "examples": {
-              "application/xml": "<error>\n              <code>9031004</code>\n              <message>Work Notification not found.</message>\n              </error>"
+              "application/xml": "<error>\n  <code>9031004</code>\n  <message>Work Notification not found.</message>\n</error>"
             }
           }
-        }
+        },
+        "x-tomitribe-response-codes": [
+          {
+            "http_status": "200",
+            "message": "OK",
+            "description": "Success"
+          },
+          {
+            "http_status": "400",
+            "error_code": "9031004",
+            "message": "No notification found.",
+            "description": "No notification match the query parameters provided."
+          },
+          {
+            "http_status": "400",
+            "error_code": "9035001",
+            "message": "Invalid limit.",
+            "description": "Limit must be between 1 and ??."
+          },
+          {
+            "http_status": "400",
+            "error_code": "9035002",
+            "message": "Invalid offset",
+            "description": "Offset must be between 0 and maximum page results."
+          },
+          {
+            "http_status": "423",
+            "message": "Locked",
+            "description": "Too many requests."
+          },
+          {
+            "http_status": "429",
+            "message": "Too many requests",
+            "description": "Too many concurrent requests."
+          },
+          {
+            "http_status": "503",
+            "message": "Service Unavailable",
+            "description": "Backend resources are not available. Try your request again later."
+          }
+        ]
       }
     }
   }
