@@ -353,46 +353,48 @@
             }
           }
         },
-        "x-tomitribe-response-codes": [
-          {
-            "http_status": "200",
-            "message": "OK",
-            "description": "Success"
-          },
-          {
-            "http_status": "400",
-            "error_code": "9031004",
-            "message": "No notification found.",
-            "description": "No notification match the query parameters provided."
-          },
-          {
-            "http_status": "400",
-            "error_code": "9035001",
-            "message": "Invalid limit.",
-            "description": "Limit must be between 1 and ??."
-          },
-          {
-            "http_status": "400",
-            "error_code": "9035002",
-            "message": "Invalid offset",
-            "description": "Offset must be between 0 and maximum page results."
-          },
-          {
-            "http_status": "423",
-            "message": "Locked",
-            "description": "Too many requests."
-          },
-          {
-            "http_status": "429",
-            "message": "Too many requests",
-            "description": "Too many concurrent requests."
-          },
-          {
-            "http_status": "503",
-            "message": "Service Unavailable",
-            "description": "Backend resources are not available. Try your request again later."
-          }
-        ]
+        "x-tribestream-api-registry": {
+          "response-codes": [
+            {
+              "http_status": "200",
+              "message": "OK",
+              "description": "Success"
+            },
+            {
+              "http_status": "400",
+              "error_code": "9031004",
+              "message": "No notification found.",
+              "description": "No notification match the query parameters provided."
+            },
+            {
+              "http_status": "400",
+              "error_code": "9035001",
+              "message": "Invalid limit.",
+              "description": "Limit must be between 1 and ??."
+            },
+            {
+              "http_status": "400",
+              "error_code": "9035002",
+              "message": "Invalid offset",
+              "description": "Offset must be between 0 and maximum page results."
+            },
+            {
+              "http_status": "423",
+              "message": "Locked",
+              "description": "Too many requests."
+            },
+            {
+              "http_status": "429",
+              "message": "Too many requests",
+              "description": "Too many concurrent requests."
+            },
+            {
+              "http_status": "503",
+              "message": "Service Unavailable",
+              "description": "Backend resources are not available. Try your request again later."
+            }
+          ]
+        }
       }
     }
   }

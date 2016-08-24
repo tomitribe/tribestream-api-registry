@@ -20,16 +20,18 @@ package org.tomitribe.tribestream.registryng.domain;
 
 public class ErrorDetail {
     private int statusCode;
-    private String sampleMessage;
+    private String errorCode;
+    private String message;
     private String description;
 
     public ErrorDetail() {
         // no-op
     }
 
-    public ErrorDetail(final int statusCode, final String sampleMessage, final String description) {
+    public ErrorDetail(final int statusCode, final String errorCode, final String message, final String description) {
         this.statusCode = statusCode;
-        this.sampleMessage = sampleMessage;
+        this.errorCode = errorCode;
+        this.message = message;
         this.description = description;
     }
 
@@ -41,12 +43,20 @@ public class ErrorDetail {
         this.statusCode = statusCode;
     }
 
-    public String getSampleMessage() {
-        return sampleMessage;
+    public String getErrorCode() {
+        return errorCode;
     }
 
-    public void setSampleMessage(final String sampleMessage) {
-        this.sampleMessage = sampleMessage;
+    public void setErrorCode(String errorCode) {
+        this.errorCode = errorCode;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(final String message) {
+        this.message = message;
     }
 
     public String getDescription() {
