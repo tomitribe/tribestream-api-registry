@@ -181,8 +181,8 @@ public abstract class RegistryResourceBase {
                         getSampleResponse(endpoint, "xml"),
                         null,
                         null,
-                        null,
-                        null
+                        getDefaultResponse(endpoint, "json"),
+                        getDefaultResponse(endpoint, "xml")
                 ),
                 new EndpointDetail.MetaData(
                         Collections.<String>emptyList(), //metadata.getCategories(),
