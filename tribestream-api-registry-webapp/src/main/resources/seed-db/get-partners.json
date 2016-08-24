@@ -637,7 +637,58 @@
               }
             }
           }
-        }
+        },
+        "x-tomitribe-response-codes": [
+          {
+            "http_status": "200",
+            "message": "OK",
+            "description": "Success"
+          },
+          {
+            "http_status": "304",
+            "message": "not modified",
+            "description": "Resource has not been modified since date specified."
+          },
+          {
+            "http_status": "400",
+            "error_code": "1001001",
+            "message": "Supplied request is invalid.",
+            "description": "Request is missing required fields."
+          },
+          {
+            "http_status": "400",
+            "error_code": "1001012",
+            "message": "Date format error.",
+            "description": "The supplied date does not match the expected format."
+          },
+          {
+            "http_status": "400",
+            "error_code": "1001013",
+            "message": "Pagination Parameters invalid.",
+            "description": "The Pagination Parameters offset and limit must be positive values."
+          },
+          {
+            "http_status": "400",
+            "error_code": "1001014",
+            "message": "No results returned.",
+            "description": "There are no partners which match the provided search results"
+          },
+          {
+            "http_status": "423",
+            "message": "Locked",
+            "description": "Too many requests."
+          },
+          {
+            "http_status": "429",
+            "message": "Too many requests",
+            "description": "Too many concurrent requests."
+          },
+          {
+            "http_status": "503",
+            "message": "Service Unavailable",
+            "description": "Backend resources are not available. Try your request again later."
+          }
+        ]
       }
     }
   }
