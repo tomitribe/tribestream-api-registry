@@ -54,6 +54,8 @@ public abstract class RegistryResourceBase {
 
     public static final String VENDOR_EXTENSION_KEY = "x-tribestream-api-registry";
 
+    public static final String VENDOR_EXT_STATUS = "status";
+
     public static final String VENDOR_EXT_RESPONSE_CODES = "response-codes";
 
     @Inject
@@ -123,9 +125,11 @@ public abstract class RegistryResourceBase {
         }
 
         List<ErrorDetail> errors = Collections.emptyList();
+        String status = null;
         // TODO: Fork swagger model and add explicit getter?
         Map<String, Object> vendorExtension = (Map<String, Object>) endpoint.getOperation().getVendorExtensions().get(VENDOR_EXTENSION_KEY);
         if (vendorExtension != null) {
+
             List<Map<String, Object>> errorCodeMaps = (List<Map<String, Object>>) vendorExtension.get(VENDOR_EXT_RESPONSE_CODES);
             if (errorCodeMaps != null) {
                 errors = errorCodeMaps.stream()
@@ -137,6 +141,8 @@ public abstract class RegistryResourceBase {
                                         (String) errorCodeMap.get("description")))
                         .collect(toList());
             }
+
+            status = (String) vendorExtension.get(VENDOR_EXT_STATUS);
         }
 
         final Collection<SeeSummary> sees = new ArrayList<SeeSummary>();
@@ -199,8 +205,8 @@ public abstract class RegistryResourceBase {
                         Collections.<String>emptyList(), //metadata.getCategories(),
                         sees,
                         endpoint.getOperation().getTags() == null ? new HashSet<String>() : new HashSet<>(endpoint.getOperation().getTags()), //metadata.getTags(),
-                    Arrays.asList(endpoint.getApplication().getSwagger().getInfo().getVersion()), //metadata.getApiVersions(),
-                        null // metadata.getStatus() != null && metadata.getStatus().getType() != null ? metadata.getStatus().getType().name() : null
+                        Arrays.asList(endpoint.getApplication().getSwagger().getInfo().getVersion()), //metadata.getApiVersions(),
+                        status
                 ),
                 new TreeSet<String>(), // rolesAllowed
                 new EndpointDetail.Mime(
@@ -217,6 +223,8 @@ public abstract class RegistryResourceBase {
 //                        new ArrayList<>(asList(tomcatSecurityInfo.getMandatoryHeaders()))) : null,
                 null,
                 PathTransformUtil.bracesToColon(endpoint.getPath()));
+
+        // $scope.statusOptions = ['PROPOSAL', 'STUB', 'DRAFT', 'TEST', 'VALIDATION', 'ACCEPTED', 'CONFIDENTIAL'];
     }
 
     protected String getSampleResponse(final Endpoint endpoint, final String mimePart) {

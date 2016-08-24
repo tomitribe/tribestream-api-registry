@@ -354,6 +354,7 @@
           }
         },
         "x-tribestream-api-registry": {
+          "status": "ACCEPTED",
           "response-codes": [
             {
               "http_status": "200",
