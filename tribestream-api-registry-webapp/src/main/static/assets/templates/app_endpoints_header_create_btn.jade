@@ -1,0 +1,10 @@
+div
+  .button-face
+    div
+      span Create
+    div.trigger
+      i.fa.fa-caret-down
+  .button-applications.floating-menu
+    ul
+      li(x-ng-repeat="app in applications | orderBy:'text'")
+        a(x-ng-href="endpoint/{{app.name}}") {{app.name}}

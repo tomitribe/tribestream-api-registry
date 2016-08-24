@@ -426,8 +426,17 @@ module basecomponents {
                             });
                         });
                     };
-                    var includeNewItem = function (item) {
-                        $scope.selectItem(item);
+                    var includeNewItem = function () {
+                        var item = $scope.filterText;
+                        if (item && item.trim() !== '') {
+                            $scope.selectItem(item.trim());
+                        } else {
+                            $timeout(function () {
+                                $scope.$apply(function () {
+                                    $scope.filterText = '';
+                                });
+                            });
+                        }
                     };
                     $scope.filterText = '';
                     $scope.deleteEngaged = false;
@@ -440,7 +449,7 @@ module basecomponents {
                         ) {
                             unselectItem($scope.selectedOptions[$scope.selectedOptions.length - 1]);
                         } else if ($scope.update && event.keyCode === 13) {
-                            includeNewItem($scope.filterText);
+                            includeNewItem();
                         }
                         $timeout(function () {
                             $scope.$apply(function () {
@@ -449,6 +458,7 @@ module basecomponents {
                             });
                         });
                     };
+                    this.includeNewItem = includeNewItem;
                 }],
                 link: function (scope, el, attr, controller) {
                     el.find('div.selected > div:first-of-type').on('click', function () {
@@ -459,6 +469,7 @@ module basecomponents {
                         el.addClass('editing');
                     });
                     el.find('input').on('blur', function () {
+                        controller.includeNewItem();
                         if (!scope.selectedOptions || !scope.selectedOptions.length) {
                             el.find('span.empty').css('display', 'inline');
                         }
