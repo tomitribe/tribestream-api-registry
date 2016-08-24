@@ -1,0 +1,644 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Get Partners",
+    "description": "This method provides the ability to get information for a collection of partner resources using the ISO country code of the market where they work.",
+    "termsOfService": "http://starbucks.com/terms/",
+    "contact": {
+      "name": "Starbucks API Team",
+      "email": "foo@starbucks.com",
+      "url": "http://starbucks.com"
+    },
+    "license": {
+      "name": "Starbucks License",
+      "url": "http://starbucks.com/license"
+    }
+  },
+  "host": "soa-prod.starbucks.com",
+  "basePath": "/",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/xml"
+  ],
+  "produces": [
+    "application/xml"
+  ],
+  "paths": {
+    "/partners/{countryCode}": {
+      "get": {
+        "description": "This method provides the ability to get information for a collection of partner resources using the ISO country code of the market where they work.",
+        "consumes": [
+          "application/xml"
+        ],
+        "produces": [
+          "application/xml"
+        ],
+        "parameters": [
+          {
+            "name": "Date",
+            "in": "header",
+            "description": "The timestamp of the request, required to construct the signature",
+            "required": true,
+            "type": "string",
+            "format": "date"
+          },
+          {
+            "name": "Digest",
+            "in": "header",
+            "description": "The checksum of the message body of the request calculated using the SHA-256 algorithm and required to construct the signature",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "Accept",
+            "in": "header",
+            "description": "Header for specifying response as XML",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "Header for specifying request as XML",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Header for specifying Signature along with the key Id, signing algorithm, headers list and signature",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "gws-environment",
+            "in": "header",
+            "description": "The Id of the environment-specific instance of the API to be called",
+            "required": true,
+            "type": "string",
+            "enum": ["prod", "ct", "pd", "pi", "ps" , "sd", "ss"]
+          },
+          {
+            "name": "gws-version",
+            "in": "header",
+            "description": "The number representing the version of the request",
+            "required": true,
+            "type": "integer",
+            "enum": [1]
+          },
+          {
+            "name": "gws-requestId",
+            "in": "header",
+            "description": "Header required internally for uniquely identifying the request, used for audit purposes and end-to-end testing",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "gws-audit",
+            "in": "header",
+            "description": "Header required internally for specifying the audit trail of callers.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "If-Modified-Since",
+            "in": "header",
+            "description": "If the requested resource has modified since the time specified, it will returned. See valid date formatting. Only the RFC 1123 date format is supported. Example: Tue, 3 Jun 2008 11:05:30 GMT",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "countryCode",
+            "in": "path",
+            "description": "The 2 character ISO code of the country where the partner is employed",
+            "required": true,
+            "type": "string",
+            "pattern": "[A-Z]{2}"
+          },
+          {
+            "name": "organizationNumber",
+            "in": "query",
+            "description": "The unique identifier of an organization to which partners are assigned.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "locationNumber",
+            "in": "query",
+            "description": "The unique identifier of a partner's location. Only certain types of organizations, such as stores, have locations.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "partnerName",
+            "in": "query",
+            "description": "String that can be used to match on a partner's first or last name.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "jobName",
+            "in": "query",
+            "description": "String that can be used to match on any part of a partner's job name.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "effectiveDates",
+            "in": "query",
+            "description": "Partner information reflecting future or current actions. Default: current. An application must be trusted to request future effective dates. future, current",
+            "required": false,
+            "type": "string",
+            "enum": ["current", "future"]
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of return results.",
+            "required": false,
+            "type": "integer",
+            "default": 100
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Return results beginning from this offset.",
+            "required": false,
+            "type": "integer",
+            "default": 0
+          },
+          {
+            "name": "employmentStatus",
+            "in": "query",
+            "description": "- new planned for release August 2016 - Allows explicit inclusion or exclusion of active/separated/loa partners from the response.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["active", "separated", "loa"]
+            },
+            "collectionFormat": "csv",
+            "default": ["active", "loa"]
+          },
+          {
+            "name": "areaType",
+            "in": "query",
+            "description": "- new planned for release August 2016 - Allows explicit inclusion or exclusion of populations based on Area Types. Retail,Non-Retail,Manufacturing. Default: all three",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["Retail", "Non-Retail", "Manufacturing"]
+            },
+            "collectionFormat": "csv",
+            "default": ["Retail", "Non-Retail", "Manufacturing"]
+          },
+          {
+            "name": "manager",
+            "in": "query",
+            "description": "Allows for searching for all partners who report to a specific manager. Country code plus Partner number (example US123456)",
+            "required": false,
+            "type": "string",
+            "pattern": "[A-Z]{2}[0-9]+"
+          },
+          {
+            "name": "firstName",
+            "in": "query",
+            "description": "- new planned for release late August 2016 - Allows for searching for all partners containing this value in the first name field or preferred name field.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "lastName",
+            "in": "query",
+            "description": "- new planned for release late August 2016 - Allows for searching for all partners containing this value in the last name field.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "jobNumber",
+            "in": "query",
+            "description": "- new planned for release late August 2016 - Allows for searching for all partners having this jobNumber.",
+            "required": false,
+            "type": "string",
+            "pattern": "[0-9]+"
+          },
+          {
+            "name": "orgType",
+            "in": "query",
+            "description": "- new planned for release late August 2016 - Allows for searching for all partners having this org type.",
+            "required": false,
+            "type": "string",
+            "enum": ["Store", "District", "Area", "Region", "Division" , "Department", "Roasting Plant", "Resource,Executive", "Consolidated Department", "Consolidated BU", "Category", "Corporation", "Company", "Business Unit"]
+          },
+          {
+            "name": "phoneNumber",
+            "in": "query",
+            "description": "- new planned for release late August 2016 - Allows for searching for all partners having this phone number in any of their phone number fields (work, mobile or home). Phone numbers returned in the response body should still follow the JWT security pattern of getPartners. Search string should consist of 10 numeric characters, with no formatting of dashes or parethesis.",
+            "required": false,
+            "type": "string",
+            "pattern": "[0-9]{10}"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "partners response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "type": "object",
+                  "properties": {
+                    "paging": {
+                      "description": "Paging results for the returned response.",
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "description": "Total number of results based on search query.",
+                          "type": "integer"
+                        },
+                        "offset": {
+                          "description": "Returned results based on offset from beginning of set.",
+                          "type": "integer"
+                        },
+                        "limit": {
+                          "description": "Maximum set number of results allowed per page.",
+                          "type": "integer"
+                        },
+                        "returned": {
+                          "description": "Number of results returned on current page.",
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "partners": {
+                      "description": "Information about a collection of partner resources.",
+                      "type": "array",
+                      "items": {
+                        "description": "Information about an instance of a partner resource where a partner is a person providing services to the organization as a full-time or part-time employee, not on a contract basis.",
+                        "type": "object",
+                        "properties": {
+                          "partnerNumber": {
+                            "description": "Used to uniquely identify a partner within a market.",
+                            "type": "string"
+                          },
+                          "names": {
+                            "description": "A container of names used to refer to the individual partner.",
+                            "properties": {
+                              "first": {
+                                "description": "A partner’s given or personal name used to address the individual.",
+                                "type": "string"
+                              },
+                              "middle": {
+                                "description": "A partner’s additional given or personal name.",
+                                "type": "string"
+                              },
+                              "last": {
+                                "description": "A partner’s family name which is passed or given to a child from one or both parents’ family names.",
+                                "type": "string"
+                              },
+                              "preferred": {
+                                "description": "A preferred name provided by the partner as a substitute for their first name, or their first name, if no preferred name was provided.",
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "modifiedDate": {
+                            "description": "The date this resource was last modified.",
+                            "type": "string",
+                            "format": "date"
+                          },
+                          "birthDate": {
+                            "description": "The partner's date of birth.",
+                            "type": "string",
+                            "format": "date"
+                          },
+                          "genderType": {
+                            "description": "A partner's stated classification as male or female.",
+                            "type": "string",
+                            "enum": ["male", "female"]
+                          },
+                          "contactInformation": {
+                            "description": "Information about methods for contacting a partner.",
+                            "type": "object",
+                            "properties": {
+                              "phoneNumbers": {
+                                "description": "A collection of phone numbers that can be used to contact the partner.",
+                                "type": "array",
+                                "items": {
+                                  "description": "Information about a contact phone number.",
+                                  "type": "object",
+                                  "properties": {
+                                    "type": {
+                                      "description": "Identifies the type of phone number including work, cell.",
+                                      "type": "string"
+                                    },
+                                    "number": {
+                                      "description": "The phone number for the specified type.",
+                                      "type": "string"
+                                    }
+                                  },
+                                  "xml": {
+                                    "name": "phoneNumber"
+                                  }
+                                },
+                                "xml": {
+                                  "name": "phoneNumbers"
+                                }
+                              },
+                              "emailAddresses": {
+                                "description": "A collection of email addresses that can be used to contact the partner.",
+                                "type": "array",
+                                "items": {
+                                  "description": "Information about a contact email address.",
+                                  "type": "object",
+                                  "properties": {
+                                    "type": {
+                                      "description": "Identifies the type of email address including work, personal.",
+                                      "type": "string"
+                                    },
+                                    "address": {
+                                      "description": "The email address for the specified type.",
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "xml": {
+                                  "name": "emailAddresses"
+                                }
+                              }
+                            }
+                          },
+                          "addresses": {
+                            "description": "A collection of addresses for the partner.",
+                            "type": "array",
+                            "items": {
+                              "description": "An instance of an address for the partner.",
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "description": "Identifies the type of address including work, personal.",
+                                  "type": "string"
+                                },
+                                "line1": {
+                                  "description": "The first line of the address, typically street address and house number.",
+                                  "type": "string"
+                                },
+                                "line2": {
+                                  "description": "The second line of the address.",
+                                  "type": "string"
+                                },
+                                "cubeNumber": {
+                                  "description": "The cube number associated with a partners work address",
+                                  "type": "integer"
+                                },
+                                "city": {
+                                  "description": "The city associated with the address.",
+                                  "type": "string"
+                                },
+                                "countrySubdivisionCode": {
+                                  "description": "The ISO 3166-1 alpha-2 code representing the country subdivision of the address.",
+                                  "type": "string",
+                                  "pattern": "[A-Z]{2}"
+                                },
+                                "countryCode": {
+                                  "description": "The ISO 3166-1 alpha-2 code representing the country of the address.",
+                                  "type": "string",
+                                  "pattern": "[A-Z]{2,3}"
+                                },
+                                "postalCode": {
+                                  "description": "An alphanumeric string that provides information that aids in the delivery of mail.",
+                                  "type": "string"
+                                }
+                              },
+                              "xml": {
+                                "name": "address"
+                              }
+                            },
+                            "xml": {
+                              "name": "addresses"
+                            }
+                          },
+                          "employmentStatuses": {
+                            "description": "Information about a partner's employment statuses with the Starbucks company.",
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "employedInd": {
+                                  "description": "Indicates whether the partner is currently employed.",
+                                  "type": "boolean"
+                                },
+                                "statusCode": {
+                                  "description": "Code representing the current employment status. Expected values include active, leave of absence and separated.",
+                                  "type": "string"
+                                },
+                                "hireDate": {
+                                  "description": "The date of the partner's most recent hiring.",
+                                  "type": "string",
+                                  "format": "date"
+                                },
+                                "effectiveDate": {
+                                  "description": "The date of the partner's most recent hire with the company.",
+                                  "type": "string",
+                                  "format": "date"
+                                }
+                              },
+                              "xml": {
+                                "name": "employmentStatus"
+                              }
+                            },
+                            "xml": {
+                              "name": "employmentStatuses"
+                            }
+                          },
+                          "jobs": {
+                            "description": "Information about a partner’s assigned work roles.",
+                            "type": "array",
+                            "items": {
+                              "description": "Information about a partner's assigned work role.",
+                              "type": "object",
+                              "properties": {
+                                "jobNumber": {
+                                  "description": "A number used to uniquely identify the job.",
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "description": "The name of the job the partner is employed to do.",
+                                  "type": "string"
+                                },
+                                "effectiveDate": {
+                                  "description": "The date the partner's job became effective.",
+                                  "type": "string",
+                                  "format": "date"
+                                }
+                              }
+                            },
+                            "xml": {
+                              "name": "jobs"
+                            }
+                          },
+                          "workContracts": {
+                            "description": "Information about a partner's contracted work assignments including pay.",
+                            "type": "array",
+                            "items": {
+                              "description": "Information about a partner's contracted work assignment including pay.",
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "description": "Classifies the work contract as either full-time or part-time.",
+                                  "type": "string"
+                                },
+                                "pay": {
+                                  "description": "Information about the partner's compensation.",
+                                  "type": "object",
+                                  "properties": {
+                                    "type": {
+                                      "description": "Classifies how the contract is paid, either hourly or salaried.",
+                                      "type": "string"
+                                    },
+                                    "rate": {
+                                      "description": "The money earned for a specified rate of time.",
+                                      "type": "number",
+                                      "format": "float"
+                                    }
+                                  }
+                                },
+                                "effectiveDate": {
+                                  "description": "The date the partner's work contract was effective.",
+                                  "type": "string",
+                                  "format": "date"
+                                }
+                              },
+                              "xml": {
+                                "name": "workContract"
+                              }
+                            },
+                            "xml": {
+                              "name": "workContracts"
+                            }
+                          },
+                          "managerInd": {
+                            "description": "Indicates whether the partner is a manager of the organization or organizations to which they report.",
+                            "type": "string"
+                          },
+                          "organizations": {
+                            "description": "The collection of organizations to which the partner reports. Most partners report to only one organization with the exception of partners who may manage more than one organization",
+                            "type": "array",
+                            "items": {
+                              "description": "An instance of an organization to which the partner reports",
+                              "type": "object",
+                              "properties": {
+                                "organizationNumber": {
+                                  "description": "The unique identifier of the organization.",
+                                  "type": "string"
+                                },
+                                "primaryInd": {
+                                  "description": "Indicates whether this organization is the partner's primary organization.",
+                                  "type": "string"
+                                },
+                                "countryCode": {
+                                  "description": "The 2-character ISO code of the country where the organization reports.",
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "description": "The word or words by which the organization is known.",
+                                  "type": "string"
+                                },
+                                "areaType": {
+                                  "description": "A value used to categorize organizations into areas based on shared characteristics. Expected values include Retail, Non-retail, Manufacturing.",
+                                  "type": "string"
+                                },
+                                "type": {
+                                  "description": "A value used to categorize organizations based on shared characteristics. See [Expected Values](https://enterprise-api-catalog.starbucks.net:8443/wiki/index.php/Get_Partners#Expected_Values).",
+                                  "type": "string",
+                                  "pattern": "[A-Z]{2}"
+                                },
+                                "costCenterNumber": {
+                                  "description": "The financial cost center number assigned to the organization.",
+                                  "type": "string"
+                                },
+                                "locationNumber": {
+                                  "description": "A number that uniquely identifies the location for the organization depending on the type of organization. Only certain types of organizations, such as stores, have locations.",
+                                  "type": "string"
+                                },
+                                "manager": {
+                                  "description": "The set of information used to identify the manager of the organization.",
+                                  "type": "object",
+                                  "properties": {
+                                    "partnerNumber": {
+                                      "description": "Used to uniquely identify the organization manager.",
+                                      "type": "string"
+                                    },
+                                    "countryCode": {
+                                      "description": "The 2-character ISO code of the country to which the manager is assigned.",
+                                      "type": "string",
+                                      "pattern": "[A-Z]{2}"
+                                    },
+                                    "name": {
+                                      "description": "The full name of the organization manager.",
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "effectiveDate": {
+                                  "description": "The date the partner's organization assignment was effective.",
+                                  "type": "string",
+                                  "format": "date"
+                                }
+                              },
+                              "xml": {
+                                "name": "organization"
+                              }
+                            },
+                            "xml": {
+                              "name": "organizations"
+                            }
+                          }
+
+                        },
+                        "xml": {
+                          "name": "partner"
+                        }
+                      },
+                      "xml": {
+                        "name": "partners"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "Header that provides the content type of the response",
+                "type": "string",
+                "enum": ["application/xml"]
+              }
+            },
+            "examples": {
+              "application/xml": "<result>\n  <paging>\n      <total>245</total>\n      <offset>0</offset>\n      <limit>1</limit>\n      <returned>1</returned>\n  </paging>\n  <partners>\n    <partner>\n      <partnerNumber>123456</partnerNumber>\n      <names>\n         <first>Jonathan</first>\n         <middle>B</middle>\n         <last>Doe</last>\n         <nickname>Jon</nickname>\n      </names>\n      <jobs>\n         <job>\n           <name>Barista</name>\n           <effectiveDate>01/11/2015<effectiveDate>\n         </job>\n      </jobs>\n      <organizations>\n         <organization>\n           <primaryInd>true</primaryInd>\n           <name>Columbia Tower</name>\n           <type>store</type>\n           <locationNumber>101</locationNumber>\n           <effectiveDate>01/11/2015<effectiveDate>\n         </organization>\n      </organizations>\n    </partner>\n  </partners>\n</result>"
+            }
+          },
+          "default": {
+            "description": "Response Body in the event of an error",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
