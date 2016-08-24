@@ -43,7 +43,7 @@ module basecomponents {
                 templateUrl: 'app/templates/component_editable_link.html',
                 controller: ['$scope', function ($scope) {
                     if (!$scope.emptyText || $scope.emptyText.trim() === '') {
-                        $scope.emptyText = 'Link not set'
+                        $scope.emptyText = 'Empty link';
                     }
                 }],
                 link: function (scope, el, attrs, controller) {
