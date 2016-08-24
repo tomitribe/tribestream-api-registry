@@ -1,10 +1,9 @@
 div
   .resp-body
-    h2 #[span Request Body]
-    div(data-tribe-editable-md, data-content="endpoint.respBody")
+    h2 Request Body
+    div(data-tribe-editable-block, data-content="endpoint.respBody")
   .expected
-    h2
-      span Expected values
+    h2 Expected values
       div(x-ng-click="addExpectedValue();")
         i.fa.fa-plus
     table(x-ng-if="endpoint.expectedValues && endpoint.expectedValues.length")
@@ -23,8 +22,7 @@ div
             div(x-ng-click="removeExpectedValue(val);")
               i.fa.fa-trash-o
   .values
-    h2
-      span Response codes
+    h2 Response codes
       div(x-ng-click="addErrorCode();", app-endpoints-details-toc-anchor="Response codes")
         i.fa.fa-plus
     table(x-ng-if="endpoint.errors && endpoint.errors.length")
@@ -49,5 +47,12 @@ div
             div(x-ng-click="removeErrorCode(val);")
               i.fa.fa-trash-o
   .samples
-    h2 #[span Response Body]
-    div(data-tribe-editable-md, data-content="endpoint.samples.responseBody")
+    h2 Samples
+    h3 Request Headers
+    div(data-tribe-editable-block, data-content="endpoint.samples.responseHeaders")
+    h3 Response Parameters
+    div(data-tribe-editable-block, data-content="endpoint.samples.responseParameters")
+    h3 Response Body
+    div(data-tribe-editable-block, data-content="endpoint.samples.responseBody")
+    h3 Response Body Error
+    div(data-tribe-editable-block, data-content="endpoint.samples.responseBodyError")

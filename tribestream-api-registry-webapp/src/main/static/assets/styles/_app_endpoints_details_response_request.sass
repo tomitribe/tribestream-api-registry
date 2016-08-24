@@ -6,18 +6,23 @@ div[data-app-endpoints-details-response-request]
     h2
       display: flex
       align-items: center
-      > span
-        font-size: 22px
-        color: $text-color
-        font-weight: 700 !important
-        text-transform: uppercase
+      font-size: 22px
+      color: $text-color
+      font-weight: 700 !important
+      text-transform: uppercase
       > div
         background-color: #d6d6d6
         padding: 0 5px
         margin-left: 10px
         > i
           color: #ffffff
-
+    h3
+      font-size: 16px
+      color: $text-color
+      font-weight: 700 !important
+      text-transform: uppercase
+    h3 + div
+      margin-bottom: 20px
     div.resp-body
       > h2
         margin: $h-margin-bottom 0 0 0
@@ -80,5 +85,12 @@ div[data-app-endpoints-details-response-request]
       td, th
         &:nth-of-type(1), &:nth-of-type(2)
           width: 130px
-    div.samples > h2
-      margin-top: $section-margin-bottom
+    div.samples
+      h2
+        margin: $section-margin-bottom 0 20px 0
+      h3 + div
+        .CodeMirror
+          border-color: #f2f0f0
+
+
+
