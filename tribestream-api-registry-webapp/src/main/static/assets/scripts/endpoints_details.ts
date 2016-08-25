@@ -414,15 +414,15 @@ angular.module('tribe-endpoints-details', [
         };
     }])
 
-    .directive('appEndpointsDetailsSee', [function () {
+    .directive('appEndpointsDetailsSee', ['$timeout', function ($timeout) {
         return {
             restrict: 'A',
             templateUrl: 'app/templates/app_endpoints_details_see.html',
             scope: {
                 'endpoint': '='
             },
-            controller: ['$scope', '$timeout', function ($scope, $timeout) {
-                $scope.addLink = function () {
+            controller: ['$scope', function ($scope) {
+                this.addLink = function () {
                     $timeout(function () {
                         $scope.$apply(function () {
                             $scope.endpoint.metadata = $scope.endpoint.metadata || {};
@@ -440,7 +440,17 @@ angular.module('tribe-endpoints-details', [
                         });
                     });
                 };
-            }]
+            }],
+            link: function (scope, el, attrs, controller) {
+                el.find('div.add-link').on('click', function () {
+                    controller.addLink();
+                    $timeout(function () {
+                        var newItem = el.find('i[data-tribe-editable-text] > div').last();
+                        newItem.focus();
+                    }, 500); // TODO: please find a better way to do this after the meeting.
+                });
+
+            }
         };
     }])
 
