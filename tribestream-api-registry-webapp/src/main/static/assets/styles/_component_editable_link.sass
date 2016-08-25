@@ -6,6 +6,7 @@ i[data-tribe-editable-link], div[data-tribe-editable-link]
   > div
     border: solid transparent 1px
     padding: 8px
+    opacity: 1 !important
     div.view
       display: flex
       align-items: center
@@ -29,6 +30,9 @@ i[data-tribe-editable-link], div[data-tribe-editable-link]
           opacity: 1
     div.value
       display: none
+      > i
+        > div
+          min-width: 300px
     &:hover
       border-color: $color
   &.visible
@@ -37,3 +41,17 @@ i[data-tribe-editable-link], div[data-tribe-editable-link]
       div.view
         div.edit-trigger
           opacity: 1
+
+.editable-link-menu
+  min-width: 300px
+  background-color: #ffffff
+  > div
+    &:first-of-type
+      padding-bottom: 0
+    &:last-of-type
+      padding-top: 0
+    width: 100%
+    > i
+      width: 100%
+      > div
+        width: 100%
