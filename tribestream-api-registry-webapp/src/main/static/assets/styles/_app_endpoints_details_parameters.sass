@@ -68,7 +68,7 @@ div[data-app-endpoints-details-parameters]
                 > i
                   color: #ffffff
                   font-size: 18px
-            &.description
+            &.description, &.valid-values
               white-space: normal
               width: 100%
               > div
@@ -80,6 +80,7 @@ div[data-app-endpoints-details-parameters]
             > i
               > div
                 width: 100%
+          @include table-row-highlight($table-hover-color)
           tr:hover
             td
               &:last-of-type
