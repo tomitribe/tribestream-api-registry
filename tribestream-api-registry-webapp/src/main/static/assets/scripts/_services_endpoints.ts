@@ -24,20 +24,8 @@ module services {
                         tribeErrorHandlerService.ensureErrorHandler(errorCallback)
                     );
                 };
-                if (!$sessionStorage.tribe) {
-                    $sessionStorage.tribe = {};
-                }
-                if (!$sessionStorage.tribe.cache) {
-                    $sessionStorage.tribe.cache = {};
-                }
-                if (!$sessionStorage.tribe.cache.loadedRawEndpoints) {
-                    $sessionStorage.tribe.cache.loadedRawEndpoints = [];
-                }
-                if (!$sessionStorage.tribe.cache.loadedEndpointDetails) {
-                    $sessionStorage.tribe.cache.loadedEndpointDetails = [];
-                }
-                var loadedRawEndpoints = $sessionStorage.tribe.cache.loadedRawEndpoints;
-                var loadedEndpointDetails = $sessionStorage.tribe.cache.loadedEndpointDetails;
+                var loadedRawEndpoints = [];
+                var loadedEndpointDetails = [];
                 return {
                     list: function () {
                         return {

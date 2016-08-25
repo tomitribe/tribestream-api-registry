@@ -339,13 +339,10 @@ angular.module('tribe-endpoints-details', [
                     $scope.removeRate = function (rate) {
                         $timeout(function () {
                             $scope.$apply(function () {
-                                if (!$scope.endpoint.throttlings) {
+                                if (!$scope.endpoint.rates) {
                                     return;
                                 }
-                                if (!$scope.endpoint.throttlings.user) {
-                                    return;
-                                }
-                                $scope.endpoint.throttlings.user = _.without($scope.endpoint.throttlings.user, rate);
+                                $scope.endpoint.rates = _.without($scope.endpoint.rates, rate);
                             });
                         });
                     };

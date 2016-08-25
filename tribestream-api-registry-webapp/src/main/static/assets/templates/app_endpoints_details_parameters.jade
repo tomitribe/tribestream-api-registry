@@ -12,6 +12,7 @@ div
             th placement
             th required
             th.description description
+            th.valid-values valid values
             th
         tbody
           tr(x-ng-repeat="param in params | orderBy:'param.name'")
@@ -24,6 +25,9 @@ div
             td.description
               div
                 i(data-tribe-editable-block, data-content="param.doc")
+            td.valid-values
+              div
+                i(data-tribe-multiselect, data-selected-options="param.sampleValues")
             td
               div
                 i.fa.fa-trash-o(x-ng-click="removeParam(param);")

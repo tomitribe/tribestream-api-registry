@@ -52,21 +52,10 @@ div[data-app-endpoints-details-resource-information]
         display: flex
         align-items: center
         flex-wrap: wrap
-        > span, > div > span
-          white-space: nowrap
-        > *, > div > *
-          margin-right: 5px
-          margin-bottom: 5px
-          &:last-child
-            margin-right: 0
-        > div:first-of-type
-          i
-            $min-width: 100px
-            > div
-              min-width: $min-width
-            input
-              min-width: $min-width
-
+        > *
+          margin-left: 5px
+          &:first-child
+            margin-left: 0
         > div:last-of-type
           display: flex
           flex-direction: column
