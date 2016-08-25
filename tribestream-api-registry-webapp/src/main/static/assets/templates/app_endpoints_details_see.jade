@@ -5,6 +5,8 @@ div
       i.fa.fa-plus
   ul
     li(x-ng-repeat="see in endpoint.metadata.sees | orderBy:['seeOrder', 'title']")
-      i(data-tribe-editable-link, data-href="see.href", data-title="see.title")
+      a(ng-if="see.href && see.href.trim() !== ''", ng-href="{{see.href}}", target="_blank")
+        i.fa.fa-link
+      i(data-tribe-editable-text, data-adjust="false", data-empty-text="enter link here", data-value="see.href")
       div(x-ng-click="removeLink(see);")
         i.fa.fa-trash

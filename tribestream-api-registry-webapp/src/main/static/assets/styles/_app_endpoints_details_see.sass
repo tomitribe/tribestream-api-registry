@@ -11,9 +11,21 @@ div[data-app-endpoints-details-see]
     > ul
       margin: 0
       list-style: none
+      width: 100%
+      > li
+        width: 100%
       > li
         display: flex
         align-items: center
+        a
+          text-decoration: none
+        i.fa.fa-link
+          color: $tomitribe-orange
+          margin: 0 5px 0 0
+        i[data-tribe-editable-text].edit
+          width: 100%
+          > div
+            width: 100%
         > div
           display: none
           background-color: #d6d6d6
