@@ -1,7 +1,7 @@
 div
   div
     span See also
-    div(x-ng-click="addLink();")
+    div.add-link
       i.fa.fa-plus
   ul
     li(x-ng-repeat="see in endpoint.metadata.sees | orderBy:['seeOrder', 'title']")
