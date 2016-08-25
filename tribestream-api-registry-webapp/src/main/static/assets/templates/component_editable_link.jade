@@ -4,8 +4,8 @@ div
     a(x-ng-if="(title && title.trim() !== '') || (href && href.trim() !== '')", x-ng-href="{{href}}", x-ng-bind-html="(title | tribeHtml) || (href | tribeHtml)")
     div.edit-trigger
       i.fa.fa-caret-down
-  .value.floating-menu
+  .value.floating-menu.editable-link-menu
     div
-      i(data-tribe-editable-text, data-value="href", data-empty-text="href not set")
+      i(data-tribe-editable-text, data-adjust="false", data-value="href", data-empty-text="href not set")
     div
-      i(data-tribe-editable-text, data-value="title", data-empty-text="title not set")
+      i(data-tribe-editable-text, data-adjust="false", data-value="title", data-empty-text="title not set")
