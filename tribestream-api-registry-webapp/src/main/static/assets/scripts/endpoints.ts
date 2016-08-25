@@ -129,7 +129,67 @@ angular.module('tribe-endpoints', [
             restrict: 'A',
             templateUrl: 'app/templates/app_endpoints_header.html',
             scope: {
-                total: '='
+                total: '=',
+                endpoints: '='
+            }
+        };
+    }])
+
+    .directive('appEndpointsHeaderCreateBtn', ['$document', function ($document) {
+        return {
+            restrict: 'A',
+            templateUrl: 'app/templates/app_endpoints_header_create_btn.html',
+            scope: {
+                endpoints: '='
+            },
+            controller: ['$scope', '$timeout', function ($scope, $timeout) {
+                $scope.$watch('endpoints', function () {
+                    $timeout(function () {
+                        $scope.$apply(function () {
+                            var applicationsMap = _.groupBy($scope.endpoints, function (endpoint) {
+                                return endpoint.application;
+                            });
+                            var applications = [];
+                            _.each(applicationsMap, function (endpoints, applicationName) {
+                                applications.push({
+                                    name: applicationName,
+                                    endpoints: endpoints
+                                });
+                            });
+                            $scope.applications = applications;
+                        });
+                    });
+                });
+            }],
+            link: function (scope, el, attrs, controller) {
+                var valueDiv = el.find('.button-applications');
+                valueDiv.detach();
+                var body = $document.find('body');
+                var clear = function () {
+                    el.removeClass('visible');
+                    valueDiv.detach();
+                };
+                var elWin = $document;
+                el.find('div.trigger').on('click', function () {
+                    if (el.hasClass('visible')) {
+                        valueDiv.detach();
+                        el.removeClass('visible');
+                        valueDiv.off('scroll', clear);
+                    } else {
+                        var pos = el.find('> div').offset();
+                        valueDiv.css({
+                            top: `${pos.top + el.find('> div').outerHeight()}px`,
+                            left: `${pos.left}px`
+                        });
+                        body.append(valueDiv);
+                        el.addClass('visible');
+                        elWin.on('scroll', clear);
+                    }
+                });
+                scope.$on('$destroy', function () {
+                    valueDiv.remove();
+                    elWin.off('scroll', clear);
+                });
             }
         };
     }])

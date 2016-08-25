@@ -1,10 +1,10 @@
 div
   .title
     h1
-      i(data-tribe-editable-option, data-value="endpoint.uri.httpMethod", data-options="['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT']")
-      i(data-tribe-editable-text, data-adjust="false", data-value="endpoint.uri.path")
+      i(data-tribe-editable-option, data-empty-text="Verb", data-value="endpoint.uri.httpMethod", data-options="['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT']")
+      i(data-tribe-editable-text, data-empty-text="Path", data-adjust="false", data-value="endpoint.uri.path")
   h2 Description
-  i(data-tribe-editable-block, data-content="endpoint.doc.doc")
+  i(data-tribe-editable-block, data-empty-text="No description", data-content="endpoint.doc.doc")
   div(data-app-endpoints-details-see, data-endpoint="endpoint")
   .resourceUrl(x-ng-if="endpoint.resourceUrl")
     h2(app-endpoints-details-toc-anchor="Resource URL") Resource URL

@@ -48,6 +48,12 @@ angular.module('tribe-main', [
                         $scope.path = $routeParams.url;
                     }]
                 })
+                .when('/endpoint/:app', {
+                    templateUrl: 'app/templates/page_endpoints_details.html',
+                    controller: ['$scope', '$routeParams', function ($scope, $routeParams) {
+                        $scope.app = $routeParams.app;
+                    }]
+                })
                 .when('/login', {
                     templateUrl: 'app/templates/page_login.html'
                 })

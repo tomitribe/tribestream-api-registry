@@ -1,7 +1,8 @@
 ///<reference path="../../bower_components/DefinitelyTyped/angularjs/angular.d.ts"/>
 
 angular.module('tribe-endpoints-details', [
-    'website-services'
+    'website-services',
+    'website-services-endpoints'
 ])
 
     .directive('appEndpointsDetailsHeader', ['$window', '$timeout', function ($window, $timeout) {
@@ -275,6 +276,30 @@ angular.module('tribe-endpoints-details', [
                     }
                     $timeout(function () {
                         $scope.$apply(function () {
+                            if (!$scope.endpoint.metadata) {
+                                $scope.endpoint.metadata = {};
+                            }
+                            if (!$scope.endpoint.metadata.apiVersions) {
+                                $scope.endpoint.metadata.apiVersions = [];
+                            }
+                            if (!$scope.endpoint.metadata.categories) {
+                                $scope.endpoint.metadata.categories = [];
+                            }
+                            if (!$scope.endpoint.metadata.tags) {
+                                $scope.endpoint.metadata.tags = [];
+                            }
+                            if (!$scope.endpoint.mime) {
+                                $scope.endpoint.mime = {};
+                            }
+                            if (!$scope.endpoint.mime.consumes) {
+                                $scope.endpoint.mime.consumes = [];
+                            }
+                            if (!$scope.endpoint.mime.produces) {
+                                $scope.endpoint.mime.produces = [];
+                            }
+                            if (!$scope.endpoint.roles) {
+                                $scope.endpoint.roles = [];
+                            }
                             $scope.requiresHttps = false;
                             $scope.requiresClientCertificate = false;
                             var detailsData = $scope.endpoint;
