@@ -1,7 +1,8 @@
 ///<reference path="../../bower_components/DefinitelyTyped/angularjs/angular.d.ts"/>
 
 angular.module('tribe-endpoints-details', [
-    'website-services'
+    'website-services',
+    'website-services-endpoints'
 ])
 
     .directive('appEndpointsDetailsHeader', ['$window', '$timeout', function ($window, $timeout) {
@@ -23,7 +24,7 @@ angular.module('tribe-endpoints-details', [
                     $timeout(function () {
                         $scope.$apply(function () {
                             $scope.endpointProtocol = aux.protocol.replace(/:$/, '');
-                            $scope.resourceUrl = $scope.endpoint.resourceUrl.substring($scope.endpointProtocol.length);
+                            $scope.resourceUrl = `${$scope.endpoint.resourceUrl}`;
                         });
                     });
                 });
@@ -275,6 +276,30 @@ angular.module('tribe-endpoints-details', [
                     }
                     $timeout(function () {
                         $scope.$apply(function () {
+                            if (!$scope.endpoint.metadata) {
+                                $scope.endpoint.metadata = {};
+                            }
+                            if (!$scope.endpoint.metadata.apiVersions) {
+                                $scope.endpoint.metadata.apiVersions = [];
+                            }
+                            if (!$scope.endpoint.metadata.categories) {
+                                $scope.endpoint.metadata.categories = [];
+                            }
+                            if (!$scope.endpoint.metadata.tags) {
+                                $scope.endpoint.metadata.tags = [];
+                            }
+                            if (!$scope.endpoint.mime) {
+                                $scope.endpoint.mime = {};
+                            }
+                            if (!$scope.endpoint.mime.consumes) {
+                                $scope.endpoint.mime.consumes = [];
+                            }
+                            if (!$scope.endpoint.mime.produces) {
+                                $scope.endpoint.mime.produces = [];
+                            }
+                            if (!$scope.endpoint.roles) {
+                                $scope.endpoint.roles = [];
+                            }
                             $scope.requiresHttps = false;
                             $scope.requiresClientCertificate = false;
                             var detailsData = $scope.endpoint;
@@ -301,54 +326,23 @@ angular.module('tribe-endpoints-details', [
 
                         });
                     });
-                    $scope.addUserRate = function () {
+                    $scope.addRate = function () {
                         $timeout(function () {
                             $scope.$apply(function () {
-                                if (!$scope.endpoint.throttlings) {
-                                    $scope.endpoint.throttlings = {};
+                                if (!$scope.endpoint.rates) {
+                                    $scope.endpoint.rates = [];
                                 }
-                                if (!$scope.endpoint.throttlings.user) {
-                                    $scope.endpoint.throttlings.user = [];
-                                }
-                                $scope.endpoint.throttlings.user.push({});
+                                $scope.endpoint.rates.push({});
                             });
                         });
                     };
-                    $scope.removeUserRate = function (rate) {
+                    $scope.removeRate = function (rate) {
                         $timeout(function () {
                             $scope.$apply(function () {
-                                if (!$scope.endpoint.throttlings) {
+                                if (!$scope.endpoint.rates) {
                                     return;
                                 }
-                                if (!$scope.endpoint.throttlings.user) {
-                                    return;
-                                }
-                                $scope.endpoint.throttlings.user = _.without($scope.endpoint.throttlings.user, rate);
-                            });
-                        });
-                    };
-                    $scope.addAppRate = function () {
-                        $timeout(function () {
-                            $scope.$apply(function () {
-                                if (!$scope.endpoint.throttlings) {
-                                    $scope.endpoint.throttlings = {};
-                                }
-                                if (!$scope.endpoint.throttlings.application) {
-                                    $scope.endpoint.throttlings.application = {};
-                                }
-                            });
-                        });
-                    };
-                    $scope.removeAppRate = function () {
-                        $timeout(function () {
-                            $scope.$apply(function () {
-                                if (!$scope.endpoint.throttlings) {
-                                    return;
-                                }
-                                if (!$scope.endpoint.throttlings.application) {
-                                    return;
-                                }
-                                delete $scope.endpoint.throttlings.application;
+                                $scope.endpoint.rates = _.without($scope.endpoint.rates, rate);
                             });
                         });
                     };
@@ -426,7 +420,27 @@ angular.module('tribe-endpoints-details', [
             templateUrl: 'app/templates/app_endpoints_details_see.html',
             scope: {
                 'endpoint': '='
-            }
+            },
+            controller: ['$scope', '$timeout', function ($scope, $timeout) {
+                $scope.addLink = function () {
+                    $timeout(function () {
+                        $scope.$apply(function () {
+                            $scope.endpoint.metadata = $scope.endpoint.metadata || {};
+                            $scope.endpoint.metadata.sees = $scope.endpoint.metadata.sees || [];
+                            $scope.endpoint.metadata.sees.push({});
+                        });
+                    });
+                };
+                $scope.removeLink = function (link) {
+                    $timeout(function () {
+                        $scope.$apply(function () {
+                            if ($scope.endpoint.metadata && $scope.endpoint.metadata.sees) {
+                                $scope.endpoint.metadata.sees = _.without($scope.endpoint.metadata.sees, link);
+                            }
+                        });
+                    });
+                };
+            }]
         };
     }])
 

@@ -12,7 +12,9 @@ div[data-app-endpoints-header]
       flex-direction: column
       align-items: flex-start
     > h1
-      margin: 0 10px 20px 20px
+      margin: 0 10px 0 20px
+      @media (max-width: $wrapping-width)
+        margin: 0 10px 20px 20px
       flex-shrink: 0
       display: flex
       align-items: center
@@ -33,7 +35,10 @@ div[data-app-endpoints-header]
     > i
       margin: 0 60px 0 10px
       @media (max-width: $wrapping-width)
-        margin-left: 20px
+        margin: 0 20px 0 20px
         align-self: stretch
       flex-grow: 1
       max-width: 400px
+      &:last-of-type
+        @media (max-width: $wrapping-width)
+          margin-top: 10px

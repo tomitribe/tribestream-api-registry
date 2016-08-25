@@ -1,6 +1,8 @@
 @import "variables"
 
 div[data-tribe-editable-md]
+  strong
+    font-weight: inherit !important
   > div
     position: relative
     border: solid 1px #f2f0f0
@@ -53,3 +55,8 @@ div[data-tribe-editable-md]
       border-color: #f2f0f0
     .icon
       display: block
+  &.edit
+    > div
+      border-color: #f2f0f0
+    .icon
+      display: none

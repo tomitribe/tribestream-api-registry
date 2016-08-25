@@ -12,7 +12,7 @@ div[data-app-endpoints-details-resource-information]
       font-weight: $app-font-weight-h1 !important
       font-size: $app-font-size-h1
       color: $text-color
-    > div
+    > div:first-of-type
       display: flex
       flex-wrap: wrap
       > div
@@ -34,89 +34,6 @@ div[data-app-endpoints-details-resource-information]
             font-weight: $app-font-weight-h3 !important
             font-size: $app-font-size-h3
             color: $text-color
-          &.app-rates, &.user-rates
-            i[data-tribe-editable-text], i[data-tribe-editable-number], i[data-tribe-editable-option]
-              > div
-                border-color: #f2f0f0
-          &.user-rates
-            width: 100%
-            > div.rates
-              display: flex
-              align-items: center
-              flex-wrap: wrap
-              > span, > div > span
-                white-space: nowrap
-              > *, > div > *
-                margin-right: 5px
-                margin-bottom: 5px
-                &:last-child
-                  margin-right: 0
-              > div:last-of-type
-                display: flex
-                flex-direction: column
-                align-items: center
-                justify-content: center
-                background-color: #d6d6d6
-                padding: 5px
-                border-radius: 3px
-                > i
-                  color: #ffffff
-                  margin: 0
-            > div:first-of-type
-              margin-bottom: 10px
-              display: flex
-              align-items: center
-              > span
-                text-transform: uppercase
-                font-weight: $app-font-weight-h3 !important
-                font-size: $app-font-size-h3
-                color: $text-color
-              > div
-                background-color: #d6d6d6
-                padding: 0 5px
-                margin-left: 10px
-                > i
-                  color: #ffffff
-          &.app-rates
-            width: 100%
-            > div.values
-              display: flex
-              align-items: center
-              flex-wrap: wrap
-              > *
-                margin-left: 5px
-                &:first-child
-                  margin-left: 0
-              > div:last-of-type
-                display: flex
-                flex-direction: column
-                align-items: center
-                justify-content: center
-                background-color: #d6d6d6
-                padding: 5px
-                border-radius: 3px
-                > i
-                  color: #ffffff
-                  margin: 0
-
-            > div:first-of-type
-              margin-bottom: 10px
-              display: flex
-              align-items: center
-              > span
-                text-transform: uppercase
-                color: #000000
-                font-weight: $app-font-weight-h3 !important
-                font-size: $app-font-size-h3
-              > div
-                background-color: #d6d6d6
-                padding: 0 5px
-                margin-left: 10px
-                > i
-                  color: #ffffff
-            i + span
-              margin-left: 5px
-
           &.auth-method
             > div
               > div
@@ -125,3 +42,43 @@ div[data-app-endpoints-details-resource-information]
                   text-transform: uppercase
                   font-size: 13px
                   font-weight: 500 !important
+    div.app-rates
+      width: 100%
+      margin-bottom: 30px
+      i[data-tribe-editable-text], i[data-tribe-editable-number], i[data-tribe-editable-option]
+        > div
+          border-color: #f2f0f0
+      > div.rates
+        display: flex
+        align-items: center
+        flex-wrap: wrap
+        > *
+          margin-left: 5px
+          &:first-child
+            margin-left: 0
+        > div:last-of-type
+          display: flex
+          flex-direction: column
+          align-items: center
+          justify-content: center
+          background-color: #d6d6d6
+          padding: 5px
+          border-radius: 3px
+          > i
+            color: #ffffff
+            margin: 0
+      > div:first-of-type
+        margin-bottom: 10px
+        display: flex
+        align-items: center
+        > span
+          text-transform: uppercase
+          font-weight: $app-font-weight-h3 !important
+          font-size: $app-font-size-h3
+          color: $text-color
+        > div
+          background-color: #d6d6d6
+          padding: 0 5px
+          margin-left: 10px
+          > i
+            color: #ffffff

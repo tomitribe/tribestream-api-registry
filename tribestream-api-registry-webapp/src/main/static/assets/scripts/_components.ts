@@ -32,6 +32,56 @@ module basecomponents {
             };
         }])
 
+        .directive('tribeEditableLink', ['$document', function ($document) {
+            return {
+                restrict: 'A',
+                scope: {
+                    href: '=',
+                    title: '=',
+                    emptyText: '@?'
+                },
+                templateUrl: 'app/templates/component_editable_link.html',
+                controller: ['$scope', function ($scope) {
+                    if (!$scope.emptyText || $scope.emptyText.trim() === '') {
+                        $scope.emptyText = 'Empty link';
+                    }
+                }],
+                link: function (scope, el, attrs, controller) {
+                    var valueDiv = el.find('.value');
+                    valueDiv.detach();
+                    var body = $document.find('body');
+                    var clear = function () {
+                        el.removeClass('visible');
+                        valueDiv.detach();
+                    };
+                    var elWin = $($document.find('div[data-app-endpoints-details] > div'));
+                    el.find('div.edit-trigger').on('click', function () {
+                        if (el.hasClass('visible')) {
+                            valueDiv.detach();
+                            el.removeClass('visible');
+                            valueDiv.off('scroll', clear);
+                        } else {
+                            var pos = el.find('> div').offset();
+                            valueDiv.css({
+                                top: `${pos.top + el.find('> div').outerHeight()}px`,
+                                left: `${pos.left}px`
+                            });
+                            body.append(valueDiv);
+                            el.addClass('visible');
+                            elWin.on('scroll', clear);
+                        }
+                    });
+                    scope.$on('$destroy', function () {
+                        valueDiv.remove();
+                        elWin.off('scroll', clear);
+                    });
+
+
+                }
+            };
+        }])
+
+
         .directive('tribeEditableMd', [function () {
             return {
                 restrict: 'A',
@@ -45,6 +95,7 @@ module basecomponents {
                     };
                     $scope.cmOption = {
                         lineNumbers: false,
+                        lineWrapping: true,
                         viewportMargin: Infinity,
                         mode: 'markdown',
                         onLoad: function (editor) {
@@ -106,6 +157,7 @@ module basecomponents {
                     };
                     $scope.cmOption = {
                         lineNumbers: false,
+                        lineWrapping: true,
                         viewportMargin: Infinity,
                         onLoad: function (editor) {
                             $timeout(function () {
@@ -115,13 +167,26 @@ module basecomponents {
                             });
                         }
                     };
-                    $scope.$watch('editorHolder.editor', function () {
-                        var editor = $scope.$eval('editorHolder.editor');
+                }],
+                link: function (scope, el, attr, controller) {
+                    scope.$watch('editorHolder.editor', function () {
+                        var editor = scope.$eval('editorHolder.editor');
                         if (editor) {
                             editor.refresh();
+                            var activate = function () {
+                                el.addClass('edit');
+                                editor.refresh();
+                                editor.focus();
+                            };
+                            el.on('click', activate);
+                            el.find('> div').on('focus', activate);
+                            editor.on('blur', function () {
+                                el.removeClass('edit');
+                            });
                         }
                     });
-                }]
+
+                }
             };
         }])
 
@@ -158,7 +223,8 @@ module basecomponents {
                 restrict: 'A',
                 scope: {
                     value: '=',
-                    adjust: '@?'
+                    adjust: '@?',
+                    emptyText: '@?'
                 },
                 templateUrl: 'app/templates/component_editable_text.html',
                 link: function (scope, el) {
@@ -183,7 +249,7 @@ module basecomponents {
             };
         }])
 
-        .directive('tribeEditableOption', ['$timeout', '$document', '$window', function ($timeout, $document, $window) {
+        .directive('tribeEditableOption', ['$timeout', '$document', function ($timeout, $document) {
             return {
                 restrict: 'A',
                 scope: {
@@ -375,8 +441,17 @@ module basecomponents {
                             });
                         });
                     };
-                    var includeNewItem = function (item) {
-                        $scope.selectItem(item);
+                    var includeNewItem = function () {
+                        var item = $scope.filterText;
+                        if (item && item.trim() !== '') {
+                            $scope.selectItem(item.trim());
+                        } else {
+                            $timeout(function () {
+                                $scope.$apply(function () {
+                                    $scope.filterText = '';
+                                });
+                            });
+                        }
                     };
                     $scope.filterText = '';
                     $scope.deleteEngaged = false;
@@ -389,7 +464,7 @@ module basecomponents {
                         ) {
                             unselectItem($scope.selectedOptions[$scope.selectedOptions.length - 1]);
                         } else if ($scope.update && event.keyCode === 13) {
-                            includeNewItem($scope.filterText);
+                            includeNewItem();
                         }
                         $timeout(function () {
                             $scope.$apply(function () {
@@ -398,6 +473,7 @@ module basecomponents {
                             });
                         });
                     };
+                    this.includeNewItem = includeNewItem;
                 }],
                 link: function (scope, el, attr, controller) {
                     el.find('div.selected > div:first-of-type').on('click', function () {
@@ -408,6 +484,7 @@ module basecomponents {
                         el.addClass('editing');
                     });
                     el.find('input').on('blur', function () {
+                        controller.includeNewItem();
                         if (!scope.selectedOptions || !scope.selectedOptions.length) {
                             el.find('span.empty').css('display', 'inline');
                         }

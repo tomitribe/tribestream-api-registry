@@ -12,21 +12,22 @@ div
             th placement
             th required
             th.description description
+            th.valid-values valid values
             th
         tbody
           tr(x-ng-repeat="param in params | orderBy:'param.name'")
             td
-              i(data-tribe-editable-text, data-value="param.name")
+              i(data-tribe-editable-text, data-value="param.name", data-adjust="false")
             td
-              i(data-tribe-editable-option, data-value="param.style", data-options="['template', 'query']")
+              i(data-tribe-editable-option, data-value="param.style", data-options="[{text:'Query parameter', value:'query'}, {text:'Header', value:'header'}, {text:'Path', value:'path'}, {text:'Form data', value:'formData'}, {text:'Body', value:'body'}]")
             td
               i(data-tribe-editable-option, data-value="param.required", data-options="[{text: 'Yes', value: true}, {text: 'No', value: false}]")
             td.description
               div
                 i(data-tribe-editable-block, data-content="param.doc")
-                //div
-                //  span valid values
-                //  i(data-tribe-editable-button-text, data-value="param.sampleValues")
+            td.valid-values
+              div
+                i(data-tribe-multiselect, data-selected-options="param.sampleValues")
             td
               div
                 i.fa.fa-trash-o(x-ng-click="removeParam(param);")
