@@ -20,6 +20,7 @@ package org.tomitribe.tribestream.registryng.resources;
 
 import io.swagger.models.ExternalDocs;
 import io.swagger.models.Response;
+import io.swagger.models.Scheme;
 import io.swagger.models.Swagger;
 import io.swagger.models.parameters.AbstractSerializableParameter;
 import io.swagger.models.parameters.Parameter;
@@ -63,7 +64,7 @@ public abstract class RegistryResourceBase {
 
     protected ApplicationDetail applicationDetail(final OpenApiDocument openApiDocument, final String lang, final UriInfo uriInfo, final HttpHeaders headers) {
         final Swagger swagger = openApiDocument.getSwagger();
-        final String protocol = swagger.getSchemes().contains("https") ? "https" : "http";
+        final String protocol = swagger.getSchemes().contains(Scheme.HTTPS) ? "https" : "http";
         final String base = protocol + "://" + swagger.getHost() + swagger.getBasePath();
 
         final ExternalDocs seeAlso = swagger.getExternalDocs();

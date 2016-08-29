@@ -18,12 +18,14 @@
  */
 package org.tomitribe.tribestream.registryng.resources;
 
-import org.tomitribe.tribestream.registryng.security.PrincipalDto;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.openejb.loader.SystemInstance;
 import org.apache.openejb.spi.SecurityService;
 import org.apache.openejb.util.reflection.Reflections;
 import org.apache.tomee.catalina.TomcatSecurityService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tomitribe.tribestream.registryng.security.PrincipalDto;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.security.RolesAllowed;
@@ -59,6 +61,8 @@ import java.util.Map;
 @Produces("application/json")
 public class LoginResource {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoginResource.class);
+
     @Context
     private HttpServletRequest request;
 
@@ -90,15 +94,15 @@ public class LoginResource {
             return Response.ok(principalToDto(tomcatPrincipal())).build();
 
         } catch (NullPointerException e) {
+            LOGGER.warn("Unexpected exception during login", e);
             return Response.status(400).build();
         } catch (final Exception e) {
             throw new WebApplicationException(e, Response.Status.UNAUTHORIZED);
-
         } finally {
             try {
                 request.logout();
             } catch (final ServletException e) {
-                // no-op
+                LOGGER.warn("Unexpected exception during login", e);
             }
         }
     }
@@ -118,11 +122,8 @@ public class LoginResource {
             final GenericPrincipal principal = GenericPrincipal.class.cast(userPrincipal);
             final Principal up = principal.getUserPrincipal();
 
-            // subject isn't accessible
-            if (subject == null) {
-                final LoginContext loginContext = (LoginContext) Reflections.get(principal, "loginContext");
-                subject = null != loginContext ? loginContext.getSubject() : null;
-            }
+            final LoginContext loginContext = (LoginContext) Reflections.get(principal, "loginContext");
+            subject = null != loginContext ? loginContext.getSubject() : null;
         }
 
 //        if (subject != null) {

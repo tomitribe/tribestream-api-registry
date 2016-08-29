@@ -19,13 +19,15 @@
 package org.tomitribe.tribestream.registryng.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.tomitribe.tribestream.registryng.entities.Endpoint;
-import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
-import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.Swagger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tomitribe.tribestream.registryng.entities.Endpoint;
+import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
+import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 
 import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
@@ -46,6 +48,8 @@ import java.util.Map;
 @Singleton
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class Repository {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Repository.class);
 
     @PersistenceContext
     private EntityManager em;
@@ -77,6 +81,7 @@ public class Repository {
                 .setParameter("applicationId", applicationId)
                 .getSingleResult();
         } catch (NoResultException e) {
+            LOGGER.debug("Could not find application by id {0}", applicationId);
             return null;
         }
     }
@@ -87,6 +92,7 @@ public class Repository {
                 .setParameter("applicationId", applicationId)
                 .getSingleResult();
         } catch (NoResultException e) {
+            LOGGER.debug("Could not find application by id {0}", applicationId);
             return null;
         }
     }
@@ -98,6 +104,7 @@ public class Repository {
                     .setParameter("version", version)
                     .getSingleResult();
         } catch (NoResultException e) {
+            LOGGER.debug("Could not find application by name '{0}' and version '{1}'", name, version);
             return null;
         }
     }
@@ -117,6 +124,7 @@ public class Repository {
         try {
             return em.find(Endpoint.class, endpointId);
         } catch (NoResultException e) {
+            LOGGER.debug("Could not find endpoint by id '{0}'", endpointId);
             // Not really nice, should be an Optional.
             // Forwarding the exception makes the caller only receive an indistinguishable EJBException
             return null;
@@ -131,6 +139,7 @@ public class Repository {
                 .setParameter("path", path.startsWith("/") ? path : "/" + path)
                 .getSingleResult();
         } catch (NoResultException e) {
+            LOGGER.debug("Could not find endpoint by application id '{0}', verb '{1}' and path '{2}'", applicationId, verb, path);
             return null;
         }
     }

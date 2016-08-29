@@ -647,6 +647,7 @@ public class SearchEngine {
                     }
                 }
             } catch (final InterruptedException e) {
+                LOGGER.warn("Interrupted while waiting for tasks to finish");
                 Thread.interrupted();
             } catch (final Exception e) {
                 // no-op

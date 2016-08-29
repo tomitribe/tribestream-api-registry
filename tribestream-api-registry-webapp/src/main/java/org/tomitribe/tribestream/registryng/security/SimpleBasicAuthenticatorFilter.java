@@ -18,6 +18,10 @@
  */
 package org.tomitribe.tribestream.registryng.security;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tomitribe.tribestream.registryng.resources.LoginResource;
+
 import javax.inject.Inject;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -38,6 +42,8 @@ import java.util.Locale;
  */
 @WebFilter(urlPatterns = "/api/*")
 public class SimpleBasicAuthenticatorFilter implements Filter {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoginResource.class);
 
     private static final String BASIC = "basic ";
 
@@ -70,6 +76,7 @@ public class SimpleBasicAuthenticatorFilter implements Filter {
                         req.login(usernamePassword[0], usernamePassword[1]);
 
                     } catch (final ServletException se) {
+                        LOGGER.info("Login failed", se);
                         // no-op, let it be a 401
                         final HttpServletResponse resp = HttpServletResponse.class.cast(response);
                         //resp.setHeader("WWW-Authenticate", value.toString()); // that's what we don't want
