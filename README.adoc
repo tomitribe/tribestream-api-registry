@@ -1,3 +1,240 @@
 = Tribestream API Registry
+:url-openapi-spec: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md
 
 Tribestream API Registry
+
+
+== Development
+
+To build and run the registry in its own TomEE instance:
+
+----
+$ mvn clean package tomee:run -pl :tribestream-api-registry-webapp
+----
+
+To make TomEE pick up changes to any static resources, typescript files, templates or style sheets:
+
+----
+$ cd tribestream-api-registry-webapp
+$ mvn frontend:gulp
+----
+
+== API
+
+The client uses these endpoints:
+
+Get all applications:
+
+----
+GET http://localhost:8080/registry/api/application
+----
+
+[source,json]
+----
+[
+  {
+    "swagger":{
+      "swagger":"2.0",
+      "paths": {
+        "/pets/{id}": {
+          "get": {
+            "description": "..." <1>
+        }
+      },
+    },
+    "_links":{
+      "self":"http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c"
+    }
+  }
+]
+----
+<1> The paths are reduced so that the operations only contain the properties `summary` and `description`
+    All other properties of an endpoint must be retrieved via the endpoint below.
+
+Get a single application by id:
+
+----
+GET http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c
+----
+
+[source,json]
+----
+{
+  "swagger":{
+    "swagger":"2.0",
+    "paths": {
+      "/pets/{id}": {
+        "get": {
+          "description": "..." <1>
+      }
+    },
+  },
+  "_links":{
+    "self":"http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c"
+  }
+}
+----
+<1> The paths are reduced so that the operations only contain the properties `summary` and `description`
+    All other properties of an endpoint must be retrieved via the endpoint below.
+
+Get an endpoint of an application:
+
+----
+GET http://localhost:8080/registry/api/application/{applicationId}/{verb}
+GET http://localhost:8080/registry/api/application/{applicationId}/{verb}/{path:.*}
+----
+
+The first request is used if the requested endpoint uses the root path `/`
+
+[source,json]
+----
+{
+  "httpMethod":"get",
+  "path":"/workNotifications/{region}/{function}",
+  "operation":{
+    "description":"....",
+    "consumes":["application/xml"],
+    "produces":["application/xml"],
+    ...
+  },
+  "_links":{
+    "application":"http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c",
+    "self":"http://localhost:8080/registry/api/endpoint/deafdbaa-d7bd-445b-86a8-8354553e4bd6"
+  }
+}
+----
+
+Import an application:
+
+----
+POST http://localhost:8080/registry/api/application/
+{
+  "swagger":{
+    "swagger":"2.0",
+    "paths": {
+      "/pets/{id}": {
+        "get": {
+          "description": "...",
+          "params": []
+      }
+    },
+  },
+}
+----
+
+[source,json]
+----
+{
+  "swagger":{
+    "swagger":"2.0",
+    "paths": {
+      "/pets/{id}": {
+        "get": {
+          "description": "..." <1>
+      }
+    },
+  },
+  "_links":{
+    "self":"http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c"
+  }
+}
+----
+<1> The paths are reduced so that the operations only contain the properties `summary` and `description`
+    All other properties of an endpoint must be retrieved via the endpoint below.
+
+Get an endpoint by ID:
+
+----
+GET http://localhost:8080/registry/api/endpoint/{endpointId}
+----
+
+[source,json]
+----
+{
+  "httpMethod":"get",
+  "path":"/workNotifications/{region}/{function}",
+  "operation":{
+    "description":"....",
+    "consumes":["application/xml"],
+    "produces":["application/xml"],
+    ...
+  },
+  "_links":{
+    "application":"http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c",
+    "self":"http://localhost:8080/registry/api/endpoint/deafdbaa-d7bd-445b-86a8-8354553e4bd6"
+  }
+}
+----
+
+Search endpoints by multiple criteria
+
+----
+GET http://localhost:8080/registry/api/registry
+        ?tag=tagA
+        &category=catA
+        &role=roleA
+        &app=myApp
+        &page=0
+        &count=20
+----
+
+
+[source,json]
+----
+{
+  "results":[
+    {
+      "applicationId":"1b281178-c381-4437-b101-a441ef508e79",
+      "endpointId":"518f5b5e-f964-4311-8b47-ad99019a2fa8",
+      "application":"Uber API",
+      "applicationVersion":"1.0.0",
+      "httpMethod":"GET",
+      "path":"/estimates/price",
+      "description":"Price Estimates",
+      "consumes":[],
+      "produces":[],
+      "secured":false,
+      "rateLimited":false,
+      "score":2.5073297
+    },
+  ],
+  "applications":[
+    {"text":"/v1","weight":2}
+  ],
+  "categories":[],
+  "tags":[
+    {"text":"Estimates","weight":2}
+  ],
+  "roles":[],
+  "total":2,
+  "current":0}
+----
+
+=== Tribestream API Registry vendor extension
+
+Properties that are not defined as part of the {url-openapi-spec}[OpenAPI specification] are stored in a vendor extension.
+
+==== Operation extension
+
+
+[source,json]
+----
+{
+  "swagger": "2.0",
+  "info": {},
+  "paths": {
+    "pets": {
+      "get": {
+        "description": "..."
+        "x-tribestream-api-registry": {
+          "status": "ACCEPTED",
+          "categories": ["mammals"],
+          "roles": ["roleA", "roleB"],
+          "auth-methods": ["HTTP Signatures", "Bearer"],
+          "api-versions": ["0.1"]
+        }
+      }
+    }
+  }
+}
+----

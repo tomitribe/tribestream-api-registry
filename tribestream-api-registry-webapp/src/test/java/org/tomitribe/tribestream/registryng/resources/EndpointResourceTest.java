@@ -60,7 +60,7 @@ public class EndpointResourceTest {
                     .get(EndpointWrapper.class);
 
             assertEquals(expectedLink, endpointWrapper.getLinks().get("self"));
-            assertEquals("http://localhost:" + getPort() + "/openejb/api/application/" + result.getDeployableId(), endpointWrapper.getLinks().get("application"));
+            assertEquals("http://localhost:" + getPort() + "/openejb/api/application/" + result.getApplicationId(), endpointWrapper.getLinks().get("application"));
         }
     }
 

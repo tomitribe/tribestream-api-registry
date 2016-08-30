@@ -63,7 +63,7 @@ public class EndpointResource {
         if (endpoint == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        EndpointWrapper endpointWrapper = new EndpointWrapper(endpoint.getVerb(), endpoint.getPath(), endpoint.getOperation());
+        EndpointWrapper endpointWrapper = new EndpointWrapper(endpoint.getVerb().toLowerCase(), endpoint.getPath(), endpoint.getOperation());
         endpointWrapper.addLink("self", uriInfo.getBaseUriBuilder().path("endpoint").path(endpoint.getId()).build());
         endpointWrapper.addLink("application", uriInfo.getBaseUriBuilder().path("application").path(endpoint.getApplication().getId()).build());
 
