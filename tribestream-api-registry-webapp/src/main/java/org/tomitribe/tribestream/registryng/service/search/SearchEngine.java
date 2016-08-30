@@ -507,7 +507,6 @@ public class SearchEngine {
 
 
         for (final String value : getExtensionProperty(endpoint, "categories", () -> Collections.<String>emptyList())) {
-            System.out.println("ADDING CATEGORY: " + value);
             eDoc.add(field("category", value));
         }
         if (endpoint.getOperation().getTags() != null) {
@@ -516,7 +515,6 @@ public class SearchEngine {
             }
         }
         for (final String value : getExtensionProperty(endpoint, "roles", () -> Collections.<String>emptyList())) {
-            System.out.println("ADDING ROLE: " + value);
             eDoc.add(field("role", value));
         }
         final String summary = endpoint.getOperation().getSummary();
