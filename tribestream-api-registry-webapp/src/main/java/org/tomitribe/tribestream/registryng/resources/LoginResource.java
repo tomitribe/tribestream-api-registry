@@ -23,8 +23,6 @@ import org.apache.openejb.loader.SystemInstance;
 import org.apache.openejb.spi.SecurityService;
 import org.apache.openejb.util.reflection.Reflections;
 import org.apache.tomee.catalina.TomcatSecurityService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.tomitribe.tribestream.registryng.security.PrincipalDto;
 
 import javax.annotation.PostConstruct;
@@ -52,6 +50,8 @@ import javax.ws.rs.core.SecurityContext;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Singleton
 @Lock(LockType.READ)
@@ -61,7 +61,7 @@ import java.util.Map;
 @Produces("application/json")
 public class LoginResource {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LoginResource.class);
+    private static final Logger LOGGER = Logger.getLogger(LoginResource.class.getName());
 
     @Context
     private HttpServletRequest request;
@@ -90,19 +90,21 @@ public class LoginResource {
 
         try {
             request.login(username, password);
+            LOGGER.log(Level.INFO, () -> String.format("Successful login of user '%s'", username));
 
             return Response.ok(principalToDto(tomcatPrincipal())).build();
 
         } catch (NullPointerException e) {
-            LOGGER.warn("Unexpected exception during login", e);
+            LOGGER.log(Level.WARNING, e, () -> String.format("Unexpected exception during login of user %s", username));
             return Response.status(400).build();
         } catch (final Exception e) {
+            LOGGER.log(Level.WARNING, e, () -> String.format("Unexpected exception during login of user %s", username));
             throw new WebApplicationException(e, Response.Status.UNAUTHORIZED);
         } finally {
             try {
                 request.logout();
             } catch (final ServletException e) {
-                LOGGER.warn("Unexpected exception during login", e);
+                LOGGER.log(Level.WARNING, e, () -> String.format("Unexpected exception during login of user %s", username));
             }
         }
     }

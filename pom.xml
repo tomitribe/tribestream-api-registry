@@ -86,7 +86,6 @@
 
     <version.tomitribe-util>1.2.1</version.tomitribe-util>
 
-    <version.slf4j>1.7.7</version.slf4j>
     <version.jackson>2.8.1</version.jackson>
     <version.lucene>4.10.2</version.lucene>
     <version.hibernate>4.3.11.Final</version.hibernate>
@@ -105,10 +104,8 @@
     <jacoco-it.destFile>jacoco-it.exec</jacoco-it.destFile>
 
     <sonar.jacoco.reportPath>${project.build.directory}/${jacoco.destFile}</sonar.jacoco.reportPath>
-    <sonar.jacoco.itReportPath>${project.build.directory}/${jacoco-it.destFile}</sonar.jacoco.itReportPath>
 
     <jacoco.surefire.argLine>${surefire.argLine}</jacoco.surefire.argLine>
-    <jacoco-it.surefire.argLine>${surefire.argLine}</jacoco-it.surefire.argLine>
 
   </properties>
 
@@ -396,9 +393,9 @@
           -javaagent:${settings.localRepository}/org/jacoco/org.jacoco.agent/${jacoco.version}/org.jacoco.agent-${jacoco.version}-runtime.jar=destfile=${project.build.directory}/${jacoco-it.destFile},output=file
         </jacoco-it.argLine>
 
-        <jacoco.surefire.argLine>${surefire.argLine} ${jacoco.argLine},includes=com.tomitribe.*
+        <jacoco.surefire.argLine>${surefire.argLine} ${jacoco.argLine},includes=org.tomitribe.*
         </jacoco.surefire.argLine>
-        <jacoco-it.surefire.argLine>${surefire.argLine} ${jacoco-it.argLine},includes=com.tomitribe.*
+        <jacoco-it.surefire.argLine>${surefire.argLine} ${jacoco-it.argLine},includes=org.tomitribe.*
         </jacoco-it.surefire.argLine>
 
         <sonar.jacoco.reportPath>${project.build.directory}/${jacoco.destFile}</sonar.jacoco.reportPath>
