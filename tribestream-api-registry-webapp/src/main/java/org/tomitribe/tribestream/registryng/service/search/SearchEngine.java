@@ -65,7 +65,7 @@ import org.tomitribe.tribestream.registryng.domain.SearchResult;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 import org.tomitribe.tribestream.registryng.repository.Repository;
-import org.tomitribe.tribestream.registryng.resources.RegistryResourceBase;
+import org.tomitribe.tribestream.registryng.resources.RegistryResource;
 import org.tomitribe.util.Duration;
 import org.tomitribe.util.Files;
 import org.tomitribe.util.IO;
@@ -563,7 +563,7 @@ public class SearchEngine {
 
     private <T> T getExtensionProperty(final Endpoint endpoint, final String extensionPropertyName, final Supplier<T> defaultSupplier) {
         return (T) Optional.ofNullable(endpoint.getOperation().getVendorExtensions())
-                .map((Map<String, Object> vendorExtensions) -> (Map<String, Object>) vendorExtensions.get(RegistryResourceBase.VENDOR_EXTENSION_KEY))
+                .map((Map<String, Object> vendorExtensions) -> (Map<String, Object>) vendorExtensions.get(RegistryResource.VENDOR_EXTENSION_KEY))
                 .map((Map<String, Object> tapirExtension) -> tapirExtension.get(extensionPropertyName))
                 .orElseGet(defaultSupplier);
     }
