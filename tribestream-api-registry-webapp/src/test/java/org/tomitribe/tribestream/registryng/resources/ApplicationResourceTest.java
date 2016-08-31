@@ -18,34 +18,43 @@
  */
 package org.tomitribe.tribestream.registryng.resources;
 
-import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
-import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
-import org.tomitribe.tribestream.registryng.domain.SearchPage;
-import org.tomitribe.tribestream.registryng.domain.SearchResult;
-import org.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
 import com.tomitribe.tribestream.test.registryng.category.Embedded;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Info;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.Swagger;
+import io.swagger.models.Tag;
+import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.URLCodec;
+import org.apache.cxf.common.i18n.Exception;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.openejb.junit.ApplicationComposerRule;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
+import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
+import org.tomitribe.tribestream.registryng.domain.SearchPage;
+import org.tomitribe.tribestream.registryng.domain.SearchResult;
+import org.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
 
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.both;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 @org.junit.Ignore("Not fully ported yet")
 @Category(Embedded.class)
@@ -80,7 +89,7 @@ public class ApplicationResourceTest {
     }
 
     @Test
-    public void shouldLoadEndpointAsSubresourceFromApplication() throws Exception {
+    public void shouldLoadEndpointAsSubresourceFromApplication() throws EncoderException {
 
         final List<ApplicationWrapper> apps = loadAllApplications();
 
@@ -99,7 +108,7 @@ public class ApplicationResourceTest {
     }
 
     @Test
-    public void shouldImportOpenAPIDocument() throws Exception {
+    public void shouldImportOpenAPIDocument() throws IOException {
 
         // Given: n Applications are installed and a new Swagger document to import
         final int oldApplicationCount = loadAllApplications().size();
@@ -131,10 +140,10 @@ public class ApplicationResourceTest {
         assertEquals(oldApplicationCount + 1, loadAllApplications().size());
 
         // And: The search also returns the two imported endpoints
-        SearchPage searchPage = WebClient.create("http://localhost:" + getPort() + "/openejb/api/search", Arrays.asList(new CustomJacksonJaxbJsonProvider()))
-            .query("tag", "test")
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .get(SearchPage.class);
+        SearchPage searchPage = getClient().target("http://localhost:" + getPort() + "/openejb/api/search")
+                .queryParam("tag", "test")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(SearchPage.class);
 
         assertEquals(2, searchPage.getResults().size());
         final List<String> foundPaths = searchPage.getResults().stream()
@@ -142,6 +151,68 @@ public class ApplicationResourceTest {
             .collect(toList());
         assertThat(foundPaths, both(hasItem("/")).and(hasItem("/v2")));
     }
+
+    @Test
+    public void should_create_and_update_application() throws IOException {
+        // Given: A new service is created
+        final String initialDocument = "{\n" +
+                "  \"swagger\": \"2.0\",\n" +
+                "  \"info\": {\n" +
+                "    \"title\": \"Test API\",\n" +
+                "    \"version\": \"v2\"\n" +
+                "  }\n" +
+                "}";
+        final Swagger createSwagger = app.getInstance(Application.class).getObjectMapper().readValue(initialDocument, Swagger.class);
+        final ApplicationWrapper createRequest = new ApplicationWrapper(createSwagger);
+        final ApplicationWrapper newApplicationWrapper = getClient().target("http://localhost:" + getPort() + "/openejb/api/application")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .buildPost(Entity.entity(createRequest, MediaType.APPLICATION_JSON_TYPE))
+                .invoke(ApplicationWrapper.class);
+        assertNotNull(newApplicationWrapper);
+
+        final String applicationURL = newApplicationWrapper.getLinks().get("self");
+        // When: I add tags and a path to the application
+        final String updateDocument = "{\n" +
+                "  \"paths\": {\n" +
+                "    \"pets\": {\n" +
+                "      \"get\": {\n" +
+                "        \"description\": \"Description for get pets\"\n" +
+                "      }\n" +
+                "    }\n" +
+                "  },\n" +
+                "  \"tags\": [ \n" +
+                "    {\n" +
+                "      \"name\": \"Tag1\",\n" +
+                "      \"description\": \"Description for Tag1\"\n" +
+                "    },\n" +
+                "      {\n" +
+                "      \"name\": \"Tag2\",\n" +
+                "      \"description\": \"Description for Tag2\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+        final Swagger updateSwagger = app.getInstance(Application.class).getObjectMapper().readValue(updateDocument, Swagger.class);
+        final ApplicationWrapper updateRequest = new ApplicationWrapper(updateSwagger);
+
+        ApplicationWrapper updatedApplicationWrapper = getClient().target(applicationURL)
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .buildPut(Entity.entity(updateRequest, MediaType.APPLICATION_JSON_TYPE))
+                .invoke(ApplicationWrapper.class);
+
+        // Then: The old information is still present
+        assertNotNull(updatedApplicationWrapper);
+        assertEquals(applicationURL, updatedApplicationWrapper.getLinks().get("self"));
+        assertEquals("Test API", updatedApplicationWrapper.getSwagger().getInfo().getTitle());
+        assertEquals("v2", updatedApplicationWrapper.getSwagger().getInfo().getVersion());
+
+        // And: The new information is applied as well
+        assertNotNull(updatedApplicationWrapper.getSwagger().getTags());
+        assertEquals(2, updatedApplicationWrapper.getSwagger().getTags().size());
+        assertThat(updatedApplicationWrapper.getSwagger().getTags().stream().map(Tag::getName).collect(toList()), hasItems("Tag1", "Tag2"));
+
+        // TODO: Paths not handled yet!
+    }
+
 
     private List<ApplicationWrapper> loadAllApplications() {
         List<ApplicationWrapper> result = getClient().target("http://localhost:" + getPort() + "/openejb/api/application")

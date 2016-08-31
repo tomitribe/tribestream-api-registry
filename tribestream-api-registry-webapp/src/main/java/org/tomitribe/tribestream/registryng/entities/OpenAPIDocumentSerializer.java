@@ -19,13 +19,12 @@
 package org.tomitribe.tribestream.registryng.entities;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
+import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
 import java.io.StringWriter;
 
 public class OpenAPIDocumentSerializer {
@@ -40,7 +39,6 @@ public class OpenAPIDocumentSerializer {
 
 
     @PrePersist
-    @PreUpdate
     public void prepersist(Object entity) {
         if (entity instanceof OpenApiDocument) {
             OpenApiDocument document = (OpenApiDocument) entity;

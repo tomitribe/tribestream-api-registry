@@ -35,7 +35,9 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import java.io.StringWriter;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -150,26 +152,31 @@ public class Repository {
         clone.setPaths(null);
         document.setSwagger(clone);
 
+        Date now = new Date();
+        document.setCreatedAt(now);
+        document.setUpdatedAt(now);
+
         em.persist(document);
 
         // Store the endpoints in a separate table
-        for (Map.Entry<String, Path> stringPathEntry : swagger.getPaths().entrySet()) {
-            final String path = stringPathEntry.getKey();
-            final Path pathObject = stringPathEntry.getValue();
-            for (Map.Entry<HttpMethod, Operation> httpMethodOperationEntry : pathObject.getOperationMap().entrySet()) {
-                final String verb = httpMethodOperationEntry.getKey().name();
-                final Operation operation = httpMethodOperationEntry.getValue();
+        if (swagger.getPaths() != null) {
+            for (Map.Entry<String, Path> stringPathEntry : swagger.getPaths().entrySet()) {
+                final String path = stringPathEntry.getKey();
+                final Path pathObject = stringPathEntry.getValue();
+                for (Map.Entry<HttpMethod, Operation> httpMethodOperationEntry : pathObject.getOperationMap().entrySet()) {
+                    final String verb = httpMethodOperationEntry.getKey().name();
+                    final Operation operation = httpMethodOperationEntry.getValue();
 
-                Endpoint endpoint = new Endpoint();
-                endpoint.setApplication(document);
-                endpoint.setPath(path);
-                endpoint.setVerb(verb);
-                endpoint.setOperation(operation);
+                    Endpoint endpoint = new Endpoint();
+                    endpoint.setApplication(document);
+                    endpoint.setPath(path);
+                    endpoint.setVerb(verb);
+                    endpoint.setOperation(operation);
 
-                em.persist(endpoint);
+                    em.persist(endpoint);
+                }
             }
         }
-
         return document;
     }
 
@@ -192,4 +199,23 @@ public class Repository {
         result.setExternalDocs(swagger.getExternalDocs());
         return result;
     }
+
+    public OpenApiDocument update(OpenApiDocument document) {
+        document.setUpdatedAt(new Date());
+        if (document.getSwagger() != null) {
+            document.setDocument(convertToJson(document.getSwagger()));
+        }
+        return em.merge(document);
+    }
+
+    private String convertToJson(Object object) {
+        try (StringWriter sw = new StringWriter()) {
+            mapper.writeValue(sw, object);
+            sw.flush();
+            return sw.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

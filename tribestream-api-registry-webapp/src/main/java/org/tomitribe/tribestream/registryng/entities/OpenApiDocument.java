@@ -47,7 +47,7 @@ import java.util.Collection;
         query = "SELECT d FROM OpenApiDocument d WHERE concat(d.name, '-', d.version) = :applicationId OR d.id = :applicationId"),
     @NamedQuery(
         name = OpenApiDocument.QRY_FIND_BY_APPLICATIONID_WITH_ENDPOINTS,
-        query = "SELECT DISTINCT d FROM OpenApiDocument d JOIN FETCH d.endpoints WHERE concat(d.name, '-', d.version) = :applicationId OR d.id = :applicationId"),
+        query = "SELECT DISTINCT d FROM OpenApiDocument d LEFT JOIN FETCH d.endpoints WHERE concat(d.name, '-', d.version) = :applicationId OR d.id = :applicationId"),
     @NamedQuery(
         name = OpenApiDocument.QRY_FIND_BY_NAME,
         query = "SELECT d FROM OpenApiDocument d WHERE d.name = :name ORDER BY d.version DESC"),

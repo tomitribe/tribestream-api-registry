@@ -32,6 +32,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -154,7 +155,82 @@ public class ApplicationResource {
 
         searchEngine.doReindex();
 
-        return Response.status(201).entity(applicationWrapper).build();
+        return Response.status(Response.Status.CREATED).entity(applicationWrapper).build();
+    }
+
+    @PUT
+    @Path("/{id}")
+    public Response updateService(
+            @Context UriInfo uriInfo,
+            @PathParam("id") final String applicationId,
+            ApplicationWrapper application) {
+
+        final Swagger swagger = application.getSwagger();
+
+        final OpenApiDocument oldDocument = repository.findByApplicationIdWithEndpoints(applicationId);
+
+        if (oldDocument == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        merge(oldDocument.getSwagger(), swagger);
+
+        // TODO: Handle added/updated/removed paths
+
+        repository.update(oldDocument);
+
+        final OpenApiDocument updatedDocument = repository.findByApplicationIdWithEndpoints(applicationId);
+
+        final ApplicationWrapper applicationWrapper = new ApplicationWrapper(shrinkSwagger(updatedDocument.getSwagger()));
+        applicationWrapper.addLink("self", uriInfo.getBaseUriBuilder().path("application").path(applicationId).build());
+
+        searchEngine.doReindex();
+
+        return Response.status(Response.Status.OK).entity(applicationWrapper).build();
+    }
+
+    private void merge(Swagger target, Swagger source) {
+
+        if (source.getSwagger() != null) {
+            target.setSwagger(source.getSwagger());
+        }
+        if (source.getInfo() != null) {
+            target.setInfo(source.getInfo());
+        }
+        if (source.getHost() != null) {
+            target.setHost(source.getHost());
+        }
+        if (source.getBasePath() != null) {
+            target.setBasePath(source.getBasePath());
+        }
+        if (source.getSchemes() != null) {
+            target.setSchemes(source.getSchemes());
+        }
+        if (source.getConsumes() != null) {
+            target.setConsumes(source.getConsumes());
+        }
+        if (source.getProduces() != null) {
+            target.setProduces(source.getProduces());
+        }
+        if (source.getDefinitions() != null) {
+            target.setDefinitions(source.getDefinitions());
+        }
+        if (source.getParameters() != null) {
+            target.setParameters(source.getParameters());
+        }
+        if (source.getResponses() != null) {
+            target.setResponses(source.getResponses());
+        }
+        if (source.getSecurity() != null) {
+            target.setSecurity(source.getSecurity());
+        }
+        if (source.getTags() != null) {
+            target.setTags(source.getTags());
+        }
+        if (source.getVendorExtensions() != null) {
+            target.getVendorExtensions().clear();
+            target.getVendorExtensions().putAll(source.getVendorExtensions());
+        }
     }
 
     private Swagger mergeSwagger(final Swagger swagger, final Collection<Endpoint> endpoints) {
@@ -180,20 +256,22 @@ public class ApplicationResource {
         Swagger applicationClone = Repository.createShallowCopy(swagger);
 
         Map<String, io.swagger.models.Path> paths = applicationClone.getPaths();
-        Map<String, io.swagger.models.Path> shrunkPaths = new HashMap<>();
+        if (paths != null) {
+            Map<String, io.swagger.models.Path> shrunkPaths = new HashMap<>();
 
-        for (Map.Entry<String, io.swagger.models.Path> pathEntry : paths.entrySet()) {
-            io.swagger.models.Path shrunkPath = new io.swagger.models.Path();
-            shrunkPaths.put(pathEntry.getKey(), shrunkPath);
-            for (Map.Entry<HttpMethod, Operation> httpMethodOperationEntry : pathEntry.getValue().getOperationMap().entrySet()) {
-                Operation shrunkOperation = new Operation();
-                shrunkOperation.setDescription(httpMethodOperationEntry.getValue().getDescription());
-                shrunkOperation.setSummary(httpMethodOperationEntry.getValue().getSummary());
-                shrunkPath.set(httpMethodOperationEntry.getKey().name().toLowerCase(), shrunkOperation);
+            for (Map.Entry<String, io.swagger.models.Path> pathEntry : paths.entrySet()) {
+                io.swagger.models.Path shrunkPath = new io.swagger.models.Path();
+                shrunkPaths.put(pathEntry.getKey(), shrunkPath);
+                for (Map.Entry<HttpMethod, Operation> httpMethodOperationEntry : pathEntry.getValue().getOperationMap().entrySet()) {
+                    Operation shrunkOperation = new Operation();
+                    shrunkOperation.setDescription(httpMethodOperationEntry.getValue().getDescription());
+                    shrunkOperation.setSummary(httpMethodOperationEntry.getValue().getSummary());
+                    shrunkPath.set(httpMethodOperationEntry.getKey().name().toLowerCase(), shrunkOperation);
+                }
             }
-        }
 
-        applicationClone.setPaths(shrunkPaths);
+            applicationClone.setPaths(shrunkPaths);
+        }
         return applicationClone;
     }
 
