@@ -22,7 +22,7 @@ import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
 import org.tomitribe.tribestream.registryng.domain.SearchResult;
 import org.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
-import com.tomitribe.tribestream.test.registryng.category.Embedded;
+import org.tomitribe.tribestream.registryng.test.category.Embedded;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.openejb.junit.ApplicationComposerRule;
 import org.junit.ClassRule;

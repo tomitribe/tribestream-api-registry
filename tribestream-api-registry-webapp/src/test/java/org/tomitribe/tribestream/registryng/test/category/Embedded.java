@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tomitribe.tribestream.test.registryng.category;
+package org.tomitribe.tribestream.registryng.test.category;
 
 public interface Embedded {
 }
