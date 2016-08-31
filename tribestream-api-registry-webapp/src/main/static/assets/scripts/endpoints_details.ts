@@ -319,8 +319,6 @@ angular.module('tribe-endpoints-details', [
                         }
 
                         let errorResponse = $scope.endpoint.operation.responses.default;
-                        console.log("ErrorResponse:");
-                        console.log(errorResponse);
                         if (errorResponse && errorResponse.examples) {
                             $timeout(function () {
                                 $scope.$apply(function () {
@@ -432,8 +430,8 @@ angular.module('tribe-endpoints-details', [
                 'path': '='
             },
             controller: [
-                '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter',
-                function ($scope, srv, tribeFilterService, $timeout, $filter) {
+                '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log',
+                function ($scope, srv, tribeFilterService, $timeout, $filter, $log) {
                     $timeout(function () {
                         $scope.$apply(function () {
                             let httpMethod = $scope.method.toLowerCase();
@@ -457,7 +455,7 @@ angular.module('tribe-endpoints-details', [
                                 $timeout(function () {
                                     $scope.$apply(function () {
                                         if (!applicationDetails || !applicationDetails.swagger) {
-                                            console.log("Got no application details!");
+                                            $log.error("Got no application details!");
                                         }
                                         $scope.application = applicationDetails;
                                     });

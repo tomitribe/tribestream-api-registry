@@ -25,17 +25,18 @@ div
               td
                 table
                   thead
-                    tr
+                    th
                       td Verb
                       td Path
                       td Summary
                   tbody
                     tr(x-ng-repeat="endpoint in endpoints")
-                        td
-                          a(x-ng-href="application/{{app}}/{{endpoint.operation}}{{endpoint.path | pathencode}}") {{endpoint.operation | pathencode}}
-                        td
-                          a(x-ng-href="application/{{app}}/{{endpoint.operation}}{{endpoint.path | pathencode}}") {{endpoint.path | pathencode}}
-                        td {{endpoint.summary}}
+                      td
+                        a(x-ng-href="application/{{app}}/{{endpoint.operation}}{{endpoint.path | pathencode}}") {{endpoint.operation | pathencode}}
+                      td
+                        a(x-ng-href="application/{{app}}/{{endpoint.operation}}{{endpoint.path | pathencode}}") {{endpoint.path | pathencode}}
+                      td
+                        span {{endpoint.summary}}
             tr(x-ng-if="swagger.consumes.length")
               td Request formats
               td

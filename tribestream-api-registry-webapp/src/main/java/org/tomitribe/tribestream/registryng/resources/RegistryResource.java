@@ -41,12 +41,6 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class RegistryResource {
 
-    public static final String VENDOR_EXTENSION_KEY = "x-tribestream-api-registry";
-
-    public static final String VENDOR_EXT_STATUS = "status";
-
-    public static final String VENDOR_EXT_RESPONSE_CODES = "response-codes";
-
     @Inject
     private Repository repository;
 

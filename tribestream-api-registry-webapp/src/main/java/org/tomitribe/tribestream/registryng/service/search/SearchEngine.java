@@ -65,7 +65,6 @@ import org.tomitribe.tribestream.registryng.domain.SearchResult;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 import org.tomitribe.tribestream.registryng.repository.Repository;
-import org.tomitribe.tribestream.registryng.resources.RegistryResource;
 import org.tomitribe.util.Duration;
 import org.tomitribe.util.Files;
 import org.tomitribe.util.IO;
@@ -104,6 +103,9 @@ import java.util.function.Supplier;
 
 import static java.util.Arrays.asList;
 import static org.apache.lucene.facet.DrillDownQuery.term;
+import static org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension.PROP_CATEGORIES;
+import static org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension.PROP_ROLES;
+import static org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension.VENDOR_EXTENSION_KEY;
 
 @Startup
 @Singleton
@@ -458,9 +460,9 @@ public class SearchEngine {
     }
 
     private void addFacets(final Endpoint endpoint, final String web, final Document doc) {
-        addFacetFields(doc, getExtensionProperty(endpoint, "categories", () -> Collections.<String>emptyList()), "category");
+        addFacetFields(doc, getExtensionProperty(endpoint, PROP_CATEGORIES, Collections::emptyList), "category");
         addFacetFields(doc, endpoint.getOperation().getTags(), "tag");
-        addFacetFields(doc, getExtensionProperty(endpoint, "roles", () -> Collections.<String>emptyList()), "role");
+        addFacetFields(doc, getExtensionProperty(endpoint, PROP_ROLES, Collections::emptyList), "role");
         if (!web.isEmpty()) {
             doc.add(new FacetField("context", web));
         }
@@ -506,7 +508,7 @@ public class SearchEngine {
         eDoc.add(field(VERB, endpoint.getVerb(), true));
 
 
-        for (final String value : getExtensionProperty(endpoint, "categories", () -> Collections.<String>emptyList())) {
+        for (final String value : getExtensionProperty(endpoint, PROP_CATEGORIES, Collections::<String>emptyList)) {
             eDoc.add(field("category", value));
         }
         if (endpoint.getOperation().getTags() != null) {
@@ -514,7 +516,7 @@ public class SearchEngine {
                 eDoc.add(field("tag", value));
             }
         }
-        for (final String value : getExtensionProperty(endpoint, "roles", () -> Collections.<String>emptyList())) {
+        for (final String value : getExtensionProperty(endpoint, PROP_ROLES, Collections::<String>emptyList)) {
             eDoc.add(field("role", value));
         }
         final String summary = endpoint.getOperation().getSummary();
@@ -549,8 +551,8 @@ public class SearchEngine {
         final String search = endpoint.getVerb() + " "
                 + endpoint.getPath() + " "
                 + Join.join(",", pathSplit) + " "
-//                + Join.join(",", endpoint.getMetadata().getCategories()) + " "
-//                + Join.join(",", endpoint.getSecurity().getRolesAllowed()) + " "
+                + Join.join(",", (List<String>) getExtensionProperty(endpoint, PROP_CATEGORIES, Collections::<String>emptyList)) + " "
+                + Join.join(",", (List<String>) getExtensionProperty(endpoint, PROP_ROLES, Collections::<String>emptyList)) + " "
                 + tags + " "
                 + (doc == null ? "" : doc) + " "
                 + webCtx;
@@ -561,7 +563,7 @@ public class SearchEngine {
 
     private <T> T getExtensionProperty(final Endpoint endpoint, final String extensionPropertyName, final Supplier<T> defaultSupplier) {
         return (T) Optional.ofNullable(endpoint.getOperation().getVendorExtensions())
-                .map((Map<String, Object> vendorExtensions) -> (Map<String, Object>) vendorExtensions.get(RegistryResource.VENDOR_EXTENSION_KEY))
+                .map((Map<String, Object> vendorExtensions) -> (Map<String, Object>) vendorExtensions.get(VENDOR_EXTENSION_KEY))
                 .map((Map<String, Object> tapirExtension) -> tapirExtension.get(extensionPropertyName))
                 .orElseGet(defaultSupplier);
     }

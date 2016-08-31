@@ -14,7 +14,7 @@ module basecomponents {
         .filter('pathencode', [function() {
             return function(input) {
                 // The root path is the most simple case
-                if (input == '/') {
+                if (input === '/') {
                     return '/';
                 }
                 return input.split('/')
