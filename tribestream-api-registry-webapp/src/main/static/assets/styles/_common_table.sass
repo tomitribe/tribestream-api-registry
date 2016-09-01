@@ -1,44 +1,23 @@
 @import "variables"
 
-div.tribe-table
-  overflow-y: auto
-  overflow-x: hidden
-  a
-    color: $app-black !important
-    span
-      color: $app-black !important
-    &:hover
-      color: $tomitribe-orange !important
-      span
-        color: $tomitribe-orange !important
+@mixin common-table()
   > table
+    table-layout: fixed
     width: 100%
-    background-color: $app-white
-    > thead
-      > tr
-        > th[x-ng-click]:hover
-          cursor: pointer
-
-        > th
-          padding: 12px
-          text-align: left
-
-    > tbody
-      > tr
-        $color: $table-hover-color
-        border-top: 1px solid $color
-        &:last-child
-          border-bottom: 1px solid $color
-        &:hover
-          background-color: $color
-          input
-            background-color: $color
-        > td
-          padding: 12px
-          div.app-component-text
-            > input
-              font-size: $app-font-size !important
-              border: 0
-              margin: 0
-              padding: 0
-              height: 22px
+    thead
+      background-color: #f9f9f9
+    th
+      $color: #f8f9fa
+      text-align: left
+      background-color: $color
+      color: #000000
+      padding: 15px 5px
+      text-transform: uppercase
+      font-size: $app-font-size-h3
+      font-weight: $app-font-weight-h3 !important
+      border: solid darken($color, 4) 1px
+      border-left: 0
+      border-right : 0
+    th, td
+      &:first-of-type
+        padding: 15px 5px 15px 10px
