@@ -40,6 +40,14 @@ angular.module('tribe-main', [
                         $scope.app = $routeParams.app;
                     }]
                 })
+                .when('/application/:app/:method/:url*', {
+                    templateUrl: 'app/templates/page_endpoints_details.html',
+                    controller: ['$scope', '$routeParams', function ($scope, $routeParams) {
+                        $scope.app = $routeParams.app;
+                        $scope.method = $routeParams.method;
+                        $scope.path = $routeParams.url;
+                    }]
+                })
                 .when('/endpoint/:app/:method/:url*', {
                     templateUrl: 'app/templates/page_endpoints_details.html',
                     controller: ['$scope', '$routeParams', function ($scope, $routeParams) {

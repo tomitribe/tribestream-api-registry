@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tomitribe.tribestream.test.registryng.util;
+package org.tomitribe.tribestream.registryng.test.util;
 
 import org.apache.openejb.testing.Configuration;
 import org.apache.openejb.testng.PropertiesBuilder;
