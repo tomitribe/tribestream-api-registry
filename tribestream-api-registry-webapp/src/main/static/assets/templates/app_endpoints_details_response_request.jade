@@ -10,14 +10,20 @@ div
       thead
         tr
           th Attribute
+          th Data Type
           th Expected Values
+          th Description
           th
       tbody
         tr(x-ng-repeat="val in endpoint.expectedValues")
           td
             i(data-tribe-editable-text, data-empty-text="not set", data-adjust="false", data-value="val.name")
           td
+            i(data-tribe-editable-text, data-empty-text="not set", data-adjust="false", data-value="val.type")
+          td
             i(data-tribe-editable-block, data-empty-text="not set", data-content="val.values")
+          td
+            i(data-tribe-editable-block, data-empty-text="not set", data-content="val.description")
           td
             div(x-ng-click="removeExpectedValue(val);")
               i.fa.fa-trash-o
