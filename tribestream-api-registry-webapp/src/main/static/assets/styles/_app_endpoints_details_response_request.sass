@@ -1,14 +1,15 @@
 @import "variables"
 @import "app_endpoints_details_common"
+@import "common_table"
 
 div[data-app-endpoints-details-response-request]
   > div
     h2
       display: flex
       align-items: center
-      font-size: 22px
+      font-size: $app-font-size-h2
       color: $text-color
-      font-weight: 700 !important
+      font-weight: $app-font-weight-h2 !important
       text-transform: uppercase
       > div
         background-color: #d6d6d6
@@ -17,9 +18,9 @@ div[data-app-endpoints-details-response-request]
         > i
           color: #ffffff
     h3
-      font-size: 16px
+      font-size: $app-font-size-h3
       color: $text-color
-      font-weight: 700 !important
+      font-weight: $app-font-weight-h3 !important
       text-transform: uppercase
     h3 + div
       margin-bottom: 20px
@@ -30,18 +31,7 @@ div[data-app-endpoints-details-response-request]
       margin-top: $h-margin-bottom
       padding-bottom: 20px
       border-bottom: dashed $app-input-border-color 1px
-      table
-        table-layout: fixed
-        width: 100%
-      th
-        background-color: #f8f9fa
-        text-align: left
-        color: #000000
-        padding: 5px
-        text-transform: uppercase
-        font-size: 15px
-        font-weight: 600 !important
-
+      @include common-table()
       th:last-of-type, td:last-of-type
         width: 35px
       td
@@ -69,8 +59,6 @@ div[data-app-endpoints-details-response-request]
             font-size: 18px
           &:hover
             background-color: #404142
-      td
-        padding: 5px 0 0 0
       @include table-row-highlight($table-hover-color)
       tr:hover
         td:last-of-type
@@ -91,6 +79,3 @@ div[data-app-endpoints-details-response-request]
       h3 + div
         .CodeMirror
           border-color: #f2f0f0
-
-
-

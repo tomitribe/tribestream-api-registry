@@ -9,6 +9,7 @@ div
         thead
           tr
             th name
+            th type
             th placement
             th required
             th.description description
@@ -18,6 +19,8 @@ div
           tr(x-ng-repeat="param in endpoint.operation.parameters | orderBy:'param.name'")
             td
               i(data-tribe-editable-text, data-value="param.name", data-adjust="false")
+            td
+              i(data-tribe-editable-text, data-value="param.type", data-adjust="false")
             td
               i(data-tribe-editable-option, data-value="param.in", data-options="[{text:'Query parameter', value:'query'}, {text:'Header', value:'header'}, {text:'Path', value:'path'}, {text:'Form data', value:'formData'}, {text:'Body', value:'body'}]")
             td
