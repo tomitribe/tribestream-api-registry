@@ -12,11 +12,11 @@ module services {
     ])
 
         .factory('tribeEndpointsService', [
-            '$location', '$resource', '$http', 'tribeErrorHandlerService', '$sessionStorage',
-            function ($location, $resource, $http, tribeErrorHandlerService, $sessionStorage) {
-                var httpListCall = function (params, successCallback, errorCallback) {
+            '$location', '$resource', '$http', 'tribeErrorHandlerService', '$sessionStorage', '$filter',
+            function ($location, $resource, $http, tribeErrorHandlerService, $sessionStorage, $filter) {
+                var httpListCall = function (url, params, successCallback, errorCallback) {
                     $http({
-                        url: 'api/registry',
+                        url: url,
                         method: 'GET',
                         params: params
                     }).then(
@@ -57,7 +57,7 @@ module services {
                                         });
                                     });
                                 };
-                                httpListCall(params, function (rawData) {
+                                httpListCall('api/registry', params, function (rawData) {
                                     var data = rawData.data;
                                     var compiledResults = [];
                                     for (let rawEndpoint of data.results) {
@@ -93,7 +93,8 @@ module services {
                                     if (existingEntry) {
                                         successCallback(existingEntry);
                                     } else {
-                                        $http.get(`api/alias/registry/endpoint/${app}/${httpMethod}/${path}`)
+                                        let encodedPath = $filter('pathencode')(path);
+                                        $http.get(`api/application/${app}/${httpMethod}/${encodedPath}`)
                                             .then(function (data) {
                                                 loadedEndpointDetails.push(data.data);
                                                 successCallback(data.data);
@@ -126,14 +127,14 @@ module services {
                             }
                         };
                     },
-                    getApplicationDetails: function (deployableId) {
+                    getApplicationDetails: function (applicationId) {
                         return {
                             then: function (successCallback, errorCallback) {
-                                $http.get('api/id/registry/application/' + deployableId)
+                                $http.get('api/application/' + applicationId)
                                     .then(function (data) {
-                                        if (data.data && data.data.details && data.data.details.length) {
+                                        if (data && data.data && data.data.swagger) {
                                             // we will have at most one result. only one application queried.
-                                            successCallback(data.data.details[0]);
+                                            successCallback(data.data);
                                         }
                                     }, tribeErrorHandlerService.ensureErrorHandler(errorCallback));
                             }

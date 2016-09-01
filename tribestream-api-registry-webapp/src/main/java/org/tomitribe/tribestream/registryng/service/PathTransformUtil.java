@@ -34,11 +34,7 @@ public final class PathTransformUtil {
             return openApiTemplate;
         }
 
-        final String[] parts = openApiTemplate.split("/");
-        final StringBuilder result = new StringBuilder(openApiTemplate.length());
-
-
-        return Stream.of(parts)
+        return Stream.of(openApiTemplate.split("/"))
                 .map(part ->
                     part.startsWith("{") && part.endsWith("}")
                             ? ":" + part.substring(1, part.length() - 1)
