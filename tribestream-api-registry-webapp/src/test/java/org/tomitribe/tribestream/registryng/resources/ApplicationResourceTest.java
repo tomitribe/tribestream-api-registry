@@ -57,7 +57,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
-@org.junit.Ignore("Not fully ported yet")
 @Category(Embedded.class)
 public class ApplicationResourceTest {
 
