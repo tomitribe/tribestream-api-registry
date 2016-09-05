@@ -63,8 +63,6 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 import org.apache.openejb.loader.SystemInstance;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.tomitribe.util.Duration;
 import org.tomitribe.util.Files;
 import org.tomitribe.util.IO;
@@ -97,6 +95,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.util.Arrays.asList;
 import static org.apache.lucene.facet.DrillDownQuery.term;
@@ -106,7 +106,7 @@ import static org.apache.lucene.facet.DrillDownQuery.term;
 @Lock(LockType.READ)
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class SearchEngine {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SearchEngine.class);
+    private static final Logger LOGGER = Logger.getLogger(SearchEngine.class.getName());
 
     private static final String DEPLOYABLE_ID_FIELD = "deployableId";
     private static final String APPLICATION_ID_FIELD = "applicationId";
@@ -360,7 +360,7 @@ public class SearchEngine {
             removeIndex().get();
             doIndex().get();
         } catch (InterruptedException | ExecutionException e) {
-            LOGGER.error("Unexpected exception while reindexing", e);
+            LOGGER.log(Level.WARNING, "Unexpected exception while reindexing", e);
         }
         return new AsyncResult<Void>(null);
     }
@@ -434,9 +434,9 @@ public class SearchEngine {
         // don't close the writer, it is too costly + it cleans up the data with in memory usage
         // locking usage should be enough for us
         Collection<Endpoint> allEndpoints = repository.findAllEndpoints();
-        LOGGER.info("FOUND {} endpoints", allEndpoints.size());
+        LOGGER.info(() -> String.format("FOUND %s endpoints", allEndpoints.size()));
         for (Endpoint endpoint: allEndpoints) {
-            LOGGER.info("Index {} {}", endpoint.getVerb(), endpoint.getPath());
+            LOGGER.info(() -> String.format("Index %s %s", endpoint.getVerb(), endpoint.getPath()));
             final String webCtx = endpoint.getApplication().getSwagger().getBasePath();
             try {
                 final Document eDoc = createDocument(endpoint, webCtx);
@@ -445,7 +445,7 @@ public class SearchEngine {
                 writer.commit(); // flush by app
                 writer.waitForMerges();
             } catch (final Exception ioe) {
-                LOGGER.error("Can't flush index for application " + webCtx, ioe);
+                LOGGER.log(Level.WARNING, ioe, () -> String.format("Can't flush index for application %s", webCtx));
             }
         }
         return new AsyncResult<Object>(true);
@@ -571,7 +571,7 @@ public class SearchEngine {
             //w.deleteDocuments(new Term(DEPLOYABLE_ID_FIELD, deployable.getId()));
             w.deleteUnusedFiles();
         } catch (final Exception e) {
-            LOGGER.error("Can't clear index", e);
+            LOGGER.log(Level.WARNING, "Can't clear index", e);
         } finally {
             try {
                 w.commit();
@@ -616,7 +616,7 @@ public class SearchEngine {
             try {
                 tmp.close();
             } catch (final IOException e) {
-                LOGGER.error(e.getMessage(), e);
+                LOGGER.log(Level.WARNING, e.getMessage(), e);
             }
         }
         if (indexFacetsDir != null) {
@@ -625,7 +625,7 @@ public class SearchEngine {
             try {
                 tmp.close();
             } catch (final IOException e) {
-                LOGGER.error(e.getMessage(), e);
+                LOGGER.log(Level.WARNING, e.getMessage(), e);
             }
         }
     }
@@ -647,7 +647,7 @@ public class SearchEngine {
                     }
                 }
             } catch (final InterruptedException e) {
-                LOGGER.warn("Interrupted while waiting for tasks to finish");
+                LOGGER.warning("Interrupted while waiting for tasks to finish");
                 Thread.interrupted();
             } catch (final Exception e) {
                 // no-op

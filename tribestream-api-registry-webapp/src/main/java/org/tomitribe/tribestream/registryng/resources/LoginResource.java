@@ -42,7 +42,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -96,10 +95,10 @@ public class LoginResource {
 
         } catch (NullPointerException e) {
             LOGGER.log(Level.WARNING, e, () -> String.format("Unexpected exception during login of user %s", username));
-            return Response.status(400).build();
-        } catch (final Exception e) {
-            LOGGER.log(Level.WARNING, e, () -> String.format("Unexpected exception during login of user %s", username));
-            throw new WebApplicationException(e, Response.Status.UNAUTHORIZED);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        } catch (final ServletException e) {
+            LOGGER.log(Level.INFO, e, () -> String.format("Login failed for user %s", username));
+            return Response.status(Response.Status.UNAUTHORIZED).build();
         } finally {
             try {
                 request.logout();
