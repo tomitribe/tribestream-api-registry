@@ -18,7 +18,7 @@
  */
 package org.tomitribe.tribestream.registryng.resources;
 
-import com.tomitribe.tribestream.test.registryng.category.Embedded;
+
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Info;
 import io.swagger.models.Operation;
@@ -38,6 +38,7 @@ import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
 import org.tomitribe.tribestream.registryng.domain.SearchResult;
 import org.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
+import org.tomitribe.tribestream.registryng.test.category.Embedded;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
