@@ -28,7 +28,6 @@ import io.swagger.models.Tag;
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.cxf.common.i18n.Exception;
-import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.openejb.junit.ApplicationComposerRule;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -37,13 +36,13 @@ import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
 import org.tomitribe.tribestream.registryng.domain.SearchResult;
-import org.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
 import org.tomitribe.tribestream.registryng.test.category.Embedded;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -117,14 +116,16 @@ public class ApplicationResourceTest {
         final ApplicationWrapper request = new ApplicationWrapper(swagger);
 
         // When: The Swagger document is posted to the application resource
-        WebClient webClient = WebClient.create("http://localhost:" + getPort() + "/openejb/api/application", Arrays.asList(new CustomJacksonJaxbJsonProvider()))
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .type(MediaType.APPLICATION_JSON_TYPE);
 
-        ApplicationWrapper applicationWrapper = webClient.post(request, ApplicationWrapper.class);
+        final Response response = getClient().target("http://localhost:" + getPort() + "/openejb/api/application")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .buildPost(Entity.entity(request, MediaType.APPLICATION_JSON_TYPE))
+                .invoke();
 
         // Then: The response status 201 and contains the imported document
-        assertEquals(201, webClient.getResponse().getStatus());
+        assertEquals(201, response.getStatus());
+
+        final ApplicationWrapper applicationWrapper = response.readEntity(ApplicationWrapper.class);
 
         assertEquals("List API versions", applicationWrapper.getSwagger().getPaths().get("/").getGet().getSummary());
         assertEquals("Show API version details", applicationWrapper.getSwagger().getPaths().get("/v2").getGet().getSummary());

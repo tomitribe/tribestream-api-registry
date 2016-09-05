@@ -18,20 +18,17 @@
  */
 package org.tomitribe.tribestream.registryng.resources;
 
-import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
-import org.tomitribe.tribestream.registryng.domain.SearchPage;
-import org.tomitribe.tribestream.registryng.domain.SearchResult;
-import org.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
-import org.tomitribe.tribestream.registryng.test.category.Embedded;
-import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.openejb.junit.ApplicationComposerRule;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
+import org.tomitribe.tribestream.registryng.domain.SearchPage;
+import org.tomitribe.tribestream.registryng.domain.SearchResult;
+import org.tomitribe.tribestream.registryng.test.category.Embedded;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.MediaType;
-import java.util.Arrays;
 import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
@@ -65,10 +62,9 @@ public class EndpointResourceTest {
     }
 
     private SearchPage loadDefaultSearchPage() {
-        WebClient webClient = WebClient.create("http://localhost:" + getPort(), Arrays.asList(new CustomJacksonJaxbJsonProvider()))
-            .accept(MediaType.APPLICATION_JSON_TYPE);
-
-        return webClient.path("openejb/api/registry").get(SearchPage.class);
+        return getClient().target("http://localhost:" + getPort() + "/openejb/api/registry")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(SearchPage.class);
     }
 
     private Application getApp() {
