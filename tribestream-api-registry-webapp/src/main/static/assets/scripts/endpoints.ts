@@ -62,11 +62,14 @@ angular.module('tribe-endpoints', [
                                             if (opname.match('^x-.*')) {
                                                 continue;
                                             }
+                                            let link = data['_links'][opname.toUpperCase() + ' ' + pathName];
+                                            let endpointId = link.substring(link.lastIndexOf('/') + 1);
                                             let operationObject = {
                                                 path: pathName,
                                                 operation: opname,
                                                 summary: ops[opname].summary,
-                                                description: ops[opname].description
+                                                description: ops[opname].description,
+                                                id: endpointId
                                             };
                                             endpoints.push(operationObject);
                                         }

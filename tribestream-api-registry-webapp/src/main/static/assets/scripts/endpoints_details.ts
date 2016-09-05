@@ -426,24 +426,21 @@ angular.module('tribe-endpoints-details', [
             templateUrl: 'app/templates/app_endpoints_details.html',
             scope: {
                 'applicationId': '=',
-                'method': '=',
-                'path': '='
+                'endpointId': '='
             },
             controller: [
                 '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log',
                 function ($scope, srv, tribeFilterService, $timeout, $filter, $log) {
                     $timeout(function () {
                         $scope.$apply(function () {
-                            let httpMethod = $scope.method.toLowerCase();
                             $scope.endpoint = {
-                                httpMethod: httpMethod,
-                                path: $scope.path,
+                                httpMethod: "",
+                                path: "",
                                 operation: {}
                             };
-                            $scope.application = {};
                         });
                     }).then(function() {
-                        srv.getDetails($scope.applicationId, $scope.method, $scope.path).then(function (detailsData) {
+                        srv.getDetails($scope.applicationId, $scope.endpointId).then(function (detailsData) {
                             $timeout(function () {
                                 $scope.$apply(function () {
                                     $scope.endpoint.httpMethod = detailsData.httpMethod;

@@ -70,7 +70,8 @@ GET http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd11
     },
   },
   "_links":{
-    "self":"http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c"
+    "self":"http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c",
+    "GET /pets":"http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c/endpoint/f27efad1-a6a2-4066-af4e-b50a0194f46a"
   }
 }
 ----
@@ -80,8 +81,7 @@ GET http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd11
 Get an endpoint of an application:
 
 ----
-GET http://localhost:8080/registry/api/application/{applicationId}/{verb}
-GET http://localhost:8080/registry/api/application/{applicationId}/{verb}/{path:.*}
+GET http://localhost:8080/registry/api/application/{applicationId}/endpoint/{endpointId}
 ----
 
 The first request is used if the requested endpoint uses the root path `/`
@@ -99,7 +99,7 @@ The first request is used if the requested endpoint uses the root path `/`
   },
   "_links":{
     "application":"http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c",
-    "self":"http://localhost:8080/registry/api/endpoint/deafdbaa-d7bd-445b-86a8-8354553e4bd6"
+    "self":"http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c/endpoint/f27efad1-a6a2-4066-af4e-b50a0194f46a"
   }
 }
 ----
@@ -142,28 +142,44 @@ POST http://localhost:8080/registry/api/application/
 <1> The paths are reduced so that the operations only contain the properties `summary` and `description`
     All other properties of an endpoint must be retrieved via the endpoint below.
 
-Get an endpoint by ID:
+
+Update an application:
 
 ----
-GET http://localhost:8080/registry/api/endpoint/{endpointId}
+PUT http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c
+{
+  "swagger":{
+    "info": {
+      "title": "New Petstore"
+    }
+  }
+}
 ----
 
 [source,json]
 ----
 {
-  "httpMethod":"get",
-  "path":"/workNotifications/{region}/{function}",
-  "operation":{
-    "description":"....",
-    "consumes":["application/xml"],
-    "produces":["application/xml"],
-    ...
+  "swagger":{
+    "swagger":"2.0",
+    "paths": {
+      "/pets/{id}": {
+        "get": {
+          "description": "..." <1>
+      }
+    },
   },
   "_links":{
-    "application":"http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c",
-    "self":"http://localhost:8080/registry/api/endpoint/deafdbaa-d7bd-445b-86a8-8354553e4bd6"
+    "self":"http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c",
+    "GET /pets":"http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c/endpoint/f27efad1-a6a2-4066-af4e-b50a0194f46a"
   }
 }
+----
+
+
+Delete an application:
+
+----
+DELETE http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c
 ----
 
 Search endpoints by multiple criteria

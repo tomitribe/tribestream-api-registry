@@ -83,18 +83,17 @@ module services {
                             }
                         };
                     },
-                    getDetails: function (app, httpMethod, path) {
+                    getDetails: function (app, endpointId) {
                         return {
                             then: function (successCallback, errorCallback) {
-                                if (httpMethod && path) {
+                                if (endpointId) {
                                     var existingEntry = _.find(loadedEndpointDetails, function (entry) {
-                                        return entry.name === app && entry.methodName === httpMethod && entry.mapping === `/${path}`;
+                                        return entry['_links'] && entry['_links'].self && entry['_links'].self.endsWith(`api/application/${app}/endpoint/${endpointId}`);
                                     });
                                     if (existingEntry) {
                                         successCallback(existingEntry);
                                     } else {
-                                        let encodedPath = $filter('pathencode')(path);
-                                        $http.get(`api/application/${app}/${httpMethod}/${encodedPath}`)
+                                        $http.get(`api/application/${app}/endpoint/${endpointId}`)
                                             .then(function (data) {
                                                 loadedEndpointDetails.push(data.data);
                                                 successCallback(data.data);
@@ -106,24 +105,6 @@ module services {
                                     loadedEndpointDetails.push(newEntry);
                                     successCallback(newEntry);
                                 }
-                            }
-                        };
-                    },
-                    listByApp: function (appName) {
-                        return {
-                            then: function (successCallback, errorCallback) {
-                                httpListCall({
-                                    'app': appName
-                                }, function (rawData) {
-                                    var data = rawData.data;
-                                    successCallback({
-                                        total: data.total,
-                                        endpoints: data.results,
-                                        categories: data.categories,
-                                        tags: data.tags,
-                                        roles: data.roles
-                                    });
-                                }, errorCallback);
                             }
                         };
                     },

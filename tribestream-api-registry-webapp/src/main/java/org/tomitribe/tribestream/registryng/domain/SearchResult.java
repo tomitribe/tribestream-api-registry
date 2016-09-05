@@ -36,6 +36,7 @@ public class SearchResult {
     private boolean secured;
     private boolean rateLimited;
     private float score;
+    private String link;
 
     public SearchResult() {
         // no-op
@@ -163,5 +164,13 @@ public class SearchResult {
 
     public void setApplicationVersion(String applicationVersion) {
         this.applicationVersion = applicationVersion;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
+    public String getLink() {
+        return link;
     }
 }

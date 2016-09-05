@@ -32,9 +32,9 @@ div
                   tbody
                     tr(x-ng-repeat="endpoint in endpoints")
                       td
-                        a(x-ng-href="application/{{app}}/{{endpoint.operation}}{{endpoint.path | pathencode}}") {{endpoint.operation | pathencode}}
+                        a(x-ng-href="application/{{app}}/endpoint/{{endpoint.id}}") {{endpoint.operation | pathencode}}
                       td
-                        a(x-ng-href="application/{{app}}/{{endpoint.operation}}{{endpoint.path | pathencode}}") {{endpoint.path | pathencode}}
+                        a(x-ng-href="application/{{app}}/endpoint/{{endpoint.id}}") {{endpoint.path | pathencode}}
                       td
                         span {{endpoint.summary}}
             tr(x-ng-if="swagger.consumes.length")

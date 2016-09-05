@@ -55,6 +55,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @Category(Embedded.class)
 public class ApplicationResourceTest {
@@ -98,12 +99,16 @@ public class ApplicationResourceTest {
 
         final Map.Entry<HttpMethod, Operation> operationEntry = pathEntry.getValue().getOperationMap().entrySet().iterator().next();
 
-        EndpointWrapper ep = getClient().target(apps.get(0).getLinks().get("self"))
-                .path(operationEntry.getKey().name().toLowerCase())
-                .path(new URLCodec("utf-8").encode(path.substring(1)))
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .get(EndpointWrapper.class);
-        assertNotNull(ep);
+        apps.get(0).getLinks().entrySet().stream()
+                .filter((Map.Entry<String, String> nameToUrl) -> !"self".equals(nameToUrl.getKey()))
+                .map(Map.Entry::getValue)
+                .forEach(url -> {
+                    assertTrue(url.startsWith(apps.get(0).getLinks().get("self")));
+                    EndpointWrapper ep = getClient().target(url)
+                            .request(MediaType.APPLICATION_JSON_TYPE)
+                            .get(EndpointWrapper.class);
+                    assertNotNull(ep);
+                });
     }
 
     @Test
