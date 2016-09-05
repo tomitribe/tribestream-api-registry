@@ -21,6 +21,7 @@ package org.tomitribe.tribestream.registryng.resources;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.tomitribe.tribestream.registryng.bootstrap.Bootstrap;
 import org.tomitribe.tribestream.registryng.repository.Repository;
+import org.tomitribe.tribestream.registryng.security.LoginContext;
 import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 import org.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
 import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
@@ -68,6 +69,7 @@ public class Application {
             Bootstrap.class, SearchEngine.class,
             SearchResource.class, RegistryResource.class,
             EndpointResource.class, ApplicationResource.class,
+            LoginContext.class,
             RegistryNgApplication.class
     })
     public WebApp war() throws Exception {

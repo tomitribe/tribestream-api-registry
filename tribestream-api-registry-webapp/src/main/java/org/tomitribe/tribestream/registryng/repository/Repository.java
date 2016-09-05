@@ -21,6 +21,7 @@ package org.tomitribe.tribestream.registryng.repository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
+import org.tomitribe.tribestream.registryng.security.LoginContext;
 import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
@@ -55,6 +56,9 @@ public class Repository {
     @Inject
     @Named(SwaggerJsonMapperProducer.SWAGGER_OBJECT_MAPPER_NAME)
     private ObjectMapper mapper;
+
+    @Inject
+    private LoginContext loginContext;
 
     public static String getApplicationId(Swagger swagger) {
         return swagger.getInfo().getTitle() + "-" + swagger.getInfo().getVersion();
@@ -155,7 +159,8 @@ public class Repository {
         Date now = new Date();
         document.setCreatedAt(now);
         document.setUpdatedAt(now);
-
+        document.setCreatedBy(loginContext.getUsername());
+        document.setUpdatedBy(loginContext.getUsername());
         em.persist(document);
 
         // Store the endpoints in a separate table
@@ -202,6 +207,7 @@ public class Repository {
 
     public OpenApiDocument update(OpenApiDocument document) {
         document.setUpdatedAt(new Date());
+        document.setUpdatedBy(loginContext.getUsername());
         if (document.getSwagger() != null) {
             document.setDocument(convertToJson(document.getSwagger()));
         }
