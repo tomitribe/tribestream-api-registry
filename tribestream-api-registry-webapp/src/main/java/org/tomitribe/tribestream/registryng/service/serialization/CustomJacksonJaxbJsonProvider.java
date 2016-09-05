@@ -23,7 +23,15 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.Provider;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 @Provider
@@ -31,7 +39,66 @@ import javax.ws.rs.ext.Provider;
 @Produces(MediaType.APPLICATION_JSON)
 public class CustomJacksonJaxbJsonProvider extends JacksonJaxbJsonProvider {
 
+    private static final Logger LOGGER = Logger.getLogger(CustomJacksonJaxbJsonProvider.class.getName());
+
     public CustomJacksonJaxbJsonProvider() {
         super(SwaggerJsonMapperProducer.createObjectMapper(), JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
+    }
+
+    @Override
+    public Object readFrom(Class<Object> type,
+                           Type genericType,
+                           Annotation[] annotations,
+                           MediaType mediaType,
+                           MultivaluedMap<String, String> httpHeaders,
+                           InputStream entityStream) throws IOException {
+        try {
+            return super.readFrom(type, genericType, annotations, mediaType, httpHeaders, entityStream);
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Reading entity failed!", e);
+            throw e;
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Reading entity failed!", e);
+            throw new IOException(e);
+        }
+    }
+
+    @Override
+    public long getSize(Object value, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+        try {
+            return super.getSize(value, type, genericType, annotations, mediaType);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Getting size for writing entity failed!", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+        try {
+            return super.isWriteable(type, genericType, annotations, mediaType);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Checking if entity is writable failed!", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void writeTo(Object value,
+                        Class<?> type,
+                        Type genericType,
+                        Annotation[] annotations,
+                        MediaType mediaType,
+                        MultivaluedMap<String, Object> httpHeaders,
+                        OutputStream entityStream) throws IOException {
+        try {
+            super.writeTo(value, type, genericType, annotations, mediaType, httpHeaders, entityStream);
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Writing entity failed!", e);
+            throw e;
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Writing entity failed!", e);
+            throw new IOException(e);
+        }
     }
 }

@@ -27,7 +27,6 @@ import io.swagger.models.Swagger;
 import io.swagger.models.Tag;
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.URLCodec;
-import org.apache.cxf.common.i18n.Exception;
 import org.apache.openejb.junit.ApplicationComposerRule;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -88,7 +87,7 @@ public class ApplicationResourceTest {
     }
 
     @Test
-    public void shouldLoadEndpointAsSubresourceFromApplication() throws EncoderException {
+    public void shouldLoadEndpointAsSubresourceFromApplication() throws Exception {
 
         final List<ApplicationWrapper> apps = loadAllApplications();
 
@@ -107,50 +106,55 @@ public class ApplicationResourceTest {
     }
 
     @Test
-    public void shouldImportOpenAPIDocument() throws IOException {
+    public void shouldImportOpenAPIDocument() throws Exception {
 
-        // Given: n Applications are installed and a new Swagger document to import
-        final int oldApplicationCount = loadAllApplications().size();
+        try {
+            // Given: n Applications are installed and a new Swagger document to import
+            final int oldApplicationCount = loadAllApplications().size();
 
-        final Swagger swagger = app.getInstance(Application.class).getObjectMapper().readValue(getClass().getResourceAsStream("/api-with-examples.json"), Swagger.class);
-        final ApplicationWrapper request = new ApplicationWrapper(swagger);
+            final Swagger swagger = app.getInstance(Application.class).getObjectMapper().readValue(getClass().getResourceAsStream("/api-with-examples.json"), Swagger.class);
+            final ApplicationWrapper request = new ApplicationWrapper(swagger);
 
-        // When: The Swagger document is posted to the application resource
+            // When: The Swagger document is posted to the application resource
 
-        final Response response = getClient().target("http://localhost:" + getPort() + "/openejb/api/application")
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .buildPost(Entity.entity(request, MediaType.APPLICATION_JSON_TYPE))
-                .invoke();
+            final Response response = getClient().target("http://localhost:" + getPort() + "/openejb/api/application")
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .buildPost(Entity.entity(request, MediaType.APPLICATION_JSON_TYPE))
+                    .invoke();
 
-        // Then: The response status 201 and contains the imported document
-        assertEquals(201, response.getStatus());
+            // Then: The response status 201 and contains the imported document
+            assertEquals(201, response.getStatus());
 
-        final ApplicationWrapper applicationWrapper = response.readEntity(ApplicationWrapper.class);
+            final ApplicationWrapper applicationWrapper = response.readEntity(ApplicationWrapper.class);
 
-        assertEquals("List API versions", applicationWrapper.getSwagger().getPaths().get("/").getGet().getSummary());
-        assertEquals("Show API version details", applicationWrapper.getSwagger().getPaths().get("/v2").getGet().getSummary());
+            assertEquals("List API versions", applicationWrapper.getSwagger().getPaths().get("/").getGet().getSummary());
+            assertEquals("Show API version details", applicationWrapper.getSwagger().getPaths().get("/v2").getGet().getSummary());
 
-        // And: the response document contains the link to itself
-        EndpointWrapper endpoint = getClient().target(applicationWrapper.getLinks().get("self")).path("get")
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .get(EndpointWrapper.class);
+            // And: the response document contains the link to itself
+            EndpointWrapper endpoint = getClient().target(applicationWrapper.getLinks().get("self")).path("get")
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .get(EndpointWrapper.class);
 
-        assertEquals(Arrays.asList("application/json"), endpoint.getOperation().getProduces());
+            assertEquals(Arrays.asList("application/json"), endpoint.getOperation().getProduces());
 
-        // And: When loading all applications the number of applications has increased by 1
-        assertEquals(oldApplicationCount + 1, loadAllApplications().size());
+            // And: When loading all applications the number of applications has increased by 1
+            assertEquals(oldApplicationCount + 1, loadAllApplications().size());
 
-        // And: The search also returns the two imported endpoints
-        SearchPage searchPage = getClient().target("http://localhost:" + getPort() + "/openejb/api/search")
-                .queryParam("tag", "test")
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .get(SearchPage.class);
+            // And: The search also returns the two imported endpoints
+            SearchPage searchPage = getClient().target("http://localhost:" + getPort() + "/openejb/api/search")
+                    .queryParam("tag", "test")
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .get(SearchPage.class);
 
-        assertEquals(2, searchPage.getResults().size());
-        final List<String> foundPaths = searchPage.getResults().stream()
-            .map(SearchResult::getPath)
-            .collect(toList());
-        assertThat(foundPaths, both(hasItem("/")).and(hasItem("/v2")));
+            assertEquals(2, searchPage.getResults().size());
+            final List<String> foundPaths = searchPage.getResults().stream()
+                    .map(SearchResult::getPath)
+                    .collect(toList());
+            assertThat(foundPaths, both(hasItem("/")).and(hasItem("/v2")));
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+            throw e;
+        }
     }
 
     @Test
