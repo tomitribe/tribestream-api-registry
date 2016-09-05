@@ -31,6 +31,7 @@ import io.swagger.models.Swagger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -211,6 +212,20 @@ public class ApplicationResource {
         searchEngine.doReindex();
 
         return Response.status(Response.Status.OK).entity(applicationWrapper).build();
+    }
+
+    @DELETE
+    @Path("/{id}")
+    public Response updateService(
+            @Context UriInfo uriInfo,
+            @PathParam("id") final String applicationId) {
+
+        if (!repository.deleteApplication(applicationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        } else {
+            searchEngine.doReindex();
+            return Response.status(Response.Status.OK).build();
+        }
     }
 
     private void merge(Swagger target, Swagger source) {

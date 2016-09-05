@@ -224,4 +224,13 @@ public class Repository {
         }
     }
 
+    public boolean deleteApplication(final String applicationId) {
+        final OpenApiDocument document = findByApplicationId(applicationId);
+        if (document == null) {
+            return false;
+        } else {
+            em.remove(document);
+            return true;
+        }
+    }
 }
