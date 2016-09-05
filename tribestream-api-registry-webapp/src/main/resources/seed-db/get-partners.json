@@ -641,8 +641,13 @@
             }
           }
         },
+        "tags": ["partners", "info"],
         "x-tribestream-api-registry": {
           "status": "ACCEPTED",
+          "api-versions": ["0.1"],
+          "categories": ["partners"],
+          "roles": ["roleA", "roleB"],
+          "auth-methods": ["HTTP Signatures", "Bearer"],
           "response-codes": [
             {
               "http_status": "200",
@@ -1029,8 +1034,10 @@
             }
           }
         },
+        "tags": ["partners", "work"],
         "x-tribestream-api-registry": {
           "status": "ACCEPTED",
+          "auth-methods": ["HTTP Signatures", "Bearer"],
           "response-codes": [
             {
               "http_status": "200",

@@ -41,8 +41,8 @@ angular.module('tribe-endpoints', [
             controller: [
                 '$timeout', '$scope', 'tribeEndpointsService', 'tribeFilterService',
                 function ($timeout, $scope, srv, tribeFilterService) {
-                    var getDetails = function (deployableId) {
-                        srv.getApplicationDetails(deployableId).then(function (data) {
+                    var getDetails = function (applicationId) {
+                        srv.getApplicationDetails(applicationId).then(function (data) {
                             $timeout(function () {
                                 $scope.$apply(function () {
                                     $scope.details = data;
@@ -50,39 +50,33 @@ angular.module('tribe-endpoints', [
                             });
                         });
                     };
-                    srv.listByApp($scope.app).then(function (data) {
+                    srv.getApplicationDetails($scope.app).then(function (data) {
                         $timeout(function () {
                             $scope.$apply(function () {
-                                $scope.total = data.total;
-                                $scope.endpoints = data.endpoints;
+                                $scope.swagger = data.swagger;
+                                let endpoints = []
+                                if (data.swagger.paths) {
+                                    for (let pathName in data.swagger.paths) {
+                                        let ops = data.swagger.paths[pathName];
+                                        for (let opname in ops) {
+                                            if (opname.match('^x-.*')) {
+                                                continue;
+                                            }
+                                            let operationObject = {
+                                                path: pathName,
+                                                operation: opname,
+                                                summary: ops[opname].summary,
+                                                description: ops[opname].description
+                                            };
+                                            endpoints.push(operationObject);
+                                        }
+                                    }
+                                }
+                                $scope.endpoints = endpoints;
                                 $scope.categories = data.categories;
                                 $scope.tags = data.tags;
                                 $scope.roles = data.roles;
                             });
-                        });
-                    });
-                    $scope.$watch('endpoints', function () {
-                        $timeout(function () {
-                            if ($scope.endpoints && $scope.endpoints.length) {
-                                getDetails($scope.endpoints[0].deployableId);
-                                var appConsumes = [];
-                                var rateLimited = 0;
-                                var requiresAuthentication = 0;
-                                _.each($scope.endpoints, function (endpoint) {
-                                    _.each(endpoint.consumes, function (consume) {
-                                        appConsumes.push(consume);
-                                    });
-                                    if (endpoint.rateLimited) {
-                                        rateLimited += 1;
-                                    }
-                                    if (endpoint.secured) {
-                                        requiresAuthentication += 1
-                                    }
-                                });
-                                $scope.consumes = _.uniq(appConsumes);
-                                $scope.rateLimited = rateLimited;
-                                $scope.requiresAuthentication = requiresAuthentication;
-                            }
                         });
                     });
                     $scope.filterByCategory = function (category) {
@@ -147,12 +141,13 @@ angular.module('tribe-endpoints', [
                     $timeout(function () {
                         $scope.$apply(function () {
                             var applicationsMap = _.groupBy($scope.endpoints, function (endpoint) {
-                                return endpoint.application;
+                                return endpoint.applicationId;
                             });
                             var applications = [];
-                            _.each(applicationsMap, function (endpoints, applicationName) {
+                            _.each(applicationsMap, function (endpoints, applicationId) {
                                 applications.push({
-                                    name: applicationName,
+                                    applicationId: applicationId,
+                                    name: endpoints[0].application,
                                     endpoints: endpoints
                                 });
                             });
@@ -242,12 +237,14 @@ angular.module('tribe-endpoints', [
                         $timeout(function () {
                             $scope.$apply(function () {
                                 var applicationsMap = _.groupBy($scope.endpoints, function (endpoint) {
-                                    return endpoint.application;
+                                    return endpoint.applicationId;
                                 });
                                 var applications = [];
-                                _.each(applicationsMap, function (endpoints, applicationName) {
+                                _.each(applicationsMap, function (endpoints, applicationId) {
                                     applications.push({
-                                        name: applicationName,
+                                        applicationId: applicationId,
+                                        name: endpoints[0].application,
+                                        version: endpoints[0].applicationVersion,
                                         endpoints: endpoints
                                     });
                                 });

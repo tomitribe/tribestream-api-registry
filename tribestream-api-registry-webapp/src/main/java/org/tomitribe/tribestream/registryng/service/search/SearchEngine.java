@@ -18,12 +18,6 @@
  */
 package org.tomitribe.tribestream.registryng.service.search;
 
-import org.tomitribe.tribestream.registryng.domain.CloudItem;
-import org.tomitribe.tribestream.registryng.domain.SearchPage;
-import org.tomitribe.tribestream.registryng.domain.SearchResult;
-import org.tomitribe.tribestream.registryng.entities.Endpoint;
-import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
-import org.tomitribe.tribestream.registryng.repository.Repository;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
@@ -63,6 +57,12 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 import org.apache.openejb.loader.SystemInstance;
+import org.tomitribe.tribestream.registryng.domain.CloudItem;
+import org.tomitribe.tribestream.registryng.domain.SearchPage;
+import org.tomitribe.tribestream.registryng.domain.SearchResult;
+import org.tomitribe.tribestream.registryng.entities.Endpoint;
+import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
+import org.tomitribe.tribestream.registryng.repository.Repository;
 import org.tomitribe.util.Duration;
 import org.tomitribe.util.Files;
 import org.tomitribe.util.IO;
@@ -85,21 +85,27 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Arrays.asList;
 import static org.apache.lucene.facet.DrillDownQuery.term;
+import static org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension.PROP_CATEGORIES;
+import static org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension.PROP_ROLES;
+import static org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension.VENDOR_EXTENSION_KEY;
 
 @Startup
 @Singleton
@@ -111,7 +117,7 @@ public class SearchEngine {
     private static final String DEPLOYABLE_ID_FIELD = "deployableId";
     private static final String APPLICATION_ID_FIELD = "applicationId";
     private static final String ENDPOINT_ID_FIELD = "endpointId";
-    public static final String VERB = "verb";
+    private static final String VERB = "verb";
     private static final String HTTP_METHOD = "httpMethod";
     private static final String PATH = "path";
     private static final String DOC = "doc";
@@ -159,9 +165,9 @@ public class SearchEngine {
             final IndexSearcher indexSearcher = searcher();
             if (indexSearcher == null) { // no index
                 return new SearchPage(
-                        new ArrayList<SearchResult>(), 0, 0,
-                        new ArrayList<CloudItem>(), new ArrayList<CloudItem>(),
-                        new ArrayList<CloudItem>(), new ArrayList<CloudItem>());
+                        new ArrayList<>(), 0, 0,
+                        new ArrayList<>(), new ArrayList<>(),
+                        new ArrayList<>(), new ArrayList<>());
             }
 
             final BooleanQuery query = new BooleanQuery();
@@ -181,7 +187,7 @@ public class SearchEngine {
                 appFilter.setMinimumNumberShouldMatch(1);
                 for (String s : request.getApps()) {
                     appFilter.add(new TermQuery(new Term("context", s)), BooleanClause.Occur.SHOULD);
-                    appFilter.add(new TermQuery(new Term("applicationNameVersion", s)), BooleanClause.Occur.SHOULD);
+                    appFilter.add(new TermQuery(new Term("applicationName", s)), BooleanClause.Occur.SHOULD);
                 }
                 query.add(appFilter, BooleanClause.Occur.MUST);
             }
@@ -206,12 +212,13 @@ public class SearchEngine {
                         doc.get(ENDPOINT_ID_FIELD),
                         doc.get(APPLICATION_ID_FIELD),
                         doc.get(ENDPOINT_ID_FIELD),
-                        doc.get("applicationNameVersion"),
+                        doc.get("applicationName"),
+                        doc.get("applicationVersion"),
                         doc.get(VERB),
                         doc.get(PATH),
                         doc.get(SUMMARY),
-                        new HashSet<String>(), // Consumes,
-                        new HashSet<String>(), // Produces,
+                        new HashSet<>(), // Consumes,
+                        new HashSet<>(), // Produces,
                         false, //!endpoint.getSecurity().getRolesAllowed().isEmpty(),
                         false, //rateLimited,
                         sd.score));
@@ -266,11 +273,6 @@ public class SearchEngine {
         return queryParser.parse(query);
     }
 
-    // returns null if doesn't exist anymore (== undeployed)
-    private Endpoint findEndpoint(final Document doc) {
-        return repository.findEndpointById(doc.get(ENDPOINT_ID_FIELD));
-    }
-
     @PostConstruct
     private void createIndex() {
         if (directoryPath.isEmpty()) {
@@ -313,7 +315,8 @@ public class SearchEngine {
         fieldAnalyzers.put("path", keywordAnalyzer);
         fieldAnalyzers.put("httpMethod", keywordAnalyzer);
         fieldAnalyzers.put("application", keywordAnalyzer);
-        fieldAnalyzers.put("applicationNameVersion", keywordAnalyzer);
+        fieldAnalyzers.put("applicationName", keywordAnalyzer);
+        fieldAnalyzers.put("applicationVersion", keywordAnalyzer);
         // host, doc, search
         fieldAnalyzers.put(DOC, keywordAnalyzer);
         fieldAnalyzers.put(SUMMARY, keywordAnalyzer);
@@ -452,9 +455,9 @@ public class SearchEngine {
     }
 
     private void addFacets(final Endpoint endpoint, final String web, final Document doc) {
-//        addFacetFields(doc, endpoint.getMetadata().getCategories(), "category");
+        addFacetFields(doc, getExtensionProperty(endpoint, PROP_CATEGORIES, Collections::emptyList), "category");
         addFacetFields(doc, endpoint.getOperation().getTags(), "tag");
-//        addFacetFields(doc, endpoint.getSecurity().getRolesAllowed(), "role");
+        addFacetFields(doc, getExtensionProperty(endpoint, PROP_ROLES, Collections::emptyList), "role");
         if (!web.isEmpty()) {
             doc.add(new FacetField("context", web));
         }
@@ -478,7 +481,8 @@ public class SearchEngine {
         eDoc.add(field(APPLICATION_ID_FIELD, application.getId(), true));
         eDoc.add(field(ENDPOINT_ID_FIELD, endpoint.getId(), true));
 
-        eDoc.add(field("applicationNameVersion", Repository.getApplicationId(endpoint.getApplication().getSwagger()), true));
+        eDoc.add(field("applicationName", endpoint.getApplication().getSwagger().getInfo().getTitle(), true));
+        eDoc.add(field("applicationVersion", endpoint.getApplication().getSwagger().getInfo().getVersion(), true));
 
         // deployable
         if (webCtx != null && !webCtx.isEmpty()) {
@@ -498,17 +502,18 @@ public class SearchEngine {
         eDoc.add(field(HTTP_METHOD, endpoint.getVerb()));
         eDoc.add(field(VERB, endpoint.getVerb(), true));
 
-//        for (final String value : endpoint.getMetadata().getCategories()) {
-//            eDoc.add(field("category", value));
-//        }
+
+        for (final String value : getExtensionProperty(endpoint, PROP_CATEGORIES, Collections::<String>emptyList)) {
+            eDoc.add(field("category", value));
+        }
         if (endpoint.getOperation().getTags() != null) {
             for (final String value : endpoint.getOperation().getTags()) {
                 eDoc.add(field("tag", value));
             }
         }
-//        for (final String value : endpoint.getSecurity().getRolesAllowed()) {
-//            eDoc.add(field("role", value));
-//        }
+        for (final String value : getExtensionProperty(endpoint, PROP_ROLES, Collections::<String>emptyList)) {
+            eDoc.add(field("role", value));
+        }
         final String summary = endpoint.getOperation().getSummary();
         if (summary != null && !summary.isEmpty()) {
             eDoc.add(field(SUMMARY, summary, true));
@@ -541,14 +546,21 @@ public class SearchEngine {
         final String search = endpoint.getVerb() + " "
                 + endpoint.getPath() + " "
                 + Join.join(",", pathSplit) + " "
-//                + Join.join(",", endpoint.getMetadata().getCategories()) + " "
-//                + Join.join(",", endpoint.getSecurity().getRolesAllowed()) + " "
+                + Join.join(",", (List<String>) getExtensionProperty(endpoint, PROP_CATEGORIES, Collections::<String>emptyList)) + " "
+                + Join.join(",", (List<String>) getExtensionProperty(endpoint, PROP_ROLES, Collections::<String>emptyList)) + " "
                 + tags + " "
                 + (doc == null ? "" : doc) + " "
                 + webCtx;
         eDoc.add(field("search", search));
 
         return eDoc;
+    }
+
+    private <T> T getExtensionProperty(final Endpoint endpoint, final String extensionPropertyName, final Supplier<T> defaultSupplier) {
+        return (T) Optional.ofNullable(endpoint.getOperation().getVendorExtensions())
+                .map((Map<String, Object> vendorExtensions) -> (Map<String, Object>) vendorExtensions.get(VENDOR_EXTENSION_KEY))
+                .map((Map<String, Object> tapirExtension) -> tapirExtension.get(extensionPropertyName))
+                .orElseGet(defaultSupplier);
     }
 
     public void waitForWrites() {

@@ -4,31 +4,31 @@ div
     div
       div(data-submenu="true", app-endpoints-details-toc-anchor="API Versions")
         span API Versions
-        i(data-tribe-multiselect, data-selected-options="endpoint.metadata.apiVersions")
+        i(data-tribe-multiselect, data-selected-options="endpoint.operation['x-tribestream-api-registry']['api-versions']")
       div(data-submenu="true", app-endpoints-details-toc-anchor="Status")
         span Status
-        i(data-tribe-editable-option, data-value="endpoint.metadata.status", data-options="statusOptions")
+        i(data-tribe-editable-option, data-value="endpoint.operation['x-tribestream-api-registry'].status", data-options="statusOptions")
     div
       div(data-submenu="true", app-endpoints-details-toc-anchor="Request formats")
         span Request formats
-        i(data-tribe-multiselect, data-available-options="requestFormatsOptions", data-selected-options="endpoint.mime.consumes")
+        i(data-tribe-multiselect, data-available-options="requestFormatsOptions", data-selected-options="endpoint.operation.consumes")
       div(data-submenu="true", app-endpoints-details-toc-anchor="Response formats")
         span Response formats
-        i(data-tribe-multiselect, data-available-options="responseFormatsOptions", data-selected-options="endpoint.mime.produces")
+        i(data-tribe-multiselect, data-available-options="responseFormatsOptions", data-selected-options="endpoint.operation.produces")
     div
       div.auth-method(data-submenu="true", app-endpoints-details-toc-anchor="Authentication method")
         span Authentication method
-        i(data-tribe-multiselect, data-available-options="['basic', 'form', 'digest', 'HTTP Signatures', 'Bearer']", data-selected-options="authMethod")
+        i(data-tribe-multiselect, data-available-options="['basic', 'form', 'digest', 'HTTP Signatures', 'Bearer']", data-selected-options="endpoint.operation['x-tribestream-api-registry']['auth-methods']")
       div(data-submenu="true", app-endpoints-details-toc-anchor="Roles")
         span Roles
-        i(data-tribe-multiselect, data-selected-options="endpoint.roles")
+        i(data-tribe-multiselect, data-selected-options="endpoint.operation['x-tribestream-api-registry'].roles")
     div
       div(data-submenu="true", app-endpoints-details-toc-anchor="Categories")
         span Categories
-        i(data-tribe-multiselect, data-selected-options="endpoint.metadata.categories")
+        i(data-tribe-multiselect, data-selected-options="endpoint.operation['x-tribestream-api-registry'].categories")
       div(data-submenu="true", app-endpoints-details-toc-anchor="Tags")
         span Tags
-        i(data-tribe-multiselect, data-selected-options="endpoint.metadata.tags")
+        i(data-tribe-multiselect, data-selected-options="endpoint.operation.tags")
   .app-rates(data-submenu="true", app-endpoints-details-toc-anchor="Rates")
     div
       span Rate Limit
