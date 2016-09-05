@@ -18,12 +18,15 @@
  */
 package org.tomitribe.tribestream.registryng.service.serialization;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,6 +46,7 @@ public class CustomJacksonJaxbJsonProvider extends JacksonJaxbJsonProvider {
 
     public CustomJacksonJaxbJsonProvider() {
         super(SwaggerJsonMapperProducer.createObjectMapper(), JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
+        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
     }
 
     @Override
@@ -54,12 +58,9 @@ public class CustomJacksonJaxbJsonProvider extends JacksonJaxbJsonProvider {
                            InputStream entityStream) throws IOException {
         try {
             return super.readFrom(type, genericType, annotations, mediaType, httpHeaders, entityStream);
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Reading entity failed!", e);
-            throw e;
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Reading entity failed!", e);
-            throw new IOException(e);
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
     }
 

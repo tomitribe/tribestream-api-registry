@@ -37,6 +37,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -147,6 +148,8 @@ public class ApplicationResource {
 
         final Swagger swagger = application.getSwagger();
 
+        validate(swagger);
+
         final OpenApiDocument document = repository.insert(swagger);
 
         final OpenApiDocument newDocument = repository.findByApplicationIdWithEndpoints(document.getId());
@@ -157,6 +160,24 @@ public class ApplicationResource {
         searchEngine.doReindex();
 
         return Response.status(Response.Status.CREATED).entity(applicationWrapper).build();
+    }
+
+    private void validate(Swagger swagger) {
+        if (swagger == null) {
+            throw new WebApplicationException("Swagger document is null!", Response.Status.BAD_REQUEST);
+        }
+        if (!"2.0".equals(swagger.getSwagger())) {
+            throw new WebApplicationException("Unsupported swagger version!", Response.Status.BAD_REQUEST);
+        }
+        if (swagger.getInfo() == null) {
+            throw new WebApplicationException("Swagger document has no info property!", Response.Status.BAD_REQUEST);
+        }
+        if (swagger.getInfo().getTitle() == null) {
+            throw new WebApplicationException("Swagger document has no title!", Response.Status.BAD_REQUEST);
+        }
+        if (swagger.getInfo().getTitle() == null) {
+            throw new WebApplicationException("Swagger document has no version!", Response.Status.BAD_REQUEST);
+        }
     }
 
     @PUT
@@ -175,6 +196,8 @@ public class ApplicationResource {
         }
 
         merge(oldDocument.getSwagger(), swagger);
+
+        validate(oldDocument.getSwagger());
 
         // TODO: Handle added/updated/removed paths
 

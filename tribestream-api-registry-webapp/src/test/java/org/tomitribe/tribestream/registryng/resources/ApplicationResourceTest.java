@@ -218,6 +218,22 @@ public class ApplicationResourceTest {
         // TODO: Paths not handled yet!
     }
 
+    @Test
+    public void should_fail_with_bad_request_on_import_of_bad_document() throws IOException {
+        // Given: A new service is created
+        final String initialDocument = "{\n" +
+                "  \"swagger\": {\n" +
+                "    \"swagger\": \"2.0\"\n" +
+                "  }\n" +
+                "}";
+        final Response response = getClient().target("http://localhost:" + getPort() + "/openejb/api/application")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .buildPost(Entity.entity(initialDocument, MediaType.APPLICATION_JSON_TYPE))
+                .invoke();
+
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+    }
+
 
     private List<ApplicationWrapper> loadAllApplications() {
         List<ApplicationWrapper> result = getClient().target("http://localhost:" + getPort() + "/openejb/api/application")
