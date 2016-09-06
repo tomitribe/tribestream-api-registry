@@ -78,6 +78,7 @@ module basecomponents {
                         el.addClass('active');
                     });
                     el.find('input').on('blur', deactivate);
+                    scope.$on('$destroy', () => el.remove());
                 })
             };
         }])
@@ -165,8 +166,10 @@ module basecomponents {
                             body.append(floatingBody);
                             adjustOffset();
                             scope.showOptions();
+                            element.addClass('active');
                         } else {
                             floatingBody.detach();
+                            element.removeClass('active');
                         }
                     });
                     scope.$watch('activeTopDown', () => {
@@ -182,7 +185,11 @@ module basecomponents {
                     scope.$watch('version', () => adjustOffset());
                     var eWin = angular.element($window);
                     eWin.bind('resize', adjustOffset);
-                    scope.$on('$destroy', () => eWin.unbind('resize', adjustOffset));
+                    scope.$on('$destroy', () => {
+                        eWin.unbind('resize', adjustOffset);
+                        floatingBody.remove();
+                        element.remove();
+                    });
                 }
             };
         }])
