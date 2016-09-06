@@ -290,6 +290,22 @@ angular.module('tribe-endpoints-details', [
                         });
                     };
                 });
+                // set as empty list in case list is undefined
+                let initList = (path, name) => {
+                    $scope.$watch(path, () => {
+                        let xapi = $scope.$eval(path);
+                        if(!xapi) {
+                            return;
+                        }
+                        if(!xapi[name]) {
+                            xapi[name] = [];
+                        }
+                    });
+                };
+                initList("endpoint.operation['x-tribestream-api-registry']", 'roles');
+                initList("endpoint.operation['x-tribestream-api-registry']", 'categories');
+                initList("endpoint.operation", 'tags');
+                initList("endpoint.operation['x-tribestream-api-registry']", 'api-versions');
             }]
         };
     }])

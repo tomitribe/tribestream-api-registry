@@ -15,9 +15,13 @@ module basecomponents {
                     originalSelectedOptions: '=selectedOptions'
                 },
                 templateUrl: 'app/templates/component_multiselect.html',
-                controller: ['$scope', '$timeout', ($scope, $timeout) => {
-                    $scope.availableOptions = _.clone($scope.originalAvailableOptions);
-                    $scope.selectedOptions = _.clone($scope.originalSelectedOptions);
+                controller: ['$scope', '$timeout', ($scope, $timeout) => $timeout(() => {
+                    $scope.$watch('originalSelectedOptions', () => {
+                        $scope.selectedOptions = _.clone($scope.originalSelectedOptions);
+                    });
+                    $scope.$watch('originalAvailableOptions', () => {
+                        $scope.availableOptions = _.clone($scope.originalAvailableOptions);
+                    });
                     $scope.fieldDirty = false;
                     $scope.optionsActivated = false;
                     $scope.optionsActivatedTopDown = 0;
@@ -51,7 +55,7 @@ module basecomponents {
                     $scope.onOptionsDeactivated = () => $timeout(() => $scope.$apply(() => {
                         $scope.optionsActivated = false;
                     }));
-                }],
+                })],
                 link: (scope, el, attr, controller) => $timeout(() => {
                     var deactivatePromise = null;
                     let cancelDeactivate = () => {
