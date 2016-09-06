@@ -71,7 +71,17 @@ div[data-tribe-multiselect-selected]
     border-color: $app-input-border-color
 
 div.tribe-data-tribe-multiselect-available-body
-  background-color: yellow
+  min-width: 300px
+  > div:first-of-type
+    padding: 0
+    > div
+      padding: 5px 8px
+
+  > div:last-of-type
+    border-top: dashed $app-input-border-color 1px
+    > span:first-of-type
+      font-weight: 800
+      margin-right: 5px
   div.option
     &.selected
-      background-color: pink
+      background-color: #f5f5f5

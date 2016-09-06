@@ -64,6 +64,8 @@ module basecomponents {
                         cancelDeactivate();
                         deactivatePromise = $timeout(() => {
                             el.removeClass('active');
+                            scope.onCommit();
+                            scope.fieldCommitted();
                         }, 500);
                     };
                     el.find('> div').on('focus', () => el.find('input').focus());
@@ -134,6 +136,17 @@ module basecomponents {
                         }
                         setText();
                     }));
+                    $scope.selectItem = (opt) => {
+                        $scope.selectedOptions.push(opt)
+                        $scope.active = false;
+                        $scope.inputText = '';
+                    };
+                    $scope.$watch('inputText', () => {
+                        if (!$scope.inputText) {
+                            return;
+                        }
+                        $scope.selectedItem = _.find($scope.availableOptions, (opt) => opt === $scope.inputText);
+                    });
                 }],
                 link: (scope, element, attrs, controller) => {
                     let floatingBody = angular.element(element.find('> div'));
@@ -286,10 +299,7 @@ module basecomponents {
                         $scope.releaseEngaged = false;
                         $scope.selectedItem = null;
                     })));
-                }],
-                link: function (scope, el, attr, controller) {
-
-                }
+                }]
             };
         }]);
 }
