@@ -19,13 +19,9 @@
 package org.tomitribe.tribestream.registryng.resources;
 
 
-import io.swagger.models.HttpMethod;
 import io.swagger.models.Info;
-import io.swagger.models.Operation;
-import io.swagger.models.Path;
 import io.swagger.models.Swagger;
 import io.swagger.models.Tag;
-import org.apache.commons.codec.net.URLCodec;
 import org.apache.openejb.junit.ApplicationComposerRule;
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -46,7 +42,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.both;
@@ -56,7 +51,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 @Category(Embedded.class)
 public class ApplicationResourceTest {
@@ -78,7 +72,7 @@ public class ApplicationResourceTest {
 
 
     @Test
-//    @Ignore
+    @Ignore
     public void shouldImportOpenAPIDocument() throws Exception {
 
         try {
