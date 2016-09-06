@@ -68,7 +68,7 @@ public class Application {
             Repository.class, SwaggerJsonMapperProducer.class,
             Bootstrap.class, SearchEngine.class,
             SearchResource.class, RegistryResource.class,
-            ApplicationResource.class,
+            ApplicationResource.class, EndpointResource.class,
             LoginContext.class,
             RegistryNgApplication.class
     })

@@ -440,9 +440,10 @@ angular.module('tribe-endpoints-details', [
                             };
                         });
                     }).then(function() {
-                        srv.getDetails($scope.applicationId, $scope.endpointId).then(function (detailsData) {
+                        srv.getDetails($scope.applicationId, $scope.endpointId).then(function (detailsResponse) {
                             $timeout(function () {
                                 $scope.$apply(function () {
+                                    let detailsData = detailsResponse.data;
                                     $scope.endpoint.httpMethod = detailsData.httpMethod;
                                     $scope.endpoint.path = $filter('pathencode')(detailsData.path);
                                     $scope.endpoint.operation = detailsData.operation;
@@ -451,10 +452,10 @@ angular.module('tribe-endpoints-details', [
                             srv.getApplicationDetails($scope.applicationId).then(function (applicationDetails) {
                                 $timeout(function () {
                                     $scope.$apply(function () {
-                                        if (!applicationDetails || !applicationDetails.swagger) {
+                                        if (!applicationDetails.data || !applicationDetails.data.swagger) {
                                             $log.error("Got no application details!");
                                         }
-                                        $scope.application = applicationDetails;
+                                        $scope.application = applicationDetails.data;
                                     });
                                 });
                             });

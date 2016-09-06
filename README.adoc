@@ -23,34 +23,6 @@ $ mvn frontend:gulp
 
 The client uses these endpoints:
 
-Get all applications:
-
-----
-GET http://localhost:8080/registry/api/application
-----
-
-[source,json]
-----
-[
-  {
-    "swagger":{
-      "swagger":"2.0",
-      "paths": {
-        "/pets/{id}": {
-          "get": {
-            "description": "..." <1>
-        }
-      },
-    },
-    "_links":{
-      "self":"http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c"
-    }
-  }
-]
-----
-<1> The paths are reduced so that the operations only contain the properties `summary` and `description`
-    All other properties of an endpoint must be retrieved via the endpoint below.
-
 Get a single application by id:
 
 ----
@@ -68,15 +40,18 @@ GET http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd11
           "description": "..." <1>
       }
     },
-  },
-  "_links":{
-    "self":"http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c",
-    "GET /pets":"http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c/endpoint/f27efad1-a6a2-4066-af4e-b50a0194f46a"
   }
 }
 ----
 <1> The paths are reduced so that the operations only contain the properties `summary` and `description`
     All other properties of an endpoint must be retrieved via the endpoint below.
+
+Links are communicated via the HTTP Link header:
+
+----
+Link: <http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c>;rel="self"
+Link: <http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c/endpoint/f27efad1-a6a2-4066-af4e-b50a0194f46a>;rel="GET /pets"
+----
 
 Get an endpoint of an application:
 
@@ -96,12 +71,15 @@ The first request is used if the requested endpoint uses the root path `/`
     "consumes":["application/xml"],
     "produces":["application/xml"],
     ...
-  },
-  "_links":{
-    "application":"http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c",
-    "self":"http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c/endpoint/f27efad1-a6a2-4066-af4e-b50a0194f46a"
   }
 }
+----
+
+Links for the endpoint poin to the endpoint itself and the application:
+
+----
+Link: <http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c>;rel="application"
+Link: <http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c/endpoint/f27efad1-a6a2-4066-af4e-b50a0194f46a>;rel="self"
 ----
 
 Import an application:
@@ -133,15 +111,18 @@ POST http://localhost:8080/registry/api/application/
           "description": "..." <1>
       }
     },
-  },
-  "_links":{
-    "self":"http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c"
   }
 }
 ----
 <1> The paths are reduced so that the operations only contain the properties `summary` and `description`
     All other properties of an endpoint must be retrieved via the endpoint below.
 
+The link for the new application is also communicated via the Link HTTP header:
+
+----
+Link: <http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c>;rel="self"
+Link: <http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c/endpoint/656a64ec-1aa1-46325-8765-9cd115733f7c>;rel="GET /pets/{id}"
+----
 
 Update an application:
 
@@ -225,6 +206,46 @@ GET http://localhost:8080/registry/api/registry
   "total":2,
   "current":0}
 ----
+
+
+Create an endpoint
+
+----
+PUT http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c/endpoint
+{
+  "httpMethod":"get",
+  "path":"/workNotifications/{region}/{function}",
+  "operation":{
+    "description":"....",
+    "consumes":["application/xml"],
+    "produces":["application/xml"],
+    ...
+  }
+}
+----
+
+The response status will be HTTP 201
+
+----
+{
+  "httpMethod":"get",
+  "path":"/workNotifications/{region}/{function}",
+  "operation":{
+    "description":"....",
+    "consumes":["application/xml"],
+    "produces":["application/xml"],
+    ...
+  }
+}
+----
+
+And the links will also be communicated as Link headers:
+
+----
+Link: <http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c>;rel="application"
+Link: <http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c/endpoint/f27efad1-a6a2-4066-af4e-b50a0194f46a>;rel="self"
+----
+
 
 === Tribestream API Registry vendor extension
 

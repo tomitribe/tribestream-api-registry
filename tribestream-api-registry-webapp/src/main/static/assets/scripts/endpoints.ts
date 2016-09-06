@@ -39,20 +39,21 @@ angular.module('tribe-endpoints', [
                 app: '=application'
             },
             controller: [
-                '$timeout', '$scope', 'tribeEndpointsService', 'tribeFilterService',
-                function ($timeout, $scope, srv, tribeFilterService) {
+                '$timeout', '$scope', 'tribeEndpointsService', 'tribeFilterService', 'tribeLinkHeaderService',
+                function ($timeout, $scope, srv, tribeFilterService, tribeLinkHeaderService) {
                     var getDetails = function (applicationId) {
                         srv.getApplicationDetails(applicationId).then(function (data) {
                             $timeout(function () {
                                 $scope.$apply(function () {
-                                    $scope.details = data;
+                                    $scope.details = data.data;
                                 });
                             });
                         });
                     };
-                    srv.getApplicationDetails($scope.app).then(function (data) {
+                    srv.getApplicationDetails($scope.app).then(function (response) {
                         $timeout(function () {
                             $scope.$apply(function () {
+                                let data = response.data;
                                 $scope.swagger = data.swagger;
                                 let endpoints = []
                                 if (data.swagger.paths) {
@@ -62,7 +63,8 @@ angular.module('tribe-endpoints', [
                                             if (opname.match('^x-.*')) {
                                                 continue;
                                             }
-                                            let link = data['_links'][opname.toUpperCase() + ' ' + pathName];
+                                            let links = tribeLinkHeaderService.parseLinkHeader(response.headers('link'));
+                                            let link = links[opname.toUpperCase() + ' ' + pathName];
                                             let endpointId = link.substring(link.lastIndexOf('/') + 1);
                                             let operationObject = {
                                                 path: pathName,

@@ -155,7 +155,7 @@ public class Repository {
             .getResultList();
     }
 
-    public OpenApiDocument insert(Swagger swagger) {
+    public OpenApiDocument insert(final Swagger swagger) {
 
         final OpenApiDocument document = new OpenApiDocument();
         document.setName(swagger.getInfo().getTitle());
@@ -178,7 +178,7 @@ public class Repository {
                 final String path = stringPathEntry.getKey();
                 final Path pathObject = stringPathEntry.getValue();
                 for (Map.Entry<HttpMethod, Operation> httpMethodOperationEntry : pathObject.getOperationMap().entrySet()) {
-                    final String verb = httpMethodOperationEntry.getKey().name();
+                    final String verb = httpMethodOperationEntry.getKey().name().toUpperCase();
                     final Operation operation = httpMethodOperationEntry.getValue();
 
                     Endpoint endpoint = new Endpoint();
@@ -192,6 +192,24 @@ public class Repository {
             }
         }
         return document;
+    }
+
+    public Endpoint insert(final Endpoint endpoint, final String applicationId) {
+        OpenApiDocument application = findByApplicationId(applicationId);
+        application.getEndpoints().add(endpoint);
+
+        endpoint.setApplication(application);
+        Date now = new Date();
+        endpoint.setCreatedAt(now);
+        endpoint.setUpdatedAt(now);
+        endpoint.setCreatedBy(loginContext.getUsername());
+        endpoint.setUpdatedBy(loginContext.getUsername());
+
+        application.setUpdatedAt(now);
+        application.setUpdatedBy(loginContext.getUsername());
+        em.persist(endpoint);
+        update(application);
+        return endpoint;
     }
 
     public static Swagger createShallowCopy(Swagger swagger) {
@@ -223,6 +241,15 @@ public class Repository {
         return em.merge(document);
     }
 
+    public Endpoint update(Endpoint endpoint) {
+        endpoint.setUpdatedAt(new Date());
+        endpoint.setUpdatedBy(loginContext.getUsername());
+        if (endpoint.getOperation() != null) {
+            endpoint.setDocument(convertToJson(endpoint.getOperation()));
+        }
+        return em.merge(endpoint);
+    }
+
     private String convertToJson(Object object) {
         try (StringWriter sw = new StringWriter()) {
             mapper.writeValue(sw, object);
@@ -239,6 +266,16 @@ public class Repository {
             return false;
         } else {
             em.remove(document);
+            return true;
+        }
+    }
+
+    public boolean deleteEndpoint(String applicationId, String endpointId) {
+        final Endpoint endpoint = findEndpointById(endpointId);
+        if (endpoint == null || !applicationId.equals(endpoint.getApplication().getId())) {
+            return false;
+        } else {
+            em.remove(endpoint);
             return true;
         }
     }

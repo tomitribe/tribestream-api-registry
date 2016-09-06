@@ -43,6 +43,7 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -75,44 +76,9 @@ public class ApplicationResourceTest {
         assertThat(applicationNames, hasItems("Swagger Petstore", "Uber API"));
     }
 
-    @Test
-    public void shouldLoadApplicationFromLink() throws Exception {
-
-        final List<ApplicationWrapper> apps = loadAllApplications();
-
-        final ApplicationWrapper directApplicationResponse = getApp().getClient().target(apps.get(1).getLinks().get("self"))
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .get(ApplicationWrapper.class);
-
-        assertEquals(apps.get(1).getSwagger().getInfo().getTitle(), directApplicationResponse.getSwagger().getInfo().getTitle());
-        assertEquals(apps.get(1).getSwagger().getInfo().getVersion(), directApplicationResponse.getSwagger().getInfo().getVersion());
-    }
 
     @Test
-    public void shouldLoadEndpointAsSubresourceFromApplication() throws Exception {
-
-        final List<ApplicationWrapper> apps = loadAllApplications();
-
-        final Map.Entry<String, Path> pathEntry = apps.get(0).getSwagger().getPaths().entrySet().iterator().next();
-
-        final String path = pathEntry.getKey();
-
-        final Map.Entry<HttpMethod, Operation> operationEntry = pathEntry.getValue().getOperationMap().entrySet().iterator().next();
-
-        apps.get(0).getLinks().entrySet().stream()
-                .filter((Map.Entry<String, String> nameToUrl) -> !"self".equals(nameToUrl.getKey()))
-                .map(Map.Entry::getValue)
-                .forEach(url -> {
-                    assertTrue(url.startsWith(apps.get(0).getLinks().get("self")));
-                    EndpointWrapper ep = getClient().target(url)
-                            .request(MediaType.APPLICATION_JSON_TYPE)
-                            .get(EndpointWrapper.class);
-                    assertNotNull(ep);
-                });
-    }
-
-    @Test
-    @Ignore
+//    @Ignore
     public void shouldImportOpenAPIDocument() throws Exception {
 
         try {
@@ -137,11 +103,11 @@ public class ApplicationResourceTest {
             assertEquals("List API versions", applicationWrapper.getSwagger().getPaths().get("/").getGet().getSummary());
             assertEquals("Show API version details", applicationWrapper.getSwagger().getPaths().get("/v2").getGet().getSummary());
 
-            // And: the response document contains the link to itself
-            EndpointWrapper endpoint = getClient().target(applicationWrapper.getLinks().get("self")).path("get")
-                    .request(MediaType.APPLICATION_JSON_TYPE)
-                    .get(EndpointWrapper.class);
-
+            EndpointWrapper endpoint = getSearchPage().getResults().stream()
+                    .filter((SearchResult sr) -> "/v2".equals(sr.getPath()) && "GET".equals(sr.getHttpMethod()))
+                    .findFirst()
+                    .map((SearchResult sr) -> loadEndpoint(sr.getApplicationId(), sr.getEndpointId()))
+                    .get();
             assertEquals(Arrays.asList("application/json"), endpoint.getOperation().getProduces());
 
             // And: When loading all applications the number of applications has increased by 1
@@ -176,13 +142,14 @@ public class ApplicationResourceTest {
                 "}";
         final Swagger createSwagger = app.getInstance(Application.class).getObjectMapper().readValue(initialDocument, Swagger.class);
         final ApplicationWrapper createRequest = new ApplicationWrapper(createSwagger);
-        final ApplicationWrapper newApplicationWrapper = getClient().target("http://localhost:" + getPort() + "/openejb/api/application")
+        final Response newApplicationWrapperResponse = getClient().target("http://localhost:" + getPort() + "/openejb/api/application")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .buildPost(Entity.entity(createRequest, MediaType.APPLICATION_JSON_TYPE))
-                .invoke(ApplicationWrapper.class);
+                .invoke();
+
+        ApplicationWrapper newApplicationWrapper = newApplicationWrapperResponse.readEntity(ApplicationWrapper.class);
         assertNotNull(newApplicationWrapper);
 
-        final String applicationURL = newApplicationWrapper.getLinks().get("self");
         // When: I add tags and a path to the application
         final String updateDocument = "{\n" +
                 "  \"paths\": {\n" +
@@ -206,14 +173,13 @@ public class ApplicationResourceTest {
         final Swagger updateSwagger = app.getInstance(Application.class).getObjectMapper().readValue(updateDocument, Swagger.class);
         final ApplicationWrapper updateRequest = new ApplicationWrapper(updateSwagger);
 
-        ApplicationWrapper updatedApplicationWrapper = getClient().target(applicationURL)
+        ApplicationWrapper updatedApplicationWrapper = getClient().target(newApplicationWrapperResponse.getLink("self"))
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .buildPut(Entity.entity(updateRequest, MediaType.APPLICATION_JSON_TYPE))
                 .invoke(ApplicationWrapper.class);
 
         // Then: The old information is still present
         assertNotNull(updatedApplicationWrapper);
-        assertEquals(applicationURL, updatedApplicationWrapper.getLinks().get("self"));
         assertEquals("Test API", updatedApplicationWrapper.getSwagger().getInfo().getTitle());
         assertEquals("v2", updatedApplicationWrapper.getSwagger().getInfo().getVersion());
 
@@ -230,11 +196,12 @@ public class ApplicationResourceTest {
 
         final List<ApplicationWrapper> apps = loadAllApplications();
 
-        ApplicationWrapper first = apps.get(0);
-        final String applicationUrl = first.getLinks().get("self");
-        final String applicationId = applicationUrl.substring(applicationUrl.lastIndexOf('/') + 1);
+        final List<SearchResult> searchResults = new ArrayList<>(getSearchPage().getResults());
+        final SearchResult searchResult = searchResults.get(0);
+        ApplicationWrapper first = loadApplication(searchResult.getApplicationId());
 
-        Response response = getClient().target(applicationUrl)
+        Response response =  getClient().target("http://localhost:" + getPort() + "/openejb/api/application/{applicationId}")
+                .resolveTemplate("applicationId", searchResult.getApplicationId())
                 .request()
                 .buildDelete()
                 .invoke();
@@ -244,7 +211,8 @@ public class ApplicationResourceTest {
         final List<ApplicationWrapper> newApps = loadAllApplications();
         assertEquals(apps.size() - 1, newApps.size());
 
-        Response response2 = getClient().target(applicationUrl)
+        Response response2 = getClient().target("http://localhost:" + getPort() + "/openejb/api/application/{applicationId}")
+                .resolveTemplate("applicationId", searchResult.getApplicationId())
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .buildGet()
                 .invoke();
@@ -257,8 +225,7 @@ public class ApplicationResourceTest {
 
         assertFalse(
             searchPage.getResults().stream()
-                    .filter(searchResult -> applicationId.equals(searchResult.getApplicationId()))
-                    .peek(System.out::println)
+                    .filter(sr -> searchResult.getApplicationId().equals(sr.getApplicationId()))
                     .findFirst()
                     .isPresent());
     }
@@ -268,10 +235,12 @@ public class ApplicationResourceTest {
 
         final List<ApplicationWrapper> apps = loadAllApplications();
 
-        ApplicationWrapper first = apps.get(0);
-        final String applicationUrl = first.getLinks().get("self");
+        final List<SearchResult> searchResults = new ArrayList<>(getSearchPage().getResults());
+        final SearchResult searchResult = searchResults.get(0);
+        ApplicationWrapper first = loadApplication(searchResult.getApplicationId());
 
-        Response response = getClient().target(applicationUrl + "_doesNotExist")
+        Response response = getClient().target("http://localhost:" + getPort() + "/openejb/api/application/{applicationId}")
+                .resolveTemplate("applicationId", searchResult.getApplicationId() + "_doesNotExist")
                 .request()
                 .buildDelete()
                 .invoke();
@@ -303,6 +272,29 @@ public class ApplicationResourceTest {
                 });
 
         return result;
+    }
+
+    private ApplicationWrapper loadApplication(final String applicationId) {
+        return getClient().target("http://localhost:" + getPort() + "/openejb/api/application/{applicationId}")
+                .resolveTemplate("applicationId", applicationId)
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(ApplicationWrapper.class);
+    }
+
+    private EndpointWrapper loadEndpoint(final String applicationId, final String endpointId) {
+        return getClient().target("http://localhost:" + getPort() + "/openejb/api/application/{applicationId}/endpoint/{endpointId}")
+                .resolveTemplate("applicationId", applicationId)
+                .resolveTemplate("endpointId", endpointId)
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(EndpointWrapper.class);
+    }
+
+
+
+    private SearchPage getSearchPage() {
+        return getClient().target("http://localhost:" + getApp().getPort() + "/openejb/api/registry")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(SearchPage.class);
     }
 
     private Application getApp() {

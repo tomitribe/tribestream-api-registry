@@ -10,10 +10,34 @@ module services {
         'ngStorage',
         'tribe-alerts'
     ])
-
+        .factory('tribeLinkHeaderService', [
+            function() {
+                return {
+                    parseLinkHeader: function (linkHeader) {
+                        if (!linkHeader) {
+                            return {};
+                        }
+                        // Split parts by comma
+                        let parts = linkHeader.split(',');
+                        let links = {};
+                        // Parse each part into a named link
+                        _.each(parts, function(p) {
+                            let section = p.split(';');
+                            if (section.length != 2) {
+                              throw new Error("section could not be split on ';'");
+                            }
+                            var url = section[0].replace(/<(.*)>/, '$1').trim();
+                            var name = section[1].replace(/rel="(.*)"/, '$1').trim();
+                            links[name] = url;
+                        });
+                        return links;
+                    }
+                };
+            }
+        ])
         .factory('tribeEndpointsService', [
-            '$location', '$resource', '$http', 'tribeErrorHandlerService', '$sessionStorage', '$filter',
-            function ($location, $resource, $http, tribeErrorHandlerService, $sessionStorage, $filter) {
+            '$location', '$resource', '$http', 'tribeErrorHandlerService', '$sessionStorage', '$filter', 'tribeLinkHeaderService',
+            function ($location, $resource, $http, tribeErrorHandlerService, $sessionStorage, $filter, tribeLinkHeaderService) {
                 var httpListCall = function (url, params, successCallback, errorCallback) {
                     $http({
                         url: url,
@@ -83,20 +107,37 @@ module services {
                             }
                         };
                     },
+                    getApplicationDetails: function (applicationId) {
+                        return {
+                            then: function (successCallback, errorCallback) {
+                                $http.get('api/application/' + applicationId)
+                                    .then(function (data) {
+                                        if (data && data.data && data.data.swagger) {
+                                            // we will have at most one result. only one application queried.
+                                            successCallback(data);
+                                        }
+                                    }, tribeErrorHandlerService.ensureErrorHandler(errorCallback));
+                            }
+                        };
+                    },
                     getDetails: function (app, endpointId) {
                         return {
                             then: function (successCallback, errorCallback) {
                                 if (endpointId) {
                                     var existingEntry = _.find(loadedEndpointDetails, function (entry) {
-                                        return entry['_links'] && entry['_links'].self && entry['_links'].self.endsWith(`api/application/${app}/endpoint/${endpointId}`);
+                                        if (!loadedEndpointDetails.headers) {
+                                            return false;
+                                        }
+                                        let links = tribeLinkHeaderService.parseLinkHeader(loadedEndpointDetails.headers('link'));
+                                        return links && links.self && links.self.endsWith(`api/application/${app}/endpoint/${endpointId}`);
                                     });
                                     if (existingEntry) {
                                         successCallback(existingEntry);
                                     } else {
                                         $http.get(`api/application/${app}/endpoint/${endpointId}`)
                                             .then(function (data) {
-                                                loadedEndpointDetails.push(data.data);
-                                                successCallback(data.data);
+                                                loadedEndpointDetails.push(data);
+                                                successCallback(data);
                                             }, tribeErrorHandlerService.ensureErrorHandler(errorCallback));
                                     }
 
@@ -105,19 +146,6 @@ module services {
                                     loadedEndpointDetails.push(newEntry);
                                     successCallback(newEntry);
                                 }
-                            }
-                        };
-                    },
-                    getApplicationDetails: function (applicationId) {
-                        return {
-                            then: function (successCallback, errorCallback) {
-                                $http.get('api/application/' + applicationId)
-                                    .then(function (data) {
-                                        if (data && data.data && data.data.swagger) {
-                                            // we will have at most one result. only one application queried.
-                                            successCallback(data.data);
-                                        }
-                                    }, tribeErrorHandlerService.ensureErrorHandler(errorCallback));
                             }
                         };
                     },
