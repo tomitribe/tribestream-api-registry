@@ -1,7 +1,10 @@
 div
-  .items(x-ng-repeat="opt in selectedOptions", ng-class="{selected: opt === selectedItem}")
-    div
-      span.opt {{opt}}
-      i.fa.fa-times(x-ng-click="releaseItem(opt)")
-  .text
-    input(type="text", x-ng-keyup="keyEntered($event);", x-ng-model="inputText")
+  div
+    .items(x-ng-repeat="opt in selectedOptions", ng-class="{selected: opt === selectedItem}")
+      div
+        span.opt {{opt}}
+        i.fa.fa-times(x-ng-click="releaseItem(opt)")
+    .text
+      input(type="text", x-ng-keyup="keyEntered($event);", x-ng-model="inputText")
+  .edit-icon
+    i.fa.fa-pencil
