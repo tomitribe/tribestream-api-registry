@@ -43,7 +43,7 @@ public class RevisionListener implements org.hibernate.envers.RevisionListener {
             revision.setUsername(username);
 
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
