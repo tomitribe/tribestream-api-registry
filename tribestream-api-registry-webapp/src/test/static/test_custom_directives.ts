@@ -24,6 +24,14 @@ describe('it tests our custom multiselect component', function () {
     // it will destroy the scope, which will destroy all its elements.
     afterEach(() => rootScope.$destroy());
 
+    let timeoutTryCatch = (ms, done, callback) => timeout(() => {
+        try {
+            callback();
+        } catch (e) {
+            done(e);
+        }
+    }, ms);
+
     it('should load selected options', (done) => {
         let scope = rootScope.$new();
         scope.selected = ['aaa', 'bbb'];
@@ -32,39 +40,17 @@ describe('it tests our custom multiselect component', function () {
         compile(element)(scope);
         // append to body so we can click on it.
         element.appendTo(document.find('body'));
-        // it will keep trying until angular compiled the what we need.
-        var index = 20;
-        let tryit = (exec) => {
-            try {
-                exec();
+        timeoutTryCatch(100, done, () => {
+            let selectedItems = angular.element(element.find('div[data-tribe-multiselect-selected] .items'));
+            timeoutTryCatch(100, done, () => {
+                let values = _.map(selectedItems, (item) => {
+                    return angular.element(item).scope().opt;
+                });
+                expect(values).to.deep.equal(['aaa', 'bbb']);
                 done();
-            } catch (e) {
-                index = index - 1;
-                if (index == 0) {
-                    done(e);
-                } else {
-                    timeout(() => {
-                        tryit(exec);
-                    }, 1);
-                }
-            }
-        };
-        tryit(() => {
-            expect(element.html()).to.contain('aaa');
-            expect(element.html()).to.contain('bbb');
-            expect(element.html()).not.to.contain('ccc');
-            expect(element.html()).not.to.contain('ddd');
-            expect(element.html()).not.to.contain('eee');
+            });
         });
     });
-
-    let timeoutTryCatch = (ms, done, callback) => timeout(() => {
-        try {
-            callback();
-        } catch (e) {
-            done(e);
-        }
-    }, ms);
 
     let triggerKeyDown = function (element, keyCode) {
         var e = $.Event("keyup");
