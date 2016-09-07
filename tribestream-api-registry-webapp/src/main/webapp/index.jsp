@@ -6,7 +6,7 @@
     }
 %>
 <html <% if(!testing) { %> id="ng-app" data-ng-app="tribe-main" <% } %> ><%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<head><title>tribestream registry test</title>
+<head><title>tribestream registry</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge;"/>
     <script type="text/javascript">
