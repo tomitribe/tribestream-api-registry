@@ -331,6 +331,7 @@ angular.module('tribe-endpoints-details', [
 
                     $timeout(function () {
                         $scope.$apply(function () {
+                            // TODO: This MUST go somewhere else, both properties
                             if (!$scope.endpoint.errors) {
                                 $scope.endpoint.errors = [];
                             }
@@ -429,8 +430,8 @@ angular.module('tribe-endpoints-details', [
                 'endpointId': '='
             },
             controller: [
-                '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log',
-                function ($scope, srv, tribeFilterService, $timeout, $filter, $log) {
+                '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', 'systemMessagesService'
+                function ($scope, srv, tribeFilterService, $timeout, $filter, $log, systemMessagesService) {
                     $timeout(function () {
                         $scope.$apply(function () {
                             $scope.endpoint = {
@@ -461,6 +462,19 @@ angular.module('tribe-endpoints-details', [
                             });
                         });
                     });
+                    $scope.save = function() {
+                        srv.saveEndpoint($scope.applicationId, $scope.endpointId, {
+                                // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
+                                httpMethod: $scope.endpoint.httpMethod,
+                                path: $scope.endpoint.path,
+                                operation: $scope.endpoint.operation
+                            })
+                            .then(
+                                function (saveResponse) {
+                                    systemMessagesService.info("Saved endpoint details! " + saveResponse.status);
+                                }
+                            );
+                    };
                 }
             ]
         };
