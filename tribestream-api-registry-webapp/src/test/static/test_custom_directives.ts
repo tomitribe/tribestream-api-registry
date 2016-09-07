@@ -228,4 +228,33 @@ describe('it tests our custom multiselect component', function () {
             });
         });
     });
+
+    it('should show the "new item" label in the available oprions list', (done) => {
+        timeoutTryCatch(100, done, () => {
+            let scope = rootScope.$new();
+            scope.selected = ['aaa', 'bbb', 'ccc'];
+            scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+            let element = angular.element('<div data-tribe-multiselect data-selected-options="selected" data-available-options="options" data-new-label="new lala"></div>');
+            // append to body so we can click on it.
+            element.appendTo(document.find('body'));
+            compile(element)(scope);
+            timeoutTryCatch(100, done, () => {
+                let selected = angular.element(element.find('div[data-tribe-multiselect-selected]'));
+                let input = angular.element(selected.find('input'));
+                timeoutTryCatch(100, done, () => {
+                    input.focus();
+                    let selectedScope = selected.scope();
+                    triggerKeyDown(input, 40); // arrowdown
+                    timeoutTryCatch(100, done, () => {
+                        selectedScope.$apply(() => selectedScope.inputText = 'fffffff');
+                        timeoutTryCatch(100, done, () => {
+                            let newLabel = angular.element(document.find('div.tribe-data-tribe-multiselect-available-body div[x-ng-if="!selectedItem"]'));
+                            expect(newLabel.find('span').first().html()).to.deep.equal('new lala:');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+    });
 });

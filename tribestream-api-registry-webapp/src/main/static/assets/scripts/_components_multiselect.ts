@@ -12,7 +12,8 @@ module basecomponents {
                 restrict: 'A',
                 scope: {
                     originalAvailableOptions: '=availableOptions',
-                    originalSelectedOptions: '=selectedOptions'
+                    originalSelectedOptions: '=selectedOptions',
+                    newLabel: '@?'
                 },
                 templateUrl: 'app/templates/component_multiselect.html',
                 controller: ['$scope', '$timeout', ($scope, $timeout) => $timeout(() => {
@@ -93,7 +94,8 @@ module basecomponents {
                     activeTopDown: '=',
                     activeBottomUp: '=',
                     onSelect: '&',
-                    inputText: '='
+                    inputText: '=',
+                    newLabel: '@?'
                 },
                 templateUrl: 'app/templates/component_multiselect_available.html',
                 controller: ['$scope', '$timeout', ($scope, $timeout) => {
