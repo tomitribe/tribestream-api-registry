@@ -180,4 +180,52 @@ describe('it tests our custom multiselect component', function () {
             });
         });
     });
+
+    it('should cancel and confirm edits', (done) => {
+        timeoutTryCatch(100, done, () => {
+            let scope = rootScope.$new();
+            scope.selected = ['aaa', 'bbb', 'ccc'];
+            scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+            let element = angular.element('<div data-tribe-multiselect data-selected-options="selected" data-available-options="options"></div>');
+            // append to body so we can click on it.
+            element.appendTo(document.find('body'));
+            compile(element)(scope);
+            timeoutTryCatch(100, done, () => {
+                let selected = angular.element(element.find('div[data-tribe-multiselect-selected]'));
+                let input = angular.element(selected.find('input'));
+                timeoutTryCatch(100, done, () => {
+                    input.focus();
+                    let selectedScope = selected.scope();
+                    selectedScope.$apply(() => selectedScope.inputText = 'fff');
+                    timeoutTryCatch(100, done, () => {
+                        triggerKeyDown(input, 13); // enter
+                        timeoutTryCatch(100, done, () => {
+                            expect(_.map(angular.element(selected.find('.items')), (item) => {
+                                return angular.element(item).scope().opt;
+                            })).to.deep.equal(['aaa', 'bbb', 'ccc', 'fff']);
+                            document.find('div.tribe-field-actions-body div[ng-click="cancel()"]').click();
+                            timeoutTryCatch(100, done, () => {
+                                expect(_.map(angular.element(selected.find('.items')), (item) => {
+                                    return angular.element(item).scope().opt;
+                                })).to.deep.equal(['aaa', 'bbb', 'ccc']);
+                                selectedScope.$apply(() => selectedScope.inputText = 'ggg');
+                                timeoutTryCatch(100, done, () => {
+                                    triggerKeyDown(input, 13); // enter
+                                    timeoutTryCatch(100, done, () => {
+                                        document.find('div.tribe-field-actions-body div[ng-click="confirm()"]').click();
+                                        timeoutTryCatch(100, done, () => {
+                                            expect(_.map(angular.element(selected.find('.items')), (item) => {
+                                                return angular.element(item).scope().opt;
+                                            })).to.deep.equal(['aaa', 'bbb', 'ccc', 'ggg']);
+                                            done();
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
 });
