@@ -1,6 +1,4 @@
-describe('it tests our custom multiselect component', function () {
-    this.timeout(0);
-
+describe('it tests our custom multiselect component', () => {
     let expect = chai.expect;
 
     var compile;
@@ -54,20 +52,7 @@ describe('it tests our custom multiselect component', function () {
                 });
                 expect(values).to.deep.equal(['aaa', 'bbb']);
                 expect(angular.element(element.find('div[data-tribe-multiselect-selected] .items i.remove')).css('display')).to.equal('none');
-                let input = angular.element(element.find('div[data-tribe-multiselect-selected] input'));
-                input.focus();
-                let selectedScope = angular.element(element.find('div[data-tribe-multiselect-selected]')).scope();
-                selectedScope.$apply(() => selectedScope.inputText = 'fff');
-                timeoutTryCatch(200, done, () => {
-                    triggerKeyDown(input, 13); // enter
-                    timeoutTryCatch(200, done, () => {
-                        selectedScope.$apply(() => selectedScope.inputText = 'fffg');
-                        timeoutTryCatch(200, done, () => {
-                            expect(angular.element(element.find('div[data-tribe-multiselect-selected] .items i.remove')).css('display')).to.equal('inline');
-                            done();
-                        });
-                    });
-                });
+                done();
             });
         });
     });
