@@ -68,9 +68,9 @@ module basecomponents {
                     let deactivate = () => {
                         cancelDeactivate();
                         deactivatePromise = $timeout(() => {
-                            el.removeClass('active');
                             scope.onCommit();
                             scope.fieldCommitted();
+                            el.removeClass('active');
                         }, 500);
                     };
                     el.find('> div').on('focus', () => el.find('input').focus());
@@ -79,6 +79,12 @@ module basecomponents {
                         el.addClass('active');
                     });
                     el.find('input').on('blur', deactivate);
+                    scope.$on('fieldDirty', () => {
+                        if (scope.fieldDirty) {
+                            cancelDeactivate();
+                            el.addClass('active');
+                        }
+                    });
                     scope.$on('$destroy', () => el.remove());
                 })
             };

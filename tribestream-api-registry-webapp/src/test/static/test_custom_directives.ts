@@ -32,6 +32,12 @@ describe('it tests our custom multiselect component', function () {
         }
     }, ms);
 
+    let triggerKeyDown = function (element, keyCode) {
+        var e = $.Event("keyup");
+        e.keyCode = keyCode;
+        element.trigger(e);
+    };
+
     it('should load selected options', (done) => {
         let scope = rootScope.$new();
         scope.selected = ['aaa', 'bbb'];
@@ -47,16 +53,24 @@ describe('it tests our custom multiselect component', function () {
                     return angular.element(item).scope().opt;
                 });
                 expect(values).to.deep.equal(['aaa', 'bbb']);
-                done();
+                expect(angular.element(element.find('div[data-tribe-multiselect-selected] .items i.remove')).css('display')).to.equal('none');
+                let input = angular.element(element.find('div[data-tribe-multiselect-selected] input'));
+                input.focus();
+                let selectedScope = angular.element(element.find('div[data-tribe-multiselect-selected]')).scope();
+                selectedScope.$apply(() => selectedScope.inputText = 'fff');
+                timeoutTryCatch(200, done, () => {
+                    triggerKeyDown(input, 13); // enter
+                    timeoutTryCatch(200, done, () => {
+                        selectedScope.$apply(() => selectedScope.inputText = 'fffg');
+                        timeoutTryCatch(200, done, () => {
+                            expect(angular.element(element.find('div[data-tribe-multiselect-selected] .items i.remove')).css('display')).to.equal('inline');
+                            done();
+                        });
+                    });
+                });
             });
         });
     });
-
-    let triggerKeyDown = function (element, keyCode) {
-        var e = $.Event("keyup");
-        e.keyCode = keyCode;
-        element.trigger(e);
-    };
 
     it('should show available options', (done) => {
         timeoutTryCatch(100, done, () => {
@@ -71,13 +85,14 @@ describe('it tests our custom multiselect component', function () {
                 let input = angular.element(element.find('input'));
                 timeoutTryCatch(100, done, () => {
                     input.focus();
-                    expect(element.hasClass('active')).to.equal(true);
-                    triggerKeyDown(input, 40);
                     timeoutTryCatch(100, done, () => {
-                        let available = element.find('div[data-tribe-multiselect-available]');
-                        // the list of items is visible
-                        expect(available.hasClass('active')).to.equal(true);
-                        done();
+                        triggerKeyDown(input, 40);
+                        timeoutTryCatch(100, done, () => {
+                            let available = element.find('div[data-tribe-multiselect-available]');
+                            // the list of items is visible
+                            expect(available.hasClass('active')).to.equal(true);
+                            done();
+                        });
                     });
                 });
             });

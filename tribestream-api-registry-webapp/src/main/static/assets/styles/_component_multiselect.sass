@@ -59,8 +59,12 @@ div[data-tribe-multiselect-selected]
 [data-tribe-multiselect]
   display: inline-block
   border: solid transparent 1px
+  i.remove
+    display: none
   &.active
     display: block
+    i.remove
+      display: inline
   &:hover
     div.edit-icon
       opacity: 1
