@@ -38,6 +38,7 @@ module basecomponents {
                     }));
                     $scope.onCommit = () => $timeout(() => $scope.$apply(() => {
                         $scope.fieldDirty = false;
+                        $scope.optionsActivated = false;
                         $scope.originalSelectedOptions = _.clone($scope.selectedOptions);
                     }));
                     $scope.fieldCanceled = () => {
