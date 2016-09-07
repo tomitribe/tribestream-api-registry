@@ -56,7 +56,7 @@ module basecomponents {
                         $scope.optionsActivated = false;
                     }));
                 })],
-                link: (scope, el, attr, controller) => $timeout(() => {
+                link: (scope, el) => $timeout(() => {
                     var deactivatePromise = null;
                     let cancelDeactivate = () => {
                         if (deactivatePromise) {
@@ -98,15 +98,13 @@ module basecomponents {
                 templateUrl: 'app/templates/component_multiselect_available.html',
                 controller: ['$scope', '$timeout', ($scope, $timeout) => {
                     $scope.availableOptions = [];
-                    $scope.showOptions = () => {
-                        $timeout(() => $scope.$apply(() => {
-                            $scope.selectedItem = null;
-                            $scope.availableOptions = _.clone($scope.originalAvailableOptions);
-                            for (let opt of $scope.selectedOptions) {
-                                $scope.availableOptions = _.without($scope.availableOptions, opt);
-                            }
-                        }));
-                    };
+                    $scope.showOptions = () => $timeout(() => $scope.$apply(() => {
+                        $scope.selectedItem = null;
+                        $scope.availableOptions = _.clone($scope.originalAvailableOptions);
+                        for (let opt of $scope.selectedOptions) {
+                            $scope.availableOptions = _.without($scope.availableOptions, opt);
+                        }
+                    }));
                     $scope.selectedItem = null;
                     let setText = () => {
                         if ($scope.selectedItem) {
@@ -153,7 +151,7 @@ module basecomponents {
                         $scope.selectedItem = _.find($scope.availableOptions, (opt) => opt === $scope.inputText);
                     });
                 }],
-                link: (scope, element, attrs, controller) => {
+                link: (scope, element) => {
                     let floatingBody = angular.element(element.find('> div'));
                     floatingBody.detach();
                     var body = $document.find('body');

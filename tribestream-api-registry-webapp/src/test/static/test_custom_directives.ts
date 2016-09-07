@@ -63,32 +63,70 @@ describe('it tests our custom multiselect component', function () {
     };
 
     it('should show available options', (done) => {
-        let scope = rootScope.$new();
-        scope.selected = ['aaa', 'bbb'];
-        scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
-        let element = angular.element('<div data-tribe-multiselect data-selected-options="selected" data-available-options="options"></div>');
-        compile(element)(scope);
-        timeout(() => {
-            let input = angular.element(element.find('input'));
-            if (!input.length) {
-                throw 'Element not found';
-            }
-            // append to body so we can click on it.
-            element.appendTo(document.find('body'));
+        try {
+            let scope = rootScope.$new();
+            scope.selected = ['aaa', 'bbb'];
+            scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+            let element = angular.element('<div data-tribe-multiselect data-selected-options="selected" data-available-options="options"></div>');
+            compile(element)(scope);
             timeout(() => {
-                input.focus();
-                expect(element.hasClass('active')).to.equal(true);
-                triggerKeyDown(input, 40);
+                let input = angular.element(element.find('input'));
+                if (!input.length) {
+                    throw 'Element not found';
+                }
+                // append to body so we can click on it.
+                element.appendTo(document.find('body'));
                 timeout(() => {
-                    let available = element.find('div[data-tribe-multiselect-available]');
-                    if (!available.length) {
-                        throw 'Element not found';
-                    }
-                    // the list of items is visible
-                    expect(available.hasClass('active')).to.equal(true);
-                    done();
-                }, 500);
-            }, 500);
-        }, 500);
+                    input.focus();
+                    expect(element.hasClass('active')).to.equal(true);
+                    triggerKeyDown(input, 40);
+                    timeout(() => {
+                        let available = element.find('div[data-tribe-multiselect-available]');
+                        if (!available.length) {
+                            throw 'Element not found';
+                        }
+                        // the list of items is visible
+                        expect(available.hasClass('active')).to.equal(true);
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        } catch (e) {
+            done(e);
+        }
+    });
+
+    it('should select selected items with the left-right keys', (done) => {
+        try {
+            let scope = rootScope.$new();
+            scope.selected = ['aaa', 'bbb'];
+            scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+            let element = angular.element('<div data-tribe-multiselect data-selected-options="selected" data-available-options="options"></div>');
+            compile(element)(scope);
+            timeout(() => {
+                let input = angular.element(element.find('input'));
+                if (!input.length) {
+                    throw 'Element not found';
+                }
+                // append to body so we can click on it.
+                element.appendTo(document.find('body'));
+                timeout(() => {
+                    input.focus();
+                    triggerKeyDown(input, 37); // left
+                    timeout(() => {
+                        let selected = element.find('div[data-tribe-multiselect-selected]');
+                        expect(angular.element(selected.find('.selected')).scope().opt).to.equal('bbb');
+                        triggerKeyDown(input, 39); // right
+                        timeout(() => {
+                            let selected = element.find('div[data-tribe-multiselect-selected]');
+                            expect(angular.element(selected.find('.selected')).scope().opt).to.equal('aaa');
+                            done();
+                        }, 100);
+                    }, 100);
+                }, 100);
+            }, 100);
+        } catch (e) {
+            done(e);
+        }
     });
 });
