@@ -4,12 +4,12 @@ div
       a(href=".")
         i.fa.fa-home
       i.fa.fa-chevron-right
-      a(x-ng-href="application/{{app}}") {{app}}
+      a(x-ng-href="application/{{app}}") {{swagger.info.title}} {{swagger.info.version}}
     article
       div
         h1
-          i(data-tribe-editable-text, data-value="details.name")
-        i(data-tribe-editable-block, data-content="details.doc")
+          i(data-tribe-editable-text, data-value="swagger.info.title")
+        div(data-tribe-editable-md, data-content="swagger.info.description")
         .see(x-ng-if="details.sees.length")
           span See:
           div
@@ -21,19 +21,32 @@ div
         table
           tbody
             tr
-              td Resources
+              td Endpoints
               td
-                a(x-ng-href=".?a={{details.name}}") {{endpoints.length}}
-            tr(x-ng-if="consumes.length")
+                table
+                  thead
+                    th
+                      td Verb
+                      td Path
+                      td Summary
+                  tbody
+                    tr(x-ng-repeat="endpoint in endpoints")
+                      td
+                        a(x-ng-href="application/{{app}}/{{endpoint.operation}}{{endpoint.path | pathencode}}") {{endpoint.operation | pathencode}}
+                      td
+                        a(x-ng-href="application/{{app}}/{{endpoint.operation}}{{endpoint.path | pathencode}}") {{endpoint.path | pathencode}}
+                      td
+                        span {{endpoint.summary}}
+            tr(x-ng-if="swagger.consumes.length")
               td Request formats
               td
                 .tribe-float
-                  span(x-ng-repeat="format in consumes") {{format}}
+                  span(x-ng-repeat="format in swagger.consumes") {{format}}
             tr(x-ng-if="produces.length")
               td Response formats
               td
                 .tribe-float
-                  span(x-ng-repeat="format in produces") {{format}}
+                  span(x-ng-repeat="format in swagger.produces") {{format}}
             tr
               td Requires authentication
               td {{requiresAuthentication}}
@@ -54,9 +67,5 @@ div
               td Tags
               td
                 .tags
-                  span(x-ng-repeat="tag in tags", x-ng-click="filterByTag(tag.text)") {{tag.text}}
-            tr
-              td WADL
-              td
-                a(x-ng-href="{{details.baseUrl}}?_wadlx" target="_blank") See WADL
+                  span(x-ng-repeat="tag in swagger.tags", x-ng-click="filterByTag(tag.text)") {{tag.text}}
   div(data-app-footer)

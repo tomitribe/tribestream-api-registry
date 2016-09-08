@@ -1,5 +1,11 @@
 <!DOCTYPE html>
-<html id="ng-app" data-ng-app="tribe-main"><%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%
+    boolean testing = false;
+    if(request.getParameter("test") != null) {
+        testing = Boolean.parseBoolean(request.getParameter("test").toUpperCase());
+    }
+%>
+<html <% if(!testing) { %> id="ng-app" data-ng-app="tribe-main" <% } %> ><%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <head><title>tribestream registry</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge;"/>
@@ -33,6 +39,9 @@
     </script>
     <link rel="stylesheet" href="app/third-party/styles/_.css"/>
     <link rel="stylesheet" href="app/styles/_.css"/>
+    <% if(testing) { %>
+        <link rel="stylesheet" href="app/third-party/styles/_tests.css"/>
+    <% } %>
     <link rel="icon" href="app/images/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width">
@@ -45,10 +54,27 @@
 <div data-ng-view class="app-body">
     <div class="app-loading"></div>
 </div>
-<script type="text/javascript" src="app/third-party/_1.js"></script>
-<script type="text/javascript" src="app/third-party/_2.js"></script>
-<script type="text/javascript" src="app/third-party/_3.js"></script>
+<% if(testing) { %>
+    <script type="text/javascript" src="app/third-party/_tests_1.js"></script>
+    <script type="text/javascript">
+        mocha.setup({
+            "ui": "bdd",
+            "reporter": "html"
+        });
+    </script>
+    <script type="text/javascript" src="app/third-party/_tests_2.js"></script>
+<% } else { %>
+    <script type="text/javascript" src="app/third-party/_.js"></script>
+<% } %>
 <script type="text/javascript" src="app/scripts/_.js"></script>
+<% if(testing) { %>
+    <div id="mocha"></div>
+    <script type="text/javascript" src="app/scripts/_tests.js"></script>
+    <script type="text/javascript">
+        mocha.run();
+    </script>
+<% } else { %>
 <script type="text/javascript" src="app/scripts/_templates.js"></script>
+<% } %>
 </body>
 </html>
