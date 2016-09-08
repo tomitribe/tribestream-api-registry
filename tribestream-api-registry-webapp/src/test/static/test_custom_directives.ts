@@ -271,7 +271,7 @@ describe('it tests our custom multiselect component', () => {
                     timeoutTryCatch(100, done, () => {
                         selectedScope.$apply(() => selectedScope.inputText = 'fffffff');
                         timeoutTryCatch(100, done, () => {
-                            let newLabel = angular.element(document.find('div.tribe-data-tribe-multiselect-available-body div[x-ng-if="!selectedItem"]'));
+                            let newLabel = angular.element(document.find('div.tribe-data-tribe-multiselect-available-body .new-opt'));
                             expect(newLabel.find('span').first().html()).to.deep.equal('new lala:');
                             done();
                         });

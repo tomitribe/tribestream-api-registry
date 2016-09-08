@@ -1,10 +1,10 @@
 .tribe-data-tribe-multiselect-available-body.floating-menu
-    div
+    .opts
         .option(x-ng-repeat="opt in availableOptions | orderBy",
                 x-ng-click="selectItem(opt)"
                 x-ng-class="{selected: opt === selectedItem}")
             span {{opt}}
-    div(x-ng-if="!selectedItem")
+    .new-opt(x-ng-if="newOpt", x-ng-class="{selected: newOpt === selectedItem}")
         span(x-ng-if="newLabel") {{newLabel}}:
         span(x-ng-if="!newLabel") New:
-        span {{inputText}}
+        span {{newOpt}}
