@@ -28,6 +28,9 @@ angular.module('tribe-main', [
                 .when('/', {
                     templateUrl: 'app/templates/page_endpoints.html'
                 })
+                .when('/showcase', {
+                    templateUrl: 'app/templates/page_components.html'
+                })
                 .when('/see/:aggregatedId', {
                     templateUrl: 'app/templates/page_see.html',
                     controller: ['$scope', '$routeParams', function ($scope, $routeParams) {

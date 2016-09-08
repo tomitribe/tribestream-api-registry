@@ -342,7 +342,7 @@
               <goal>gulp</goal>
             </goals>
             <configuration>
-              <arguments>build-with-tests</arguments>
+              <arguments>build</arguments>
             </configuration>
           </execution>
         </executions>
