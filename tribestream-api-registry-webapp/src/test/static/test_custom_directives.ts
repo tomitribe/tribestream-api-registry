@@ -47,12 +47,34 @@ describe('it tests our custom multiselect component', () => {
         timeoutTryCatch(100, done, () => {
             let selectedItems = angular.element(element.find('div[data-tribe-multiselect-selected] .items'));
             timeoutTryCatch(100, done, () => {
-                let values = _.map(selectedItems, (item) => {
-                    return angular.element(item).scope().opt;
-                });
+                let values = _.map(selectedItems, (item) => angular.element(item).scope().opt);
                 expect(values).to.deep.equal(['aaa', 'bbb']);
                 expect(angular.element(element.find('div[data-tribe-multiselect-selected] .items i.remove')).css('display')).to.equal('none');
                 done();
+            });
+        });
+    });
+
+    it('should show action buttons on input focus', (done) => {
+        let scope = rootScope.$new();
+        scope.selected = ['aaa'];
+        scope.options = [];
+        let element = angular.element('<div data-tribe-multiselect data-selected-options="selected" data-available-options="options"></div>');
+        compile(element)(scope);
+        // append to body so we can click on it.
+        element.appendTo(document.find('body'));
+        timeoutTryCatch(100, done, () => {
+            expect(document.find('div.tribe-field-actions-body').length).to.equal(0);
+            let componentWrapper = angular.element(element.find('> div'));
+            // it should trigger the input focus event
+            componentWrapper.focus();
+            timeoutTryCatch(100, done, () => {
+                let input = angular.element(element.find('input'));
+                expect(input.is(":focus")).to.equal(true);
+                timeoutTryCatch(100, done, () => {
+                    expect(document.find('div.tribe-field-actions-body').length).to.equal(1);
+                    done();
+                });
             });
         });
     });
