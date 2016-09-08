@@ -23,6 +23,7 @@ angular.module('website-components-multiselect', [
                 $scope.optionsActivatedTopDown = 0;
                 $scope.optionsActivatedBottomUp = 0;
                 $scope.version = 0;
+                $scope.selectedOption = null;
                 $scope.inputText = '';
                 $scope.fieldChanged = () => $timeout(() => $scope.$apply(() => {
                     $scope.fieldDirty = true;
@@ -98,6 +99,7 @@ angular.module('website-components-multiselect', [
                 activeBottomUp: '=',
                 onSelect: '&',
                 inputText: '=',
+                selectedItem: '=selectedOption',
                 newLabel: '@?'
             },
             templateUrl: 'app/templates/component_multiselect_available.html',
@@ -105,46 +107,68 @@ angular.module('website-components-multiselect', [
                 $scope.availableOptions = [];
                 $scope.showOptions = () => $timeout(() => $scope.$apply(() => {
                     $scope.selectedItem = null;
+                    $scope.newOpt = null;
                     $scope.availableOptions = _.clone($scope.originalAvailableOptions);
                     for (let opt of $scope.selectedOptions) {
                         $scope.availableOptions = _.without($scope.availableOptions, opt);
                     }
-                }));
-                $scope.selectedItem = null;
-                let setText = () => {
-                    if ($scope.selectedItem) {
-                        if ($scope.selectedItem.toString) {
-                            $scope.inputText = $scope.selectedItem.toString();
+                    if ($scope.inputText.trim()) {
+                        $scope.availableOptions = _.filter($scope.availableOptions, (opt) => {
+                            return opt.startsWith($scope.inputText);
+                        });
+                        $scope.selectedItem = _.find($scope.availableOptions, (opt) => opt.startsWith($scope.inputText.trim()));
+                        if (_.find($scope.availableOptions, (opt) => opt === $scope.inputText.trim())) {
+                            $scope.newOpt = null;
                         } else {
-                            $scope.inputText = $scope.selectedItem;
+                            $scope.newOpt = $scope.inputText.trim();
+                        }
+                        if(!$scope.selectedItem) {
+                            $scope.selectedItem = $scope.newOpt;
                         }
                     }
-                };
+                }));
+                $scope.selectedItem = null;
                 $scope.selectNext = () => $timeout(() => $scope.$apply(() => {
                     let ordered = _.sortBy($scope.availableOptions, (item) => item);
                     if ($scope.selectedItem) {
                         var index = ordered.indexOf($scope.selectedItem) + 1;
                         if (index >= ordered.length) {
-                            index = 0;
+                            if ($scope.newOpt) {
+                                $scope.selectedItem = $scope.newOpt;
+                            } else {
+                                $scope.selectedItem = ordered[0];
+                            }
+                        } else {
+                            $scope.selectedItem = ordered[index];
                         }
-                        $scope.selectedItem = ordered[index];
                     } else {
                         $scope.selectedItem = _.first(ordered);
                     }
-                    setText();
                 }));
                 $scope.selectPrevious = () => $timeout(() => $scope.$apply(() => {
                     let ordered = _.sortBy($scope.availableOptions, (item) => item);
                     if ($scope.selectedItem) {
-                        var index = ordered.indexOf($scope.selectedItem) - 1;
-                        if (index < 0) {
-                            index = ordered.length - 1;
+                        if ($scope.newOpt === $scope.selectedItem && ordered.length) {
+                            $scope.selectedItem = _.last(ordered);
+                        } else {
+                            var index = ordered.indexOf($scope.selectedItem) - 1;
+                            if (index < 0) {
+                                if ($scope.newOpt) {
+                                    $scope.selectedItem = $scope.newOpt;
+                                } else {
+                                    $scope.selectedItem = _.last(ordered);
+                                }
+                            } else {
+                                $scope.selectedItem = ordered[index];
+                            }
                         }
-                        $scope.selectedItem = ordered[index];
                     } else {
-                        $scope.selectedItem = _.last(ordered);
+                        if ($scope.newOpt) {
+                            $scope.selectedItem = $scope.newOpt;
+                        } else {
+                            $scope.selectedItem = _.last(ordered);
+                        }
                     }
-                    setText();
                 }));
                 $scope.selectItem = (opt) => {
                     $scope.selectedOptions.push(opt);
@@ -152,10 +176,16 @@ angular.module('website-components-multiselect', [
                     $scope.inputText = '';
                 };
                 $scope.$watch('inputText', () => {
-                    if (!$scope.inputText) {
-                        return;
-                    }
-                    $scope.selectedItem = _.find($scope.availableOptions, (opt) => opt === $scope.inputText);
+                    $timeout(() => $scope.$apply(() => {
+                        if (!$scope.inputText) {
+                            $scope.selectedItem = null;
+                            $scope.active = false;
+                        } else {
+                            $scope.selectedItem = _.find($scope.availableOptions, (opt) => opt.startsWith($scope.inputText));
+                            $scope.active = true;
+                            $scope.showOptions();
+                        }
+                    }));
                 });
             }],
             link: (scope, element) => {
@@ -209,6 +239,7 @@ angular.module('website-components-multiselect', [
                 onSelectTopDownOption: '&',
                 onSelectBottomUpOption: '&',
                 onOptionsDeactivated: '&',
+                selectedOption: '=',
                 inputText: '='
             },
             templateUrl: 'app/templates/component_multiselect_selected.html',
@@ -267,13 +298,13 @@ angular.module('website-components-multiselect', [
                     }
                 }));
                 let addItem = () => {
-                    let trimmed = $scope.inputText.trim();
-                    if (trimmed) {
-                        let existing = _.find($scope.selectedOptions, (selected) => selected === trimmed);
+                    if ($scope.selectedOption) {
+                        let existing = _.find($scope.selectedOptions, (selected) => selected === $scope.selectedOption);
                         if (!existing) {
-                            $scope.selectedOptions.push(trimmed);
+                            $scope.selectedOptions.push($scope.selectedOption);
                         }
                     }
+                    $scope.selectedOption = null;
                     $scope.inputText = '';
                 };
                 $scope.keyEntered = (event) =>  $timeout(() => $scope.$apply(() => {
