@@ -1,0 +1,26 @@
+@import "variables"
+
+div.tribe-field-actions-body
+  display: flex
+  border: solid #cccccc 1px
+  background-color: #f0f0f0
+  > div
+    margin: 3px
+    $size: 22px
+    width: $size
+    height: $size
+    display: flex
+    flex-direction: column
+    justify-content: center
+    align-items: center
+    border: solid #cbcbcb 1px
+    $bg-color: #f5f5f5
+    background-color: $bg-color
+    i
+      color: #777
+    &:hover
+      background-color: darken($bg-color, 10)
+      cursor: pointer
+      i
+        color: inherit
+

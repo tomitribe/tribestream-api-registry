@@ -28,6 +28,9 @@ angular.module('tribe-main', [
                 .when('/', {
                     templateUrl: 'app/templates/page_endpoints.html'
                 })
+                .when('/showcase', {
+                    templateUrl: 'app/templates/page_components.html'
+                })
                 .when('/see/:aggregatedId', {
                     templateUrl: 'app/templates/page_see.html',
                     controller: ['$scope', '$routeParams', function ($scope, $routeParams) {
@@ -38,6 +41,14 @@ angular.module('tribe-main', [
                     templateUrl: 'app/templates/page_application_details.html',
                     controller: ['$scope', '$routeParams', function ($scope, $routeParams) {
                         $scope.app = $routeParams.app;
+                    }]
+                })
+                .when('/application/:app/:method/:url*', {
+                    templateUrl: 'app/templates/page_endpoints_details.html',
+                    controller: ['$scope', '$routeParams', function ($scope, $routeParams) {
+                        $scope.app = $routeParams.app;
+                        $scope.method = $routeParams.method;
+                        $scope.path = $routeParams.url;
                     }]
                 })
                 .when('/endpoint/:app/:method/:url*', {

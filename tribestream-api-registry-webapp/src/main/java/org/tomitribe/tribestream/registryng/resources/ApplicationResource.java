@@ -23,6 +23,7 @@ import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 import org.tomitribe.tribestream.registryng.repository.Repository;
+import org.tomitribe.tribestream.registryng.service.PathTransformUtil;
 import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
@@ -114,13 +115,13 @@ public class ApplicationResource {
         @PathParam("verb") final String verb,
         @PathParam("path") final String pathWithoutLeadingSlash) {
 
-        final String path = "/" + pathWithoutLeadingSlash;
+        final String path = PathTransformUtil.colonToBraces(pathWithoutLeadingSlash);
 
         Endpoint endpoint = repository.findEndpoint(applicationId, verb, path);
         if (endpoint == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        EndpointWrapper endpointWrapper = new EndpointWrapper(verb, path, endpoint.getOperation());
+        EndpointWrapper endpointWrapper = new EndpointWrapper(verb.toLowerCase(), path, endpoint.getOperation());
         endpointWrapper.addLink("self", uriInfo.getBaseUriBuilder().path("endpoint").path(endpoint.getId()).build());
         endpointWrapper.addLink("application", uriInfo.getBaseUriBuilder().path("application").path(applicationId).build());
 
