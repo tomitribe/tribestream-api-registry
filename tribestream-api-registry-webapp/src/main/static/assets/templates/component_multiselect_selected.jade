@@ -1,6 +1,6 @@
 div
   div
-    .items(x-ng-repeat="opt in selectedOptions", ng-class="{selected: opt === selectedItem}")
+    .items(x-ng-repeat="opt in selectedOptions | orderBy", ng-class="{selected: opt === selectedItem}")
       div
         span.opt {{opt}}
         i.fa.fa-times.remove(x-ng-click="releaseItem(opt)")

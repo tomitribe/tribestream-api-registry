@@ -175,7 +175,7 @@ describe('it tests our custom multiselect component', () => {
                             timeoutTryCatch(100, done, () => {
                                 triggerKeyDown(input, 13); // enter
                                 timeoutTryCatch(100, done, () => {
-                                    let lastSelected = selected.find('.items').last();
+                                    let lastSelected = selected.find('.items')[3];
                                     expect(angular.element(lastSelected).scope().opt).to.equal('eee');
                                     triggerKeyDown(input, 40); // arrowdown
                                     timeoutTryCatch(100, done, () => {
@@ -189,7 +189,8 @@ describe('it tests our custom multiselect component', () => {
                                         timeoutTryCatch(100, done, () => {
                                             triggerKeyDown(input, 13); // enter
                                             timeoutTryCatch(100, done, () => {
-                                                expect(angular.element(selected.find('.items').last()).scope().opt).to.equal('ddd');
+                                                // items are sorted, so it should go to the third position
+                                                expect(angular.element(selected.find('.items')[3]).scope().opt).to.equal('ddd');
                                                 done();
                                             });
                                         });

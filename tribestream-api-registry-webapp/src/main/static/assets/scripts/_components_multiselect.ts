@@ -121,31 +121,33 @@ angular.module('website-components-multiselect', [
                     }
                 };
                 $scope.selectNext = () => $timeout(() => $scope.$apply(() => {
+                    let ordered = _.sortBy($scope.availableOptions, (item) => item);
                     if ($scope.selectedItem) {
-                        var index = $scope.availableOptions.indexOf($scope.selectedItem) + 1;
-                        if (index >= $scope.availableOptions.length) {
+                        var index = ordered.indexOf($scope.selectedItem) + 1;
+                        if (index >= ordered.length) {
                             index = 0;
                         }
-                        $scope.selectedItem = $scope.availableOptions[index];
+                        $scope.selectedItem = ordered[index];
                     } else {
-                        $scope.selectedItem = _.first($scope.availableOptions);
+                        $scope.selectedItem = _.first(ordered);
                     }
                     setText();
                 }));
                 $scope.selectPrevious = () => $timeout(() => $scope.$apply(() => {
+                    let ordered = _.sortBy($scope.availableOptions, (item) => item);
                     if ($scope.selectedItem) {
-                        var index = $scope.availableOptions.indexOf($scope.selectedItem) - 1;
+                        var index = ordered.indexOf($scope.selectedItem) - 1;
                         if (index < 0) {
-                            index = $scope.availableOptions.length - 1;
+                            index = ordered.length - 1;
                         }
-                        $scope.selectedItem = $scope.availableOptions[index];
+                        $scope.selectedItem = ordered[index];
                     } else {
-                        $scope.selectedItem = _.last($scope.availableOptions);
+                        $scope.selectedItem = _.last(ordered);
                     }
                     setText();
                 }));
                 $scope.selectItem = (opt) => {
-                    $scope.selectedOptions.push(opt)
+                    $scope.selectedOptions.push(opt);
                     $scope.active = false;
                     $scope.inputText = '';
                 };
@@ -215,20 +217,22 @@ angular.module('website-components-multiselect', [
                 $scope.releaseEngaged = false;
                 $scope.selectedItem = null;
                 let selectOrDeleteLast = () => $timeout(() => $scope.$apply(() => {
+                    let ordered = _.sortBy($scope.selectedOptions, (item) => item);
                     if ($scope.selectedItem) {
-                        var selectedIndex = $scope.selectedOptions.indexOf($scope.selectedItem);
+                        var selectedIndex = ordered.indexOf($scope.selectedItem);
                         $scope.selectedOptions = _.without($scope.selectedOptions, $scope.selectedItem);
-                        if ($scope.selectedOptions.length) {
-                            if (selectedIndex >= $scope.selectedOptions.length) {
-                                selectedIndex = $scope.selectedOptions.length - 1;
+                        ordered = _.without(ordered, $scope.selectedItem);
+                        if (ordered.length) {
+                            if (selectedIndex >= ordered.length) {
+                                selectedIndex = ordered.length - 1;
                             }
-                            $scope.selectedItem = $scope.selectedOptions[selectedIndex];
+                            $scope.selectedItem = ordered[selectedIndex];
                         } else {
                             $scope.selectedItem = null;
                         }
                         $scope.onChange();
                     } else {
-                        $scope.selectedItem = _.last($scope.selectedOptions);
+                        $scope.selectedItem = _.last(ordered);
                     }
                 }));
                 let releaseSelection = () => $timeout(() => $scope.$apply(() => $scope.selectedItem = null));
@@ -239,25 +243,27 @@ angular.module('website-components-multiselect', [
                     if (!$scope.selectedItem) {
                         selectOrDeleteLast();
                     } else {
-                        var next = $scope.selectedOptions.indexOf($scope.selectedItem) - 1;
+                        let ordered = _.sortBy($scope.selectedOptions, (item) => item);
+                        var next = ordered.indexOf($scope.selectedItem) - 1;
                         if (next === -1) {
-                            next = $scope.selectedOptions.length - 1;
+                            next = ordered.length - 1;
                         }
-                        $scope.selectedItem = $scope.selectedOptions[next];
+                        $scope.selectedItem = ordered[next];
                     }
                 }));
                 let selectRight = () => $timeout(() => $scope.$apply(() => {
                     if (!$scope.selectedOptions.length) {
                         return;
                     }
+                    let ordered = _.sortBy($scope.selectedOptions, (item) => item);
                     if (!$scope.selectedItem) {
-                        $scope.selectedItem = $scope.selectedOptions[0];
+                        $scope.selectedItem = ordered[0];
                     } else {
-                        var next = $scope.selectedOptions.indexOf($scope.selectedItem) + 1;
-                        if (next === $scope.selectedOptions.length) {
+                        var next = ordered.indexOf($scope.selectedItem) + 1;
+                        if (next === ordered.length) {
                             next = 0;
                         }
-                        $scope.selectedItem = $scope.selectedOptions[next];
+                        $scope.selectedItem = ordered[next];
                     }
                 }));
                 let addItem = () => {
