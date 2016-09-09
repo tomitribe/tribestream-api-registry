@@ -46,10 +46,10 @@
 
   <role rolename="tribe-admin"/>
   <role rolename="tribe-console"/>
-  <role rolename="tribe-repogistry"/>
+  <role rolename="tribe-registry"/>
   <role rolename="tribe-tools"/>
 
-  <group groupname="tribe" roles="tribe-admin,tribe-console,tribe-repogistry,tribe-tools"/>
+  <group groupname="tribe" roles="tribe-admin,tribe-console,tribe-registry,tribe-tools"/>
 
   <!-- SHA1 for admin is d033e22ae348aeb5660fc2140aec35850c4da997 -->
   <!--<user username="admin" password="d033e22ae348aeb5660fc2140aec35850c4da997" groups="tribe"/>-->
