@@ -19,13 +19,14 @@
 package org.tomitribe.tribestream.registryng.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.tomitribe.tribestream.registryng.entities.Endpoint;
+import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
+import org.tomitribe.tribestream.registryng.security.LoginContext;
+import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.Swagger;
-import org.tomitribe.tribestream.registryng.entities.Endpoint;
-import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
-import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 
 import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
@@ -35,7 +36,9 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import java.io.StringWriter;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -57,6 +60,9 @@ public class Repository {
     @Inject
     @Named(SwaggerJsonMapperProducer.SWAGGER_OBJECT_MAPPER_NAME)
     private ObjectMapper mapper;
+
+    @Inject
+    private LoginContext loginContext;
 
     public static String getApplicationId(Swagger swagger) {
         return swagger.getInfo().getTitle() + "-" + swagger.getInfo().getVersion();
@@ -149,7 +155,7 @@ public class Repository {
             .getResultList();
     }
 
-    public OpenApiDocument insert(Swagger swagger) {
+    public OpenApiDocument insert(final Swagger swagger) {
 
         final OpenApiDocument document = new OpenApiDocument();
         document.setName(swagger.getInfo().getTitle());
@@ -159,27 +165,51 @@ public class Repository {
         clone.setPaths(null);
         document.setSwagger(clone);
 
+        Date now = new Date();
+        document.setCreatedAt(now);
+        document.setUpdatedAt(now);
+        document.setCreatedBy(loginContext.getUsername());
+        document.setUpdatedBy(loginContext.getUsername());
         em.persist(document);
 
         // Store the endpoints in a separate table
-        for (Map.Entry<String, Path> stringPathEntry : swagger.getPaths().entrySet()) {
-            final String path = stringPathEntry.getKey();
-            final Path pathObject = stringPathEntry.getValue();
-            for (Map.Entry<HttpMethod, Operation> httpMethodOperationEntry : pathObject.getOperationMap().entrySet()) {
-                final String verb = httpMethodOperationEntry.getKey().name();
-                final Operation operation = httpMethodOperationEntry.getValue();
+        if (swagger.getPaths() != null) {
+            for (Map.Entry<String, Path> stringPathEntry : swagger.getPaths().entrySet()) {
+                final String path = stringPathEntry.getKey();
+                final Path pathObject = stringPathEntry.getValue();
+                for (Map.Entry<HttpMethod, Operation> httpMethodOperationEntry : pathObject.getOperationMap().entrySet()) {
+                    final String verb = httpMethodOperationEntry.getKey().name().toUpperCase();
+                    final Operation operation = httpMethodOperationEntry.getValue();
 
-                Endpoint endpoint = new Endpoint();
-                endpoint.setApplication(document);
-                endpoint.setPath(path);
-                endpoint.setVerb(verb);
-                endpoint.setOperation(operation);
+                    Endpoint endpoint = new Endpoint();
+                    endpoint.setApplication(document);
+                    endpoint.setPath(path);
+                    endpoint.setVerb(verb);
+                    endpoint.setOperation(operation);
 
-                em.persist(endpoint);
+                    em.persist(endpoint);
+                }
             }
         }
-
         return document;
+    }
+
+    public Endpoint insert(final Endpoint endpoint, final String applicationId) {
+        OpenApiDocument application = findByApplicationId(applicationId);
+        application.getEndpoints().add(endpoint);
+
+        endpoint.setApplication(application);
+        Date now = new Date();
+        endpoint.setCreatedAt(now);
+        endpoint.setUpdatedAt(now);
+        endpoint.setCreatedBy(loginContext.getUsername());
+        endpoint.setUpdatedBy(loginContext.getUsername());
+
+        application.setUpdatedAt(now);
+        application.setUpdatedBy(loginContext.getUsername());
+        em.persist(endpoint);
+        update(application);
+        return endpoint;
     }
 
     public static Swagger createShallowCopy(Swagger swagger) {
@@ -200,5 +230,53 @@ public class Repository {
         result.setTags(swagger.getTags());
         result.setExternalDocs(swagger.getExternalDocs());
         return result;
+    }
+
+    public OpenApiDocument update(OpenApiDocument document) {
+        document.setUpdatedAt(new Date());
+        document.setUpdatedBy(loginContext.getUsername());
+        if (document.getSwagger() != null) {
+            document.setDocument(convertToJson(document.getSwagger()));
+        }
+        return em.merge(document);
+    }
+
+    public Endpoint update(Endpoint endpoint) {
+        endpoint.setUpdatedAt(new Date());
+        endpoint.setUpdatedBy(loginContext.getUsername());
+        if (endpoint.getOperation() != null) {
+            endpoint.setDocument(convertToJson(endpoint.getOperation()));
+        }
+        return em.merge(endpoint);
+    }
+
+    private String convertToJson(Object object) {
+        try (StringWriter sw = new StringWriter()) {
+            mapper.writeValue(sw, object);
+            sw.flush();
+            return sw.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean deleteApplication(final String applicationId) {
+        final OpenApiDocument document = findByApplicationId(applicationId);
+        if (document == null) {
+            return false;
+        } else {
+            em.remove(document);
+            return true;
+        }
+    }
+
+    public boolean deleteEndpoint(String applicationId, String endpointId) {
+        final Endpoint endpoint = findEndpointById(endpointId);
+        if (endpoint == null || !applicationId.equals(endpoint.getApplication().getId())) {
+            return false;
+        } else {
+            em.remove(endpoint);
+            return true;
+        }
     }
 }

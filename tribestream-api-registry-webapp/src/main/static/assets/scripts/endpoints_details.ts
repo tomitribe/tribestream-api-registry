@@ -347,6 +347,7 @@ angular.module('tribe-endpoints-details', [
 
                     $timeout(function () {
                         $scope.$apply(function () {
+                            // TODO: This MUST go somewhere else, both properties
                             if (!$scope.endpoint.errors) {
                                 $scope.endpoint.errors = [];
                             }
@@ -442,26 +443,24 @@ angular.module('tribe-endpoints-details', [
             templateUrl: 'app/templates/app_endpoints_details.html',
             scope: {
                 'applicationId': '=',
-                'method': '=',
-                'path': '='
+                'endpointId': '='
             },
             controller: [
-                '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log',
-                function ($scope, srv, tribeFilterService, $timeout, $filter, $log) {
+                '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', 'systemMessagesService'
+                function ($scope, srv, tribeFilterService, $timeout, $filter, $log, systemMessagesService) {
                     $timeout(function () {
                         $scope.$apply(function () {
-                            let httpMethod = $scope.method.toLowerCase();
                             $scope.endpoint = {
-                                httpMethod: httpMethod,
-                                path: $scope.path,
+                                httpMethod: "",
+                                path: "",
                                 operation: {}
                             };
-                            $scope.application = {};
                         });
                     }).then(function() {
-                        srv.getDetails($scope.applicationId, $scope.method, $scope.path).then(function (detailsData) {
+                        srv.getDetails($scope.applicationId, $scope.endpointId).then(function (detailsResponse) {
                             $timeout(function () {
                                 $scope.$apply(function () {
+                                    let detailsData = detailsResponse.data;
                                     $scope.endpoint.httpMethod = detailsData.httpMethod;
                                     $scope.endpoint.path = $filter('pathencode')(detailsData.path);
                                     $scope.endpoint.operation = detailsData.operation;
@@ -470,15 +469,28 @@ angular.module('tribe-endpoints-details', [
                             srv.getApplicationDetails($scope.applicationId).then(function (applicationDetails) {
                                 $timeout(function () {
                                     $scope.$apply(function () {
-                                        if (!applicationDetails || !applicationDetails.swagger) {
+                                        if (!applicationDetails.data || !applicationDetails.data.swagger) {
                                             $log.error("Got no application details!");
                                         }
-                                        $scope.application = applicationDetails;
+                                        $scope.application = applicationDetails.data;
                                     });
                                 });
                             });
                         });
                     });
+                    $scope.save = function() {
+                        srv.saveEndpoint($scope.applicationId, $scope.endpointId, {
+                                // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
+                                httpMethod: $scope.endpoint.httpMethod,
+                                path: $scope.endpoint.path,
+                                operation: $scope.endpoint.operation
+                            })
+                            .then(
+                                function (saveResponse) {
+                                    systemMessagesService.info("Saved endpoint details! " + saveResponse.status);
+                                }
+                            );
+                    };
                 }
             ]
         };

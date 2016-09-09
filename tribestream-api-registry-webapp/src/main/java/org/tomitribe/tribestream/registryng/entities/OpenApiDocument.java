@@ -20,6 +20,7 @@ package org.tomitribe.tribestream.registryng.entities;
 
 import io.swagger.models.Swagger;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
@@ -44,10 +45,10 @@ import java.util.Collection;
         query = "SELECT d FROM OpenApiDocument d WHERE d.name = :name AND d.version = :version"),
     @NamedQuery(
         name = OpenApiDocument.QRY_FIND_BY_APPLICATIONID,
-        query = "SELECT d FROM OpenApiDocument d WHERE concat(d.name, '-', d.version) = :applicationId OR d.id = :applicationId"),
+        query = "SELECT d FROM OpenApiDocument d WHERE d.id = :applicationId"),
     @NamedQuery(
         name = OpenApiDocument.QRY_FIND_BY_APPLICATIONID_WITH_ENDPOINTS,
-        query = "SELECT DISTINCT d FROM OpenApiDocument d JOIN FETCH d.endpoints WHERE concat(d.name, '-', d.version) = :applicationId OR d.id = :applicationId"),
+        query = "SELECT DISTINCT d FROM OpenApiDocument d LEFT JOIN FETCH d.endpoints WHERE d.id = :applicationId"),
     @NamedQuery(
         name = OpenApiDocument.QRY_FIND_BY_NAME,
         query = "SELECT d FROM OpenApiDocument d WHERE d.name = :name ORDER BY d.version DESC"),
@@ -90,7 +91,7 @@ public class OpenApiDocument extends AbstractEntity {
     @Lob
     private String document;
 
-    @OneToMany(targetEntity = Endpoint.class, mappedBy = "application")
+    @OneToMany(targetEntity = Endpoint.class, mappedBy = "application", cascade = CascadeType.REMOVE)
     private Collection<Endpoint> endpoints = new ArrayList<>();
 
     private transient Swagger swagger;
