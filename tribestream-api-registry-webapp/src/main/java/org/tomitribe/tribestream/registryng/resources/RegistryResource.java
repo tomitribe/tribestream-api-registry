@@ -19,6 +19,7 @@
 package org.tomitribe.tribestream.registryng.resources;
 
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
+import org.tomitribe.tribestream.registryng.domain.SearchResult;
 import org.tomitribe.tribestream.registryng.repository.Repository;
 import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 import org.tomitribe.tribestream.registryng.service.search.SearchRequest;
@@ -73,7 +74,14 @@ public class RegistryResource {
             page,
             count
         );
-        return searchEngine.search(searchRequest);
+        SearchPage searchPage = searchEngine.search(searchRequest);
+        for (SearchResult searchResult: searchPage.getResults()) {
+            searchResult.setLink(uriInfo.getBaseUriBuilder()
+                    .path("/application/{applicationId}/endpoint/{endpointId}")
+                    .resolveTemplate("applicationId", searchResult.getApplicationId())
+                    .resolveTemplate("endpointId", searchResult.getEndpointId()).build().toASCIIString());
+        }
+        return searchPage;
     }
 
 }

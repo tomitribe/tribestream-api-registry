@@ -19,12 +19,6 @@
 package org.tomitribe.tribestream.registryng.resources;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.tomitribe.tribestream.registryng.bootstrap.Bootstrap;
-import org.tomitribe.tribestream.registryng.repository.Repository;
-import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
-import org.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
-import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
-import org.tomitribe.tribestream.registryng.webapp.RegistryNgApplication;
 import org.apache.openejb.jee.JaxbJavaee;
 import org.apache.openejb.jee.WebApp;
 import org.apache.openejb.jee.jpa.unit.Persistence;
@@ -41,6 +35,13 @@ import org.hibernate.jpa.boot.spi.ClassDescriptor;
 import org.hibernate.jpa.boot.spi.MappingFileDescriptor;
 import org.hibernate.jpa.boot.spi.PackageDescriptor;
 import org.hibernate.jpa.boot.spi.PersistenceUnitDescriptor;
+import org.tomitribe.tribestream.registryng.bootstrap.Bootstrap;
+import org.tomitribe.tribestream.registryng.repository.Repository;
+import org.tomitribe.tribestream.registryng.security.LoginContext;
+import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
+import org.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
+import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
+import org.tomitribe.tribestream.registryng.webapp.RegistryNgApplication;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -67,7 +68,8 @@ public class Application {
             Repository.class, SwaggerJsonMapperProducer.class,
             Bootstrap.class, SearchEngine.class,
             SearchResource.class, RegistryResource.class,
-            EndpointResource.class, ApplicationResource.class,
+            ApplicationResource.class, EndpointResource.class,
+            LoginContext.class,
             RegistryNgApplication.class
     })
     public WebApp war() throws Exception {

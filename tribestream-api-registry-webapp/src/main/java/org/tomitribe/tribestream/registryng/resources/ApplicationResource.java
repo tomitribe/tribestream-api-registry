@@ -18,25 +18,27 @@
  */
 package org.tomitribe.tribestream.registryng.resources;
 
-import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
-import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
-import org.tomitribe.tribestream.registryng.entities.Endpoint;
-import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
-import org.tomitribe.tribestream.registryng.repository.Repository;
-import org.tomitribe.tribestream.registryng.service.PathTransformUtil;
-import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
+import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
+import org.tomitribe.tribestream.registryng.entities.Endpoint;
+import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
+import org.tomitribe.tribestream.registryng.repository.Repository;
+import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -71,7 +73,7 @@ public class ApplicationResource {
 
     @GET
     @Path("/")
-    public List<ApplicationWrapper> getAllApplications(@Context UriInfo uriInfo) {
+    public Response getAllApplications(@Context UriInfo uriInfo) {
         final List<OpenApiDocument> applications = repository.findAllApplicationsWithEndpoints();
 
         final Set<String> ids = new HashSet<>();
@@ -80,11 +82,29 @@ public class ApplicationResource {
         for (OpenApiDocument application : applications) {
             final Swagger swagger = shrinkSwagger(mergeSwagger(application.getSwagger(), application.getEndpoints()));
             ApplicationWrapper applicationWrapper = new ApplicationWrapper(swagger);
-            applicationWrapper.addLink("self", uriInfo.getBaseUriBuilder().path("application").path(application.getId()).build());
             uniqueResults.add(applicationWrapper);
         }
 
-        return uniqueResults;
+        return Response.status(Response.Status.OK).entity(uniqueResults).build();
+    }
+
+    private Link[] buildLinks(UriInfo uriInfo, OpenApiDocument application) {
+        List<Link> result = new ArrayList<>();
+
+        result.add(
+                Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path("application/{applicationId}").resolveTemplate("applicationId", application.getId()))
+                        .rel("self")
+                        .build());
+        for (Endpoint endpoint : application.getEndpoints()) {
+            result.add(
+                    Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path("application/{applicationId}/endpoint/{endpointId}")
+                            .resolveTemplate("applicationId", application.getId())
+                            .resolveTemplate("endpointId", endpoint.getId()))
+                            .rel(endpoint.getVerb() + " " + endpoint.getPath())
+                            .build());
+        }
+
+        return result.toArray(new Link[result.size()]);
     }
 
     @GET
@@ -101,42 +121,10 @@ public class ApplicationResource {
         final Swagger reducedSwagger = shrinkSwagger(mergeSwagger(application.getSwagger(), application.getEndpoints()));
 
         ApplicationWrapper applicationWrapper = new ApplicationWrapper(reducedSwagger);
-        applicationWrapper.addLink("self", uriInfo.getBaseUriBuilder().path("application").path(application.getId()).build());
 
-        return Response.ok(applicationWrapper).build();
+        return Response.ok(applicationWrapper).links(buildLinks(uriInfo, application)).build();
     }
 
-
-    @GET
-    @Path("/{applicationId}/{verb}/{path:.*}")
-    public Response getEndpoint(
-        @Context UriInfo uriInfo,
-        @PathParam("applicationId") final String applicationId,
-        @PathParam("verb") final String verb,
-        @PathParam("path") final String pathWithoutLeadingSlash) {
-
-        final String path = PathTransformUtil.colonToBraces(pathWithoutLeadingSlash);
-
-        Endpoint endpoint = repository.findEndpoint(applicationId, verb, path);
-        if (endpoint == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        EndpointWrapper endpointWrapper = new EndpointWrapper(verb.toLowerCase(), path, endpoint.getOperation());
-        endpointWrapper.addLink("self", uriInfo.getBaseUriBuilder().path("endpoint").path(endpoint.getId()).build());
-        endpointWrapper.addLink("application", uriInfo.getBaseUriBuilder().path("application").path(applicationId).build());
-
-        return Response.ok(endpointWrapper).build();
-    }
-
-    // For root resources
-    @GET
-    @Path("/{applicationId}/{verb}")
-    public Response getEndpoint(
-        @Context UriInfo uriInfo,
-        @PathParam("applicationId") final String applicationId,
-        @PathParam("verb") final String verb) {
-        return getEndpoint(uriInfo, applicationId, verb, "");
-    }
 
     @POST
     @Path("/")
@@ -146,16 +134,129 @@ public class ApplicationResource {
 
         final Swagger swagger = application.getSwagger();
 
+        validate(swagger);
+
         final OpenApiDocument document = repository.insert(swagger);
 
         final OpenApiDocument newDocument = repository.findByApplicationIdWithEndpoints(document.getId());
 
         final ApplicationWrapper applicationWrapper = new ApplicationWrapper(shrinkSwagger(mergeSwagger(newDocument.getSwagger(), newDocument.getEndpoints())));
-        applicationWrapper.addLink("self", uriInfo.getBaseUriBuilder().path("application").path(document.getId()).build());
 
         searchEngine.doReindex();
 
-        return Response.status(201).entity(applicationWrapper).build();
+        return Response.status(Response.Status.CREATED)
+                .entity(applicationWrapper)
+                .links(buildLinks(uriInfo, newDocument))
+                .build();
+    }
+
+    private void validate(Swagger swagger) {
+        if (swagger == null) {
+            throw new WebApplicationException("Swagger document is null!", Response.Status.BAD_REQUEST);
+        }
+        if (!"2.0".equals(swagger.getSwagger())) {
+            throw new WebApplicationException("Unsupported swagger version!", Response.Status.BAD_REQUEST);
+        }
+        if (swagger.getInfo() == null) {
+            throw new WebApplicationException("Swagger document has no info property!", Response.Status.BAD_REQUEST);
+        }
+        if (swagger.getInfo().getTitle() == null) {
+            throw new WebApplicationException("Swagger document has no title!", Response.Status.BAD_REQUEST);
+        }
+        if (swagger.getInfo().getTitle() == null) {
+            throw new WebApplicationException("Swagger document has no version!", Response.Status.BAD_REQUEST);
+        }
+    }
+
+    @PUT
+    @Path("/{id}")
+    public Response updateService(
+            @Context UriInfo uriInfo,
+            @PathParam("id") final String applicationId,
+            ApplicationWrapper application) {
+
+        final Swagger swagger = application.getSwagger();
+
+        final OpenApiDocument oldDocument = repository.findByApplicationIdWithEndpoints(applicationId);
+
+        if (oldDocument == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        merge(oldDocument.getSwagger(), swagger);
+
+        validate(oldDocument.getSwagger());
+
+        // TODO: Handle added/updated/removed paths
+
+        repository.update(oldDocument);
+
+        final OpenApiDocument updatedDocument = repository.findByApplicationIdWithEndpoints(applicationId);
+
+        final ApplicationWrapper applicationWrapper = new ApplicationWrapper(shrinkSwagger(updatedDocument.getSwagger()));
+
+        searchEngine.doReindex();
+
+        return Response.status(Response.Status.OK).links(buildLinks(uriInfo, updatedDocument)).entity(applicationWrapper).build();
+    }
+
+
+    @DELETE
+    @Path("/{id}")
+    public Response deleteService(
+            @Context UriInfo uriInfo,
+            @PathParam("id") final String applicationId) {
+
+        if (!repository.deleteApplication(applicationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        } else {
+            searchEngine.doReindex();
+            return Response.status(Response.Status.OK).build();
+        }
+    }
+
+    private void merge(Swagger target, Swagger source) {
+
+        if (source.getSwagger() != null) {
+            target.setSwagger(source.getSwagger());
+        }
+        if (source.getInfo() != null) {
+            target.setInfo(source.getInfo());
+        }
+        if (source.getHost() != null) {
+            target.setHost(source.getHost());
+        }
+        if (source.getBasePath() != null) {
+            target.setBasePath(source.getBasePath());
+        }
+        if (source.getSchemes() != null) {
+            target.setSchemes(source.getSchemes());
+        }
+        if (source.getConsumes() != null) {
+            target.setConsumes(source.getConsumes());
+        }
+        if (source.getProduces() != null) {
+            target.setProduces(source.getProduces());
+        }
+        if (source.getDefinitions() != null) {
+            target.setDefinitions(source.getDefinitions());
+        }
+        if (source.getParameters() != null) {
+            target.setParameters(source.getParameters());
+        }
+        if (source.getResponses() != null) {
+            target.setResponses(source.getResponses());
+        }
+        if (source.getSecurity() != null) {
+            target.setSecurity(source.getSecurity());
+        }
+        if (source.getTags() != null) {
+            target.setTags(source.getTags());
+        }
+        if (source.getVendorExtensions() != null) {
+            target.getVendorExtensions().clear();
+            target.getVendorExtensions().putAll(source.getVendorExtensions());
+        }
     }
 
     private Swagger mergeSwagger(final Swagger swagger, final Collection<Endpoint> endpoints) {
@@ -181,20 +282,22 @@ public class ApplicationResource {
         Swagger applicationClone = Repository.createShallowCopy(swagger);
 
         Map<String, io.swagger.models.Path> paths = applicationClone.getPaths();
-        Map<String, io.swagger.models.Path> shrunkPaths = new HashMap<>();
+        if (paths != null) {
+            Map<String, io.swagger.models.Path> shrunkPaths = new HashMap<>();
 
-        for (Map.Entry<String, io.swagger.models.Path> pathEntry : paths.entrySet()) {
-            io.swagger.models.Path shrunkPath = new io.swagger.models.Path();
-            shrunkPaths.put(pathEntry.getKey(), shrunkPath);
-            for (Map.Entry<HttpMethod, Operation> httpMethodOperationEntry : pathEntry.getValue().getOperationMap().entrySet()) {
-                Operation shrunkOperation = new Operation();
-                shrunkOperation.setDescription(httpMethodOperationEntry.getValue().getDescription());
-                shrunkOperation.setSummary(httpMethodOperationEntry.getValue().getSummary());
-                shrunkPath.set(httpMethodOperationEntry.getKey().name().toLowerCase(), shrunkOperation);
+            for (Map.Entry<String, io.swagger.models.Path> pathEntry : paths.entrySet()) {
+                io.swagger.models.Path shrunkPath = new io.swagger.models.Path();
+                shrunkPaths.put(pathEntry.getKey(), shrunkPath);
+                for (Map.Entry<HttpMethod, Operation> httpMethodOperationEntry : pathEntry.getValue().getOperationMap().entrySet()) {
+                    Operation shrunkOperation = new Operation();
+                    shrunkOperation.setDescription(httpMethodOperationEntry.getValue().getDescription());
+                    shrunkOperation.setSummary(httpMethodOperationEntry.getValue().getSummary());
+                    shrunkPath.set(httpMethodOperationEntry.getKey().name().toLowerCase(), shrunkOperation);
+                }
             }
-        }
 
-        applicationClone.setPaths(shrunkPaths);
+            applicationClone.setPaths(shrunkPaths);
+        }
         return applicationClone;
     }
 
