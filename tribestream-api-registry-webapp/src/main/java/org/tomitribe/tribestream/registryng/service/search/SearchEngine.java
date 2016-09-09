@@ -56,7 +56,6 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
-import org.apache.openejb.loader.SystemInstance;
 import org.tomitribe.tribestream.registryng.domain.CloudItem;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
 import org.tomitribe.tribestream.registryng.domain.SearchResult;
@@ -283,10 +282,10 @@ public class SearchEngine {
             File index = new File(directoryPath, "index");
             File facet = new File(directoryPath, "facet");
             if (!index.isAbsolute()) {
-                index = new File(SystemInstance.get().getHome().getDirectory(), directoryPath + "/index");
+                index = new File(System.getProperty("openejb.base"), directoryPath + "/index");
             }
             if (!facet.isAbsolute()) {
-                facet = new File(SystemInstance.get().getHome().getDirectory(), directoryPath + "/facet");
+                facet = new File(System.getProperty("openejb.base"), directoryPath + "/facet");
             }
             if (!index.exists()) {
                 Files.mkdirs(index);
