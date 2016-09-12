@@ -1,0 +1,249 @@
+angular.module('website-components-singleselect', [
+    'website-components-field-actions'
+])
+
+    .directive('tribeSingleselect', ['$window', '$timeout', ($window, $timeout) => {
+        return {
+            restrict: 'A',
+            scope: {
+                originalAvailableOptions: '=availableOptions',
+                originalSelectedOption: '=selectedOption',
+                newLabel: '@?'
+            },
+            templateUrl: 'app/templates/component_singleselect.html',
+            controller: ['$scope', '$timeout', ($scope, $timeout) => $timeout(() => {
+                $scope.selectedItem = null;
+                $scope.fieldDirty = false;
+                $scope.optionsActivated = false;
+                $scope.optionsActivatedTopDown = 0;
+                $scope.optionsActivatedBottomUp = 0;
+                $scope.version = 0;
+                $scope.$watch('originalSelectedOption', () => {
+                    $scope.inputText = _.clone($scope.originalSelectedOption);
+                });
+                $scope.$watch('originalAvailableOptions', () => {
+                    $scope.availableOptions = _.clone($scope.originalAvailableOptions);
+                });
+                $scope.onChange = () => $timeout(() => $scope.$apply(() => {
+                    $scope.optionsActivated = true;
+                    $scope.fieldDirty = true;
+                    $scope.version = $scope.version + 1;
+                }));
+                $scope.onCancel = () => $timeout(() => $scope.$apply(() => {
+                    $scope.fieldDirty = false;
+                    $scope.optionsActivated = false;
+                    $scope.inputText = _.clone($scope.originalSelectedOption);
+                    $scope.selectedItem = null;
+                    $scope.$broadcast('fieldCanceled');
+                }));
+                $scope.onCommit = () => $timeout(() => $scope.$apply(() => {
+                    $scope.fieldDirty = false;
+                    $scope.optionsActivated = false;
+                    $scope.originalSelectedOption = _.clone($scope.selectedItem);
+                    $scope.inputText = _.clone($scope.selectedItem);
+                    $scope.selectedItem = null;
+                    $scope.$broadcast('fieldCommitted');
+                }));
+                $scope.onSelectTopDownOption = () => $timeout(() => $scope.$apply(() => {
+                    $scope.optionsActivatedTopDown = $scope.optionsActivatedTopDown + 1;
+                    $scope.optionsActivated = true;
+                }));
+                $scope.onSelectBottomUpOption = () => $timeout(() => $scope.$apply(() => {
+                    $scope.optionsActivatedBottomUp = $scope.optionsActivatedBottomUp + 1;
+                    $scope.optionsActivated = true;
+                }));
+            })],
+            link: (scope, el) => $timeout(() => {
+                var deactivatePromise = null;
+                let cancelDeactivate = () => {
+                    if (deactivatePromise) {
+                        $timeout.cancel(deactivatePromise);
+                    }
+                    deactivatePromise = null;
+                };
+                let deactivate = () => {
+                    cancelDeactivate();
+                    deactivatePromise = $timeout(() => {
+                        el.removeClass('active');
+                        if (scope.fieldDirty) {
+                            scope.onCommit();
+                        }
+                    }, 500);
+                };
+                el.find('> div').on('focus', () => el.find('input').focus());
+                el.find('input').on('focus', () => {
+                    cancelDeactivate();
+                    el.addClass('active');
+                    $timeout(() => scope.$apply(() => {
+                        scope.fieldDirty = true;
+                        scope.version = scope.version + 1;
+                    }));
+                });
+                scope.$on('fieldCanceled', () => el.find('input').blur());
+                scope.$on('fieldCommitted', () => el.find('input').blur());
+                el.find('input').on('blur', deactivate);
+                scope.$on('fieldDirty', () => {
+                    if (scope.fieldDirty) {
+                        cancelDeactivate();
+                        el.addClass('active');
+                    }
+                });
+                scope.$on('$destroy', () => el.remove());
+            })
+        };
+    }])
+
+    .directive('tribeSingleselectAvailable', ['$document', '$window', ($document, $window) => {
+        return {
+            restrict: 'A',
+            scope: {
+                originalAvailableOptions: '=availableOptions',
+                active: '=',
+                activeTopDown: '=',
+                activeBottomUp: '=',
+                onSelect: '&',
+                inputText: '=',
+                selectedItem: '=',
+                version: '=',
+                newLabel: '@?'
+            },
+            templateUrl: 'app/templates/component_singleselect_available.html',
+            controller: ['$scope', '$timeout', ($scope, $timeout) => {
+                $scope.showOptions = () => $timeout(() => $scope.$apply(() => {
+                    $scope.selectedItem = null;
+                    $scope.newOpt = null;
+                    $scope.availableOptions = _.clone($scope.originalAvailableOptions);
+                    $scope.availableOptions = _.sortBy(_.filter($scope.availableOptions, (opt) => {
+                        return opt.startsWith($scope.inputText);
+                    }), (item) => item);
+                    $scope.selectedItem = _.find($scope.availableOptions, (opt) => opt.startsWith($scope.inputText.trim()));
+                    if (_.find($scope.availableOptions, (opt) => opt === $scope.inputText.trim())) {
+                        $scope.newOpt = null;
+                    } else {
+                        $scope.newOpt = $scope.inputText.trim();
+                    }
+                    if (!$scope.selectedItem) {
+                        $scope.selectedItem = $scope.newOpt;
+                    }
+                }));
+                $scope.selectNext = () => $timeout(() => $scope.$apply(() => {
+                    let ordered = _.sortBy($scope.availableOptions, (item) => item);
+                    if ($scope.selectedItem) {
+                        var index = ordered.indexOf($scope.selectedItem) + 1;
+                        if (index >= ordered.length) {
+                            if ($scope.newOpt) {
+                                $scope.selectedItem = $scope.newOpt;
+                            } else {
+                                $scope.selectedItem = ordered[0];
+                            }
+                        } else {
+                            $scope.selectedItem = ordered[index];
+                        }
+                    } else {
+                        $scope.selectedItem = _.first(ordered);
+                    }
+                }));
+                $scope.selectPrevious = () => $timeout(() => $scope.$apply(() => {
+                    let ordered = _.sortBy($scope.availableOptions, (item) => item);
+                    if ($scope.selectedItem) {
+                        if ($scope.newOpt === $scope.selectedItem && ordered.length) {
+                            $scope.selectedItem = _.last(ordered);
+                        } else {
+                            var index = ordered.indexOf($scope.selectedItem) - 1;
+                            if (index < 0) {
+                                if ($scope.newOpt) {
+                                    $scope.selectedItem = $scope.newOpt;
+                                } else {
+                                    $scope.selectedItem = _.last(ordered);
+                                }
+                            } else {
+                                $scope.selectedItem = ordered[index];
+                            }
+                        }
+                    } else {
+                        if ($scope.newOpt) {
+                            $scope.selectedItem = $scope.newOpt;
+                        } else {
+                            $scope.selectedItem = _.last(ordered);
+                        }
+                    }
+                }));
+            }],
+            link: (scope, element) => {
+                let floatingBody = angular.element(element.find('> div'));
+                floatingBody.detach();
+                var body = $document.find('body');
+                let adjustOffset = () => {
+                    let position = element.offset();
+                    floatingBody.offset(position);
+                };
+                scope.$watch('active', () => {
+                    if (scope.active) {
+                        body.append(floatingBody);
+                        adjustOffset();
+                        scope.showOptions();
+                        element.addClass('active');
+                    } else {
+                        floatingBody.detach();
+                        element.removeClass('active');
+                    }
+                });
+                scope.$watch('activeTopDown', () => {
+                    if (scope.activeTopDown) {
+                        scope.selectNext();
+                    }
+                });
+                scope.$watch('activeBottomUp', () => {
+                    if (scope.activeBottomUp) {
+                        scope.selectPrevious();
+                    }
+                });
+                scope.$watch('version', () => {
+                    adjustOffset();
+                    if (scope.active) {
+                        scope.showOptions();
+                        element.addClass('active');
+                    }
+                });
+                var eWin = angular.element($window);
+                eWin.bind('resize', adjustOffset);
+                scope.$on('$destroy', () => {
+                    eWin.unbind('resize', adjustOffset);
+                    floatingBody.remove();
+                    element.remove();
+                });
+            }
+        };
+    }])
+
+    .directive('tribeSingleselectSelected', [() => {
+        return {
+            restrict: 'A',
+            scope: {
+                onChange: '&',
+                onCancel: '&',
+                onCommit: '&',
+                onSelectTopDownOption: '&',
+                onSelectBottomUpOption: '&',
+                inputText: '='
+            },
+            templateUrl: 'app/templates/component_singleselect_selected.html',
+            controller: ['$scope', '$timeout', ($scope, $timeout) => {
+                $scope.keyEntered = (event) =>  $timeout(() => $scope.$apply(() => {
+                    if (event.keyCode === 27 /* Escape */) {
+                        $scope.onCancel();
+                    } else if (event.keyCode === 40 /* ArrowDown */) {
+                        $scope.onSelectTopDownOption();
+                    } else if (event.keyCode === 38 /* ArrowUp */) {
+                        $scope.onSelectBottomUpOption();
+                    } else if (event.keyCode === 13 /* Enter */) {
+                        $scope.onCommit();
+                    } else if(event.keyCode === 9) {
+                        // this is a tab key. no-op for now.
+                    } else {
+                        $scope.onChange();
+                    }
+                }));
+            }]
+        };
+    }]);

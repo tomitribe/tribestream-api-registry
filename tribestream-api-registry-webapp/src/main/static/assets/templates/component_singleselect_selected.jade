@@ -1,0 +1,6 @@
+div
+  .text
+    input(type="text", x-ng-keyup="keyEntered($event);", x-ng-model="inputText")
+    span {{inputText}}
+  .edit-icon
+    i.fa.fa-pencil
