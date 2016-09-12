@@ -45,7 +45,9 @@ import static javax.xml.bind.DatatypeConverter.printBase64Binary;
  * Contains the configuration for the tests
  */
 @ContainerProperties({
-        @ContainerProperties.Property(name = "hibernate.hbm2ddl.auto", value = "create-drop")
+        @ContainerProperties.Property(name = "hibernate.hbm2ddl.auto", value = "create-drop"),
+        @ContainerProperties.Property(name = "registryDatasource", value = "new://Resource?type=DataSource")
+        // ,@ContainerProperties.Property(name = "registryDatasource.LogSql", value = "true")
 })
 @org.apache.openejb.testing.Application
 public class Registry {

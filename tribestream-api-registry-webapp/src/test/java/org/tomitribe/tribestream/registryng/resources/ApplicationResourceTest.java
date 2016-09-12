@@ -27,14 +27,12 @@ import org.apache.openejb.testing.Application;
 import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
 import org.tomitribe.tribestream.registryng.domain.SearchResult;
 import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
-import org.tomitribe.tribestream.registryng.test.category.Embedded;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -56,7 +54,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
-@Category(Embedded.class)
 @RunWith(TomEEEmbeddedSingleRunner.class)
 public class ApplicationResourceTest {
     @Inject

@@ -19,7 +19,6 @@
 package org.tomitribe.tribestream.registryng.entities;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.envers.Audited;
 
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
@@ -29,7 +28,6 @@ import javax.persistence.Version;
 import java.util.Date;
 
 @MappedSuperclass
-@Audited
 public class AbstractEntity {
 
     @Id

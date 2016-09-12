@@ -24,7 +24,7 @@ import org.tomitribe.tribestream.registryng.security.LoginContext;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
-import javax.naming.InitialContext;
+import javax.enterprise.inject.spi.CDI;
 import javax.naming.NamingException;
 import java.util.Set;
 
@@ -58,7 +58,7 @@ public class RevisionListener implements org.hibernate.envers.RevisionListener {
     private <T> T getManagedBean(Class<T> clazz) throws NamingException {
         // RevisionListener is not instantiated as a CDI managed bean, so we
         // have to do a programmatic lookup of the LoginContext.
-        BeanManager beanManager = (BeanManager) new InitialContext().lookup("java:comp/BeanManager");
+        BeanManager beanManager = CDI.current().getBeanManager();
         Set<Bean<?>> beans = beanManager.getBeans(clazz);
         Bean<?> bean = beanManager.resolve(beans);
         CreationalContext<?> ctx = beanManager.createCreationalContext(bean);

@@ -169,6 +169,15 @@
     </pluginManagement>
 
     <plugins>
+      <plugin> <!-- tests rely on a single container so ensure to reuse it -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${version.surefire}</version>
+        <configuration>
+          <forkCount>1</forkCount>
+          <reuseForks>true</reuseForks>
+        </configuration>
+      </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -461,6 +470,8 @@
             <version>${version.surefire}</version>
             <configuration>
               <argLine>${jacoco.surefire.argLine}</argLine>
+              <forkCount>1</forkCount>
+              <reuseForks>true</reuseForks>
             </configuration>
           </plugin>
 
