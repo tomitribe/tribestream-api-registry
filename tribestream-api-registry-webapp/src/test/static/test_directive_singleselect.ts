@@ -92,7 +92,7 @@ describe('it tests our custom singleselect component', () => {
             let scope = rootScope.$new();
             scope.selected = 'aaa';
             scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
-            let element = angular.element('<div data-tribe-singleselect data-selected-option="selected" data-available-options="options"></div>');
+            let element = angular.element('<div data-tribe-singleselect data-editable="true" data-selected-option="selected" data-available-options="options"></div>');
             // append to body so we can click on it.
             element.appendTo(document.find('body'));
             compile(element)(scope);
@@ -114,6 +114,36 @@ describe('it tests our custom singleselect component', () => {
                                 expect(selectedScope.selectedItem).to.equal('fff');
                                 done();
                             });
+                        });
+                    });
+                });
+            });
+        });
+    });
+
+    it('should not enter new items', (done) => {
+        timeoutTryCatch(100, done, () => {
+            let scope = rootScope.$new();
+            scope.selected = 'aaa';
+            scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+            let element = angular.element('<div data-tribe-singleselect data-editable="false" data-selected-option="selected" data-available-options="options"></div>');
+            // append to body so we can click on it.
+            element.appendTo(document.find('body'));
+            compile(element)(scope);
+            timeoutTryCatch(100, done, () => {
+                let selected = angular.element(element.find('div[data-tribe-singleselect-selected]'));
+                let input = angular.element(selected.find('input'));
+                timeoutTryCatch(100, done, () => {
+                    input.focus();
+                    let selectedScope = selected.scope();
+                    expect(selectedScope.selectedItem).to.equal('aaa');
+                    selectedScope.$apply(() => selectedScope.inputText = 'fff');
+                    timeoutTryCatch(100, done, () => {
+                        triggerKeyDown(input, 40); // keydown
+                        timeoutTryCatch(100, done, () => {
+                            let newLabel = angular.element(document.find('div.tribe-data-tribe-singleselect-available-body .new-opt'));
+                            expect(newLabel.find('span').first().html()).to.deep.equal('No matches');
+                            done();
                         });
                     });
                 });

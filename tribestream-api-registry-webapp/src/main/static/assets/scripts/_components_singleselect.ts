@@ -6,12 +6,18 @@ angular.module('website-components-singleselect', [
         return {
             restrict: 'A',
             scope: {
+                editable: '@?',
                 originalAvailableOptions: '=availableOptions',
                 originalSelectedOption: '=selectedOption',
                 newLabel: '@?'
             },
             templateUrl: 'app/templates/component_singleselect.html',
             controller: ['$scope', '$timeout', ($scope, $timeout) => $timeout(() => {
+                if ($scope.editable === undefined) {
+                    $scope.editable = false;
+                } else {
+                    $scope.editable = $scope.editable === 'true';
+                }
                 $scope.selectedItem = null;
                 $scope.inputText = null;
                 $scope.fieldDirty = false;
@@ -41,9 +47,14 @@ angular.module('website-components-singleselect', [
                 $scope.onCommit = () => $timeout(() => $scope.$apply(() => {
                     $scope.fieldDirty = false;
                     $scope.optionsActivated = false;
-                    $scope.originalSelectedOption = _.clone($scope.selectedItem);
-                    $scope.inputText = _.clone($scope.selectedItem);
-                    $scope.selectedItem = _.clone($scope.selectedItem);
+                    if ($scope.selectedItem) {
+                        $scope.originalSelectedOption = _.clone($scope.selectedItem);
+                        $scope.inputText = _.clone($scope.selectedItem);
+                        $scope.selectedItem = _.clone($scope.selectedItem);
+                    } else {
+                        $scope.inputText = _.clone($scope.originalSelectedOption);
+                        $scope.selectedItem = _.clone($scope.originalSelectedOption);
+                    }
                     $scope.$broadcast('fieldCommitted');
                 }));
                 $scope.onSelectTopDownOption = () => $timeout(() => $scope.$apply(() => {
@@ -112,7 +123,8 @@ angular.module('website-components-singleselect', [
                 inputText: '=',
                 selectedItem: '=',
                 version: '=',
-                newLabel: '@?'
+                newLabel: '@?',
+                editable: '='
             },
             templateUrl: 'app/templates/component_singleselect_available.html',
             controller: ['$scope', '$timeout', ($scope, $timeout) => {
@@ -125,13 +137,15 @@ angular.module('website-components-singleselect', [
                         return opt.startsWith(text);
                     }), (item) => item);
                     $scope.selectedItem = _.find($scope.availableOptions, (opt) => opt.startsWith(text));
-                    if (_.find($scope.availableOptions, (opt) => opt === text)) {
-                        $scope.newOpt = null;
-                    } else {
-                        $scope.newOpt = text;
-                    }
-                    if (!$scope.selectedItem) {
-                        $scope.selectedItem = $scope.newOpt;
+                    if ($scope.editable) {
+                        if (_.find($scope.availableOptions, (opt) => opt === text)) {
+                            $scope.newOpt = null;
+                        } else {
+                            $scope.newOpt = text;
+                        }
+                        if (!$scope.selectedItem) {
+                            $scope.selectedItem = $scope.newOpt;
+                        }
                     }
                 }));
                 $scope.selectNext = () => $timeout(() => $scope.$apply(() => {
@@ -176,6 +190,11 @@ angular.module('website-components-singleselect', [
                         }
                     }
                 }));
+                $scope.selectItem = (opt) => {
+                    $scope.selectedOption = opt;
+                    $scope.active = false;
+                    $scope.inputText = opt;
+                };
             }],
             link: (scope, element) => {
                 let floatingBody = angular.element(element.find('> div'));
