@@ -37,11 +37,11 @@
       <version>7.0</version>
       <scope>provided</scope>
     </dependency>
+
     <dependency>
       <groupId>org.tomitribe</groupId>
       <artifactId>tomitribe-util</artifactId>
       <version>1.2.1</version>
-      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -67,25 +67,6 @@
       <artifactId>jackson-jaxrs-json-provider</artifactId>
       <version>${version.jackson}</version>
       <scope>compile</scope>
-    </dependency>
-
-    <dependency> <!-- security service -->
-      <groupId>org.apache.tomee</groupId>
-      <artifactId>openejb-core</artifactId>
-      <version>${version.tomee}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency> <!-- tomcat security service -->
-      <groupId>org.apache.tomee</groupId>
-      <artifactId>tomee-catalina</artifactId>
-      <version>${version.tomee}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency> <!-- GenericPrincipal -->
-      <groupId>org.apache.tomcat</groupId>
-      <artifactId>tomcat-catalina</artifactId>
-      <version>${version.tomcat}</version>
-      <scope>provided</scope>
     </dependency>
 
     <dependency>

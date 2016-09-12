@@ -19,14 +19,14 @@
 package org.tomitribe.tribestream.registryng.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.tomitribe.tribestream.registryng.entities.Endpoint;
-import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
-import org.tomitribe.tribestream.registryng.security.LoginContext;
-import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.Swagger;
+import org.tomitribe.tribestream.registryng.entities.Endpoint;
+import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
+import org.tomitribe.tribestream.registryng.security.LoginContext;
+import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 
 import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
@@ -165,11 +165,13 @@ public class Repository {
         clone.setPaths(null);
         document.setSwagger(clone);
 
+        final String username = getUser();
+
         Date now = new Date();
         document.setCreatedAt(now);
         document.setUpdatedAt(now);
-        document.setCreatedBy(loginContext.getUsername());
-        document.setUpdatedBy(loginContext.getUsername());
+        document.setCreatedBy(username);
+        document.setUpdatedBy(username);
         em.persist(document);
 
         // Store the endpoints in a separate table
@@ -192,6 +194,10 @@ public class Repository {
             }
         }
         return document;
+    }
+
+    protected String getUser() {
+        return loginContext.getUsername();
     }
 
     public Endpoint insert(final Endpoint endpoint, final String applicationId) {
