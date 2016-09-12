@@ -38,7 +38,7 @@ describe('it tests our custom singleselect component', () => {
 
     it('should show action buttons on input focus', (done) => {
         let scope = rootScope.$new();
-        scope.selected = ['aaa'];
+        scope.selected = 'aaa';
         scope.options = [];
         let element = angular.element('<div data-tribe-singleselect data-selected-option="selected" data-available-options="options"></div>');
         compile(element)(scope);
@@ -55,6 +55,33 @@ describe('it tests our custom singleselect component', () => {
                 timeoutTryCatch(100, done, () => {
                     expect(document.find('div.tribe-field-actions-body').length).to.equal(1);
                     done();
+                });
+            });
+        });
+    });
+
+    it('should show available options', (done) => {
+        timeoutTryCatch(100, done, () => {
+            let scope = rootScope.$new();
+            scope.selected = 'aaa';
+            scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+            let element = angular.element('<div data-tribe-singleselect data-selected-option="selected" data-available-options="options"></div>');
+            // append to body so we can click on it.
+            element.appendTo(document.find('body'));
+            compile(element)(scope);
+            timeoutTryCatch(100, done, () => {
+                let input = angular.element(element.find('input'));
+                timeoutTryCatch(100, done, () => {
+                    input.focus();
+                    timeoutTryCatch(100, done, () => {
+                        triggerKeyDown(input, 40);
+                        timeoutTryCatch(100, done, () => {
+                            let available = element.find('div[data-tribe-singleselect-available]');
+                            // the list of items is visible
+                            expect(available.hasClass('active')).to.equal(true);
+                            done();
+                        });
+                    });
                 });
             });
         });

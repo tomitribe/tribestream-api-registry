@@ -13,6 +13,7 @@ angular.module('website-components-singleselect', [
             templateUrl: 'app/templates/component_singleselect.html',
             controller: ['$scope', '$timeout', ($scope, $timeout) => $timeout(() => {
                 $scope.selectedItem = null;
+                $scope.inputText = null;
                 $scope.fieldDirty = false;
                 $scope.optionsActivated = false;
                 $scope.optionsActivatedTopDown = 0;
@@ -20,6 +21,7 @@ angular.module('website-components-singleselect', [
                 $scope.version = 0;
                 $scope.$watch('originalSelectedOption', () => {
                     $scope.inputText = _.clone($scope.originalSelectedOption);
+                    $scope.selectedItem = _.clone($scope.originalSelectedOption);
                 });
                 $scope.$watch('originalAvailableOptions', () => {
                     $scope.availableOptions = _.clone($scope.originalAvailableOptions);
@@ -33,7 +35,7 @@ angular.module('website-components-singleselect', [
                     $scope.fieldDirty = false;
                     $scope.optionsActivated = false;
                     $scope.inputText = _.clone($scope.originalSelectedOption);
-                    $scope.selectedItem = null;
+                    $scope.selectedItem = _.clone($scope.originalSelectedOption);
                     $scope.$broadcast('fieldCanceled');
                 }));
                 $scope.onCommit = () => $timeout(() => $scope.$apply(() => {
@@ -41,7 +43,7 @@ angular.module('website-components-singleselect', [
                     $scope.optionsActivated = false;
                     $scope.originalSelectedOption = _.clone($scope.selectedItem);
                     $scope.inputText = _.clone($scope.selectedItem);
-                    $scope.selectedItem = null;
+                    $scope.selectedItem = _.clone($scope.selectedItem);
                     $scope.$broadcast('fieldCommitted');
                 }));
                 $scope.onSelectTopDownOption = () => $timeout(() => $scope.$apply(() => {
@@ -88,6 +90,11 @@ angular.module('website-components-singleselect', [
                         el.addClass('active');
                     }
                 });
+                scope.$watch('inputText', () => {
+                    if (el.hasClass('active')) {
+                        scope.onChange();
+                    }
+                });
                 scope.$on('$destroy', () => el.remove());
             })
         };
@@ -113,14 +120,15 @@ angular.module('website-components-singleselect', [
                     $scope.selectedItem = null;
                     $scope.newOpt = null;
                     $scope.availableOptions = _.clone($scope.originalAvailableOptions);
+                    let text = $scope.inputText ? $scope.inputText.trim() : '';
                     $scope.availableOptions = _.sortBy(_.filter($scope.availableOptions, (opt) => {
-                        return opt.startsWith($scope.inputText);
+                        return opt.startsWith(text);
                     }), (item) => item);
-                    $scope.selectedItem = _.find($scope.availableOptions, (opt) => opt.startsWith($scope.inputText.trim()));
-                    if (_.find($scope.availableOptions, (opt) => opt === $scope.inputText.trim())) {
+                    $scope.selectedItem = _.find($scope.availableOptions, (opt) => opt.startsWith(text));
+                    if (_.find($scope.availableOptions, (opt) => opt === text)) {
                         $scope.newOpt = null;
                     } else {
-                        $scope.newOpt = $scope.inputText.trim();
+                        $scope.newOpt = text;
                     }
                     if (!$scope.selectedItem) {
                         $scope.selectedItem = $scope.newOpt;
@@ -238,10 +246,8 @@ angular.module('website-components-singleselect', [
                         $scope.onSelectBottomUpOption();
                     } else if (event.keyCode === 13 /* Enter */) {
                         $scope.onCommit();
-                    } else if(event.keyCode === 9) {
+                    } else if (event.keyCode === 9) {
                         // this is a tab key. no-op for now.
-                    } else {
-                        $scope.onChange();
                     }
                 }));
             }]
