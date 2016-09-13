@@ -29,7 +29,18 @@ angular.module('tribe-main', [
                     templateUrl: 'app/templates/page_endpoints.html'
                 })
                 .when('/showcase', {
-                    templateUrl: 'app/templates/page_components.html'
+                    templateUrl: 'app/templates/page_components.html',
+                    controller: ['$scope', ($scope) => {
+                        $scope.toUppercase = (item) => {
+                            if (!item) {
+                                return null;
+                            }
+                            if (item.text) {
+                                return item.text.toUpperCase();
+                            }
+                            return item.toUpperCase();
+                        };
+                    }]
                 })
                 .when('/see/:aggregatedId', {
                     templateUrl: 'app/templates/page_see.html',

@@ -9,15 +9,28 @@ angular.module('website-components-singleselect', [
                 editable: '@?',
                 originalAvailableOptions: '=availableOptions',
                 originalSelectedOption: '=selectedOption',
+                originalGetOptionText: '=getOptionText',
                 newLabel: '@?'
             },
             templateUrl: 'app/templates/component_singleselect.html',
             controller: ['$scope', '$timeout', ($scope, $timeout) => $timeout(() => {
-                $scope.getOptionText = (item) => {
-                    if (item.text === undefined) {
+                $scope.$watch('originalGetOptionText', () => {
+                    if ($scope.originalGetOptionText) {
+                        $scope.getOptionText = $scope.originalGetOptionText;
+                    } else {
+                        $scope.getOptionText = (item) => {
+                            if (!item || item.text === undefined) {
+                                return item;
+                            }
+                            return item.text;
+                        };
+                    }
+                });
+                $scope.getOptionValue = (item) => {
+                    if (!item || item.value === undefined) {
                         return item;
                     }
-                    return item.text;
+                    return item.value;
                 };
                 if ($scope.editable === undefined) {
                     $scope.editable = false;
@@ -31,12 +44,16 @@ angular.module('website-components-singleselect', [
                 $scope.optionsActivatedTopDown = 0;
                 $scope.optionsActivatedBottomUp = 0;
                 $scope.version = 0;
-                $scope.$watch('originalSelectedOption', () => {
-                    $scope.inputText = $scope.getOptionText(_.clone($scope.originalSelectedOption));
-                    $scope.selectedItem = _.clone($scope.originalSelectedOption);
-                });
                 $scope.$watch('originalAvailableOptions', () => {
                     $scope.availableOptions = _.clone($scope.originalAvailableOptions);
+                    $scope.$watch('originalSelectedOption', () => {
+                        let existing = _.find($scope.availableOptions, (item) => {
+                            let availValue = $scope.getOptionValue(item);
+                            return availValue === $scope.originalSelectedOption;
+                        });
+                        $scope.inputText = $scope.getOptionText(_.clone(existing));
+                        $scope.selectedItem = _.clone(existing);
+                    });
                 });
                 $scope.onChange = () => $timeout(() => $scope.$apply(() => {
                     $scope.optionsActivated = true;
@@ -46,20 +63,28 @@ angular.module('website-components-singleselect', [
                 $scope.onCancel = () => $timeout(() => $scope.$apply(() => {
                     $scope.fieldDirty = false;
                     $scope.optionsActivated = false;
-                    $scope.inputText = $scope.getOptionText(_.clone($scope.originalSelectedOption));
-                    $scope.selectedItem = _.clone($scope.originalSelectedOption);
+                    let existing = _.find($scope.availableOptions, (item) => {
+                        let availValue = $scope.getOptionValue(item);
+                        return availValue === $scope.originalSelectedOption;
+                    });
+                    $scope.inputText = $scope.getOptionText(existing);
+                    $scope.selectedItem = _.clone(existing);
                     $scope.$broadcast('fieldCanceled');
                 }));
                 $scope.onCommit = () => $timeout(() => $scope.$apply(() => {
                     $scope.fieldDirty = false;
                     $scope.optionsActivated = false;
                     if ($scope.selectedItem) {
-                        $scope.originalSelectedOption = _.clone($scope.selectedItem);
-                        $scope.inputText = $scope.getOptionText(_.clone($scope.selectedItem));
+                        $scope.originalSelectedOption = $scope.getOptionValue($scope.selectedItem);
+                        $scope.inputText = $scope.getOptionText($scope.selectedItem);
                         $scope.selectedItem = _.clone($scope.selectedItem);
                     } else {
-                        $scope.inputText = $scope.getOptionText(_.clone($scope.originalSelectedOption));
-                        $scope.selectedItem = _.clone($scope.originalSelectedOption);
+                        let existing = _.find($scope.availableOptions, (item) => {
+                            let availValue = $scope.getOptionValue(item);
+                            return availValue === $scope.originalSelectedOption;
+                        });
+                        $scope.inputText = $scope.getOptionText(existing);
+                        $scope.selectedItem = _.clone(existing);
                     }
                     $scope.$broadcast('fieldCommitted');
                 }));
@@ -130,16 +155,11 @@ angular.module('website-components-singleselect', [
                 selectedItem: '=',
                 version: '=',
                 newLabel: '@?',
-                editable: '='
+                editable: '=',
+                getOptionText: '='
             },
             templateUrl: 'app/templates/component_singleselect_available.html',
             controller: ['$scope', '$timeout', ($scope, $timeout) => {
-                $scope.getOptionText = (item) => {
-                    if (item.text === undefined) {
-                        return item;
-                    }
-                    return item.text;
-                };
                 $scope.showOptions = () => $timeout(() => $scope.$apply(() => {
                     $scope.selectedItem = null;
                     $scope.newOpt = null;
@@ -147,7 +167,7 @@ angular.module('website-components-singleselect', [
                     let text = $scope.inputText ? $scope.inputText.trim() : '';
                     $scope.availableOptions = _.sortBy(_.filter($scope.availableOptions, (opt) => {
                         return $scope.getOptionText(opt).startsWith(text);
-                    }), (item) => item);
+                    }), (item) => $scope.getOptionText(item));
                     $scope.selectedItem = _.find($scope.availableOptions, (opt) => $scope.getOptionText(opt).startsWith(text));
                     if ($scope.editable) {
                         if (_.find($scope.availableOptions, (opt) => $scope.getOptionText(opt) === text)) {
@@ -161,7 +181,7 @@ angular.module('website-components-singleselect', [
                     }
                 }));
                 $scope.selectNext = () => $timeout(() => $scope.$apply(() => {
-                    let ordered = _.sortBy($scope.availableOptions, (item) => item);
+                    let ordered = _.sortBy($scope.availableOptions, (item) => $scope.getOptionText(item));
                     if ($scope.selectedItem) {
                         var index = ordered.indexOf($scope.selectedItem) + 1;
                         if (index >= ordered.length) {
@@ -178,7 +198,7 @@ angular.module('website-components-singleselect', [
                     }
                 }));
                 $scope.selectPrevious = () => $timeout(() => $scope.$apply(() => {
-                    let ordered = _.sortBy($scope.availableOptions, (item) => item);
+                    let ordered = _.sortBy($scope.availableOptions, (item) => $scope.getOptionText(item));
                     if ($scope.selectedItem) {
                         if ($scope.newOpt === $scope.selectedItem && ordered.length) {
                             $scope.selectedItem = _.last(ordered);
@@ -205,7 +225,7 @@ angular.module('website-components-singleselect', [
                 $scope.selectItem = (opt) => {
                     $scope.selectedOption = opt;
                     $scope.active = false;
-                    $scope.inputText = opt;
+                    $scope.inputText = $scope.getOptionText(opt);
                 };
             }],
             link: (scope, element) => {
