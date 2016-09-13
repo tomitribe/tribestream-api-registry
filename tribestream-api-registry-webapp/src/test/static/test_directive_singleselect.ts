@@ -169,11 +169,9 @@ describe('it tests our custom singleselect component', () => {
                     selectedScope.$apply(() => selectedScope.inputText = 'fff');
                     timeoutTryCatch(100, done, () => {
                         triggerKeyDown(input, 27); // escape
-                        timeoutTryCatch(100, done, () => {
-                            timeoutTryCatch(100, done, () => {
-                                expect(selectedScope.selectedItem).to.equal('aaa');
-                                done();
-                            });
+                        timeoutTryCatch(200, done, () => {
+                            expect(selectedScope.selectedItem).to.equal('aaa');
+                            done();
                         });
                     });
                 });
@@ -209,6 +207,38 @@ describe('it tests our custom singleselect component', () => {
                         });
                     });
                 });
+            });
+        });
+    });
+
+    it('should show empty label', (done) => {
+        timeoutTryCatch(100, done, () => {
+            let scope = rootScope.$new();
+            scope.selected = null;
+            scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+            let element = angular.element('<div data-tribe-singleselect data-selected-option="selected" data-available-options="options"></div>');
+            // append to body so we can click on it.
+            element.appendTo(document.find('body'));
+            compile(element)(scope);
+            timeoutTryCatch(100, done, () => {
+                expect(angular.element(element.find('span.empty')).length).to.equal(1);
+                done();
+            });
+        });
+    });
+
+    it('should not show empty label', (done) => {
+        timeoutTryCatch(100, done, () => {
+            let scope = rootScope.$new();
+            scope.selected = 'bbb';
+            scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+            let element = angular.element('<div data-tribe-singleselect data-selected-option="selected" data-available-options="options"></div>');
+            // append to body so we can click on it.
+            element.appendTo(document.find('body'));
+            compile(element)(scope);
+            timeoutTryCatch(100, done, () => {
+                expect(angular.element(element.find('span.empty')).length).to.equal(0);
+                done();
             });
         });
     });
