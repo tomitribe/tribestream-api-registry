@@ -77,21 +77,14 @@ angular.module('website-components-singleselect', [
                     $scope.$broadcast('fieldCanceled');
                 }));
                 $scope.onCommit = () => $timeout(() => $scope.$apply(() => {
-                    $scope.fieldDirty = false;
-                    $scope.optionsActivated = false;
                     if ($scope.selectedItem) {
+                        $scope.fieldDirty = false;
+                        $scope.optionsActivated = false;
                         $scope.originalSelectedOption = $scope.getOptionValue($scope.selectedItem);
                         $scope.inputText = $scope.getOptionText($scope.selectedItem);
                         $scope.selectedItem = _.clone($scope.originalSelectedOption);
-                    } else {
-                        let existing = _.find($scope.availableOptions, (item) => {
-                            let availValue = $scope.getOptionValue(item);
-                            return availValue === $scope.originalSelectedOption;
-                        });
-                        $scope.inputText = $scope.getOptionText(existing);
-                        $scope.selectedItem = _.clone(existing);
+                        $scope.$broadcast('fieldCommitted');
                     }
-                    $scope.$broadcast('fieldCommitted');
                 }));
                 $scope.onSelectTopDownOption = () => $timeout(() => $scope.$apply(() => {
                     $scope.optionsActivatedTopDown = $scope.optionsActivatedTopDown + 1;
