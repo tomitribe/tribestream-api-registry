@@ -51,8 +51,13 @@ angular.module('website-components-singleselect', [
                             let availValue = $scope.getOptionValue(item);
                             return availValue === $scope.originalSelectedOption;
                         });
-                        $scope.inputText = $scope.getOptionText(_.clone(existing));
-                        $scope.selectedItem = _.clone(existing);
+                        if (existing) {
+                            $scope.inputText = $scope.getOptionText(_.clone(existing));
+                            $scope.selectedItem = _.clone(existing);
+                        } else {
+                            $scope.inputText = _.clone($scope.originalSelectedOption);
+                            $scope.selectedItem = _.clone($scope.originalSelectedOption);
+                        }
                     });
                 });
                 $scope.onChange = () => $timeout(() => $scope.$apply(() => {
@@ -77,7 +82,7 @@ angular.module('website-components-singleselect', [
                     if ($scope.selectedItem) {
                         $scope.originalSelectedOption = $scope.getOptionValue($scope.selectedItem);
                         $scope.inputText = $scope.getOptionText($scope.selectedItem);
-                        $scope.selectedItem = _.clone($scope.selectedItem);
+                        $scope.selectedItem = _.clone($scope.originalSelectedOption);
                     } else {
                         let existing = _.find($scope.availableOptions, (item) => {
                             let availValue = $scope.getOptionValue(item);
