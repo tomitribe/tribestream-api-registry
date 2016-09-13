@@ -32,6 +32,12 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.apache.tomee</groupId>
+      <artifactId>javaee-api</artifactId>
+      <version>7.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.tomitribe</groupId>
       <artifactId>tomitribe-util</artifactId>
       <version>1.2.1</version>
@@ -61,6 +67,25 @@
       <artifactId>jackson-jaxrs-json-provider</artifactId>
       <version>${version.jackson}</version>
       <scope>compile</scope>
+    </dependency>
+
+    <dependency> <!-- security service -->
+      <groupId>org.apache.tomee</groupId>
+      <artifactId>openejb-core</artifactId>
+      <version>${version.tomee}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency> <!-- tomcat security service -->
+      <groupId>org.apache.tomee</groupId>
+      <artifactId>tomee-catalina</artifactId>
+      <version>${version.tomee}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency> <!-- GenericPrincipal -->
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>tomcat-catalina</artifactId>
+      <version>${version.tomcat}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -145,55 +170,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.tomcat</groupId>
-      <artifactId>tomcat-catalina</artifactId>
-      <version>${version.tomcat}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.tomcat</groupId>
-      <artifactId>tomcat-util</artifactId>
-      <version>${version.tomcat}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.tomcat</groupId>
-      <artifactId>tomcat-coyote</artifactId>
-      <version>${version.tomcat}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
       <groupId>org.apache.tomee</groupId>
-      <artifactId>tomee-catalina</artifactId>
+      <artifactId>tomee-embedded</artifactId>
       <version>${version.tomee}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.tomee</groupId>
-      <artifactId>tomee-jaxrs</artifactId>
-      <version>${version.tomee}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.tomee</groupId>
-      <artifactId>openejb-cxf-rs</artifactId>
-      <version>${version.tomee}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.cxf</groupId>
-      <artifactId>cxf-rt-rs-client</artifactId>
-      <version>3.1.7</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.apache.tomcat</groupId>
-      <artifactId>tomcat-jdbc</artifactId>
-      <version>${version.tomcat}</version>
-      <scope>provided</scope>
-    </dependency>
-
   </dependencies>
 
   <build>
@@ -227,51 +208,41 @@
       </plugin>
 
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>embedded-surefire</id>
-            <goals>
-              <goal>test</goal>
-            </goals>
-            <configuration>
-              <argLine>-Xmx1024m -Duser.language=en -Duser.region=en_US</argLine>
-              <groups>org.tomitribe.tribestream.registryng.test.category.Embedded</groups>
-              <skip>${maven.test.skip}</skip>
-              <forkCount>1</forkCount>
-              <reuseForks>false</reuseForks>
-              <systemPropertyVariables>
-                <openejb.jul.forceReload>true</openejb.jul.forceReload>
-              </systemPropertyVariables>
-            </configuration>
-          </execution>
-          <execution>
-            <id>other-surefire</id>
-            <goals>
-              <goal>test</goal>
-            </goals>
-            <configuration>
-              <argLine>-Xmx1024m -Duser.language=en -Duser.region=en_US</argLine>
-              <excludedGroups>org.tomitribe.tribestream.registryng.test.category.Embedded</excludedGroups>
-              <skip>${maven.test.skip}</skip>
-              <forkCount>1</forkCount>
-              <reuseForks>false</reuseForks>
-              <systemPropertyVariables>
-                <openejb.jul.forceReload>true</openejb.jul.forceReload>
-              </systemPropertyVariables>
-            </configuration>
-          </execution>
-        </executions>
+        <groupId>org.apache.tomee.maven</groupId>
+        <artifactId>tomee-embedded-maven-plugin</artifactId>
+        <version>7.0.1</version>
         <configuration>
-          <skip>true</skip>
-          <failIfNoTests>false</failIfNoTests>
-          <reuseForks>false</reuseForks>
-          <forkCount>1</forkCount>
-          <systemPropertyVariables>
-            <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
-          </systemPropertyVariables>
+          <context>/registry</context>
+          <classpathAsWar>true</classpathAsWar>
+          <singleClassLoader>true</singleClassLoader>
+          <containerProperties>
+            <org.apache.openejb.cxf.bus.features>org.apache.cxf.feature.LoggingFeature</org.apache.openejb.cxf.bus.features>
+            <openejb.deploymentId.format>{appId}/{ejbJarId}/{ejbName}</openejb.deploymentId.format>
+            <openapirepo.dir>${project.basedir}/target/test-classes</openapirepo.dir>
+            <java.security.auth.login.config>${project.basedir}/src/main/tomee/conf/jaas.config</java.security.auth.login.config>
+            <!-- openejb integration is in higher classloader so either add hibernate in "container" loader or workaround it like that -->
+            <hibernate.transaction.jta.platform>org.hibernate.engine.transaction.jta.platform.internal.ResinJtaPlatform</hibernate.transaction.jta.platform>
+            <java.naming.factory.initial>org.apache.openejb.core.LocalInitialContextFactory</java.naming.factory.initial>
+          </containerProperties>
+          <users>
+            <admin>admin</admin>
+          </users>
+          <roles>
+            <tribe-registry>admin</tribe-registry>
+          </roles>
         </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.tomitribe</groupId>
+            <artifactId>tomitribe-util</artifactId>
+            <version>${version.tomitribe-util}</version>
+          </dependency>
+          <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${version.commons-io}</version>
+          </dependency>
+        </dependencies>
       </plugin>
 
       <plugin>

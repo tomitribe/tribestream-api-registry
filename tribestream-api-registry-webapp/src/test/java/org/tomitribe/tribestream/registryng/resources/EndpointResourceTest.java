@@ -21,41 +21,36 @@ package org.tomitribe.tribestream.registryng.resources;
 
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
-import org.apache.openejb.junit.ApplicationComposerRule;
-import org.junit.ClassRule;
+import org.apache.openejb.testing.Application;
+import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
 import org.tomitribe.tribestream.registryng.domain.SearchResult;
-import org.tomitribe.tribestream.registryng.test.category.Embedded;
 
-import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 
+import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-@Category(Embedded.class)
+@RunWith(TomEEEmbeddedSingleRunner.class)
 public class EndpointResourceTest {
+    private final Random random = new Random(System.currentTimeMillis());
 
-    @ClassRule
-    public final static ApplicationComposerRule app = new ApplicationComposerRule(new Application());
-
-    private Random random = new Random(System.currentTimeMillis());
-
+    @Application
+    private Registry registry;
 
     @Test
     public void shouldDeleteEndpoint() throws Exception {
@@ -68,14 +63,14 @@ public class EndpointResourceTest {
 
         String endpointUrl = searchResult.getLink();
 
-        Response originalEndpointResponse = getClient().target(endpointUrl)
+        Response originalEndpointResponse = registry.client().target(endpointUrl)
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get();
 
         assertEquals(Response.Status.OK.getStatusCode(), originalEndpointResponse.getStatus());
 
         // When: I send a DELETE to the endpoint URL
-        final Response response = getClient().target(endpointUrl)
+        final Response response = registry.client().target(endpointUrl)
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .buildDelete()
                 .invoke();
@@ -86,7 +81,7 @@ public class EndpointResourceTest {
         // And: I get a 404 when getting the endpoint
         assertEquals(
                 Response.Status.NOT_FOUND.getStatusCode(),
-                getClient().target(endpointUrl)
+                registry.client().target(endpointUrl)
                         .request(MediaType.APPLICATION_JSON_TYPE)
                         .buildGet()
                         .invoke()
@@ -120,10 +115,12 @@ public class EndpointResourceTest {
         final String endpointUrl = searchResult.getLink();
 
         final ApplicationWrapper applicationWrapper = loadApplication(searchResult.getApplicationId());
+        assertNotNull(applicationWrapper);
 
-        EndpointWrapper originalEndpoint = getClient().target(endpointUrl)
+        final EndpointWrapper originalEndpoint = registry.client().target(endpointUrl)
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(EndpointWrapper.class);
+        assertNotNull(originalEndpoint);
 
         // When: I update the path and verb of an endpoint
         final String newVerb = "patch";
@@ -133,7 +130,7 @@ public class EndpointResourceTest {
         newOperation.setSummary(newSummary);
         final EndpointWrapper endpointWrapper = new EndpointWrapper(newVerb, newPath, newOperation);
 
-        Response response = getClient().target(endpointUrl)
+        Response response = registry.client().target(endpointUrl)
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .buildPut(Entity.entity(endpointWrapper, MediaType.APPLICATION_JSON_TYPE))
                 .invoke();
@@ -142,7 +139,7 @@ public class EndpointResourceTest {
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         // And: When I refetch the endpoint it has the new path and verb
-        EndpointWrapper updatedEndpoint = getClient().target(endpointUrl)
+        EndpointWrapper updatedEndpoint = registry.client().target(endpointUrl)
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(EndpointWrapper.class);
         assertEquals(newVerb, updatedEndpoint.getHttpMethod());
@@ -185,11 +182,11 @@ public class EndpointResourceTest {
         final Operation operation = new Operation();
         operation.setDescription(newDescription);
         operation.setSummary(newSummary);
-        operation.setTags(Arrays.asList(newTag));
+        operation.setTags(singletonList(newTag));
         newEndpoint.setOperation(operation);
 
         // When: I post the endpoint
-        Response response = getClient().target("http://localhost:" + getPort() + "/openejb/api/application/{applicationId}/endpoint")
+        Response response = registry.target().path("api/application/{applicationId}/endpoint")
                 .resolveTemplate("applicationId", applicationId)
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .buildPost(Entity.entity(newEndpoint, MediaType.APPLICATION_JSON_TYPE))
@@ -216,36 +213,15 @@ public class EndpointResourceTest {
 
 
     private SearchPage getSearchPage() {
-        return getClient().target("http://localhost:" + getApp().getPort() + "/openejb/api/registry")
+        return registry.target().path("api/registry")
                     .request(MediaType.APPLICATION_JSON_TYPE)
                     .get(SearchPage.class);
     }
 
-    private List<ApplicationWrapper> loadAllApplications() {
-        List<ApplicationWrapper> result = getClient().target("http://localhost:" + getPort() + "/openejb/api/application")
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .get(new GenericType<List<ApplicationWrapper>>() {
-                });
-
-        return result;
-    }
-
     private ApplicationWrapper loadApplication(final String applicationId) {
-        return getClient().target("http://localhost:" + getPort() + "/openejb/api/application/{applicationId}")
+        return registry.target().path("api/application/{applicationId}")
                 .resolveTemplate("applicationId", applicationId)
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(ApplicationWrapper.class);
-    }
-
-    private Application getApp() {
-        return app.getInstance(Application.class);
-    }
-
-    private int getPort() {
-        return getApp().getPort();
-    }
-
-    public Client getClient() {
-        return getApp().getClient();
     }
 }

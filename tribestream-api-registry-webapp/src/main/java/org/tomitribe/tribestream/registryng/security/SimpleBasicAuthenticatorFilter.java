@@ -77,9 +77,9 @@ public class SimpleBasicAuthenticatorFilter implements Filter {
                     try {
                         req.login(username, password);
 
-                        LOGGER.log(Level.FINE, () -> String.format("Successfully logged in %s for request %s", username, req.getRequestURI()));
+                        LOGGER.log(Level.FINE, () -> String.format("Successfully logged in '%s' for request '%s'", username, req.getRequestURI()));
                     } catch (final ServletException se) {
-                        LOGGER.log(Level.INFO, se, () -> String.format("Login failed for user %s for request %s", username, req.getRequestURI()));
+                        LOGGER.log(Level.WARNING, se, () -> String.format("Login failed for user '%s' for request '%s'", username, req.getRequestURI()));
                         // no-op, let it be a 401
                         final HttpServletResponse resp = HttpServletResponse.class.cast(response);
                         //resp.setHeader("WWW-Authenticate", value.toString()); // that's what we don't want

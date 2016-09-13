@@ -19,21 +19,23 @@
 package org.tomitribe.tribestream.registryng.resources;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.models.Info;
 import io.swagger.models.Swagger;
 import io.swagger.models.Tag;
-import org.apache.openejb.junit.ApplicationComposerRule;
-import org.junit.ClassRule;
+import org.apache.openejb.testing.Application;
+import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
 import org.tomitribe.tribestream.registryng.domain.SearchResult;
-import org.tomitribe.tribestream.registryng.test.category.Embedded;
+import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 
-import javax.ws.rs.client.Client;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
@@ -52,11 +54,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
-@Category(Embedded.class)
+@RunWith(TomEEEmbeddedSingleRunner.class)
 public class ApplicationResourceTest {
+    @Inject
+    @Named(SwaggerJsonMapperProducer.SWAGGER_OBJECT_MAPPER_NAME)
+    private ObjectMapper objectMapper;
 
-    @ClassRule
-    public final static ApplicationComposerRule app = new ApplicationComposerRule(new Application());
+    @Application
+    private Registry registry;
 
     @Test
     public void shouldLoadAllApplications() throws Exception {
@@ -79,12 +84,12 @@ public class ApplicationResourceTest {
             // Given: n Applications are installed and a new Swagger document to import
             final int oldApplicationCount = loadAllApplications().size();
 
-            final Swagger swagger = app.getInstance(Application.class).getObjectMapper().readValue(getClass().getResourceAsStream("/api-with-examples.json"), Swagger.class);
+            final Swagger swagger = objectMapper.readValue(getClass().getResourceAsStream("/api-with-examples.json"), Swagger.class);
             final ApplicationWrapper request = new ApplicationWrapper(swagger);
 
             // When: The Swagger document is posted to the application resource
 
-            final Response response = getClient().target("http://localhost:" + getPort() + "/openejb/api/application")
+            final Response response = registry.target().path("api/application")
                     .request(MediaType.APPLICATION_JSON_TYPE)
                     .buildPost(Entity.entity(request, MediaType.APPLICATION_JSON_TYPE))
                     .invoke();
@@ -108,7 +113,7 @@ public class ApplicationResourceTest {
             assertEquals(oldApplicationCount + 1, loadAllApplications().size());
 
             // And: The search also returns the two imported endpoints
-            SearchPage searchPage = getClient().target("http://localhost:" + getPort() + "/openejb/api/registry")
+            SearchPage searchPage = registry.target().path("api/registry")
                     .queryParam("tag", "test")
                     .request(MediaType.APPLICATION_JSON_TYPE)
                     .get(SearchPage.class);
@@ -134,9 +139,9 @@ public class ApplicationResourceTest {
                 "    \"version\": \"v2\"\n" +
                 "  }\n" +
                 "}";
-        final Swagger createSwagger = app.getInstance(Application.class).getObjectMapper().readValue(initialDocument, Swagger.class);
+        final Swagger createSwagger = objectMapper.readValue(initialDocument, Swagger.class);
         final ApplicationWrapper createRequest = new ApplicationWrapper(createSwagger);
-        final Response newApplicationWrapperResponse = getClient().target("http://localhost:" + getPort() + "/openejb/api/application")
+        final Response newApplicationWrapperResponse = registry.target().path("api/application")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .buildPost(Entity.entity(createRequest, MediaType.APPLICATION_JSON_TYPE))
                 .invoke();
@@ -164,13 +169,12 @@ public class ApplicationResourceTest {
                 "    }\n" +
                 "  ]\n" +
                 "}";
-        final Swagger updateSwagger = app.getInstance(Application.class).getObjectMapper().readValue(updateDocument, Swagger.class);
+        final Swagger updateSwagger = objectMapper.readValue(updateDocument, Swagger.class);
         final ApplicationWrapper updateRequest = new ApplicationWrapper(updateSwagger);
 
-        ApplicationWrapper updatedApplicationWrapper = getClient().target(newApplicationWrapperResponse.getLink("self"))
+        final ApplicationWrapper updatedApplicationWrapper = registry.client().target(newApplicationWrapperResponse.getLink("self"))
                 .request(MediaType.APPLICATION_JSON_TYPE)
-                .buildPut(Entity.entity(updateRequest, MediaType.APPLICATION_JSON_TYPE))
-                .invoke(ApplicationWrapper.class);
+                .put(Entity.entity(updateRequest, MediaType.APPLICATION_JSON_TYPE), ApplicationWrapper.class);
 
         // Then: The old information is still present
         assertNotNull(updatedApplicationWrapper);
@@ -192,9 +196,10 @@ public class ApplicationResourceTest {
 
         final List<SearchResult> searchResults = new ArrayList<>(getSearchPage().getResults());
         final SearchResult searchResult = searchResults.get(0);
-        ApplicationWrapper first = loadApplication(searchResult.getApplicationId());
+        final ApplicationWrapper first = loadApplication(searchResult.getApplicationId());
+        assertNotNull(first);
 
-        Response response =  getClient().target("http://localhost:" + getPort() + "/openejb/api/application/{applicationId}")
+        Response response =  registry.target().path("api/application/{applicationId}")
                 .resolveTemplate("applicationId", searchResult.getApplicationId())
                 .request()
                 .buildDelete()
@@ -205,7 +210,7 @@ public class ApplicationResourceTest {
         final List<ApplicationWrapper> newApps = loadAllApplications();
         assertEquals(apps.size() - 1, newApps.size());
 
-        Response response2 = getClient().target("http://localhost:" + getPort() + "/openejb/api/application/{applicationId}")
+        Response response2 = registry.target().path("api/application/{applicationId}")
                 .resolveTemplate("applicationId", searchResult.getApplicationId())
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .buildGet()
@@ -213,7 +218,7 @@ public class ApplicationResourceTest {
 
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response2.getStatus());
 
-        SearchPage searchPage = getClient().target("http://localhost:" + getPort() + "/openejb/api/registry")
+        SearchPage searchPage = registry.target().path("api/registry")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(SearchPage.class);
 
@@ -228,12 +233,14 @@ public class ApplicationResourceTest {
     public void shouldGet404WhenDeletingNotExistingApplication() throws Exception {
 
         final List<ApplicationWrapper> apps = loadAllApplications();
+        assertNotNull(apps);
 
         final List<SearchResult> searchResults = new ArrayList<>(getSearchPage().getResults());
         final SearchResult searchResult = searchResults.get(0);
-        ApplicationWrapper first = loadApplication(searchResult.getApplicationId());
+        final ApplicationWrapper first = loadApplication(searchResult.getApplicationId());
+        assertNotNull(first);
 
-        Response response = getClient().target("http://localhost:" + getPort() + "/openejb/api/application/{applicationId}")
+        Response response = registry.target().path("api/application/{applicationId}")
                 .resolveTemplate("applicationId", searchResult.getApplicationId() + "_doesNotExist")
                 .request()
                 .buildDelete()
@@ -250,7 +257,7 @@ public class ApplicationResourceTest {
                 "    \"swagger\": \"2.0\"\n" +
                 "  }\n" +
                 "}";
-        final Response response = getClient().target("http://localhost:" + getPort() + "/openejb/api/application")
+        final Response response = registry.target().path("api/application")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .buildPost(Entity.entity(initialDocument, MediaType.APPLICATION_JSON_TYPE))
                 .invoke();
@@ -260,23 +267,21 @@ public class ApplicationResourceTest {
 
 
     private List<ApplicationWrapper> loadAllApplications() {
-        List<ApplicationWrapper> result = getClient().target("http://localhost:" + getPort() + "/openejb/api/application")
+        return registry.target().path("api/application")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(new GenericType<List<ApplicationWrapper>>() {
                 });
-
-        return result;
     }
 
     private ApplicationWrapper loadApplication(final String applicationId) {
-        return getClient().target("http://localhost:" + getPort() + "/openejb/api/application/{applicationId}")
+        return registry.target().path("api/application/{applicationId}")
                 .resolveTemplate("applicationId", applicationId)
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(ApplicationWrapper.class);
     }
 
     private EndpointWrapper loadEndpoint(final String applicationId, final String endpointId) {
-        return getClient().target("http://localhost:" + getPort() + "/openejb/api/application/{applicationId}/endpoint/{endpointId}")
+        return registry.target().path("api/application/{applicationId}/endpoint/{endpointId}")
                 .resolveTemplate("applicationId", applicationId)
                 .resolveTemplate("endpointId", endpointId)
                 .request(MediaType.APPLICATION_JSON_TYPE)
@@ -286,20 +291,8 @@ public class ApplicationResourceTest {
 
 
     private SearchPage getSearchPage() {
-        return getClient().target("http://localhost:" + getApp().getPort() + "/openejb/api/registry")
+        return registry.target().path("api/registry")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(SearchPage.class);
-    }
-
-    private Application getApp() {
-        return app.getInstance(Application.class);
-    }
-
-    private int getPort() {
-        return getApp().getPort();
-    }
-
-    public Client getClient() {
-        return getApp().getClient();
     }
 }
