@@ -42,7 +42,9 @@ div
       i(data-tribe-editable-number, data-adjust="false", data-value="rl.rateLimit")
       span requests /
       i(data-tribe-editable-number, data-adjust="false", data-value="rl.rateWindow")
-      i(data-tribe-editable-option, data-value="rl.rateUnit", data-options="rateUnits")
+      div(data-tribe-singleselect,
+          data-selected-option="rl.rateUnit",
+          data-available-options="rateUnits")
       span Description
       i(data-tribe-editable-text, data-adjust="false", data-value="rl.description")
       div(x-ng-click="removeRate(rl)")
