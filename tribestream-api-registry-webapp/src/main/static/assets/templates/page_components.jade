@@ -24,3 +24,18 @@
             data-new-label="New Item",
             data-selected-option="'aa'",
             data-available-options="['aaaa', 'aaa', 'aa', 'bbb', 'ccc', 'ddd', 'eee', 'eeeee', 'fff', 'ggg', 'hhh']")
+
+    div
+        label object non-editable
+        div(data-tribe-singleselect,
+            data-new-label="New Item",
+            data-selected-option="{text: 'aa', value: 'a_a'}",
+            data-available-options="[{text: 'aa', value: 'a_a'}, {text: 'aaa', value: 'a_a_a'}, {text: 'aaaa', value: 'a_a_a_a'}]")
+
+    div
+        label object editable
+        div(data-tribe-singleselect,
+            data-new-label="New Item",
+            data-editable="true",
+            data-selected-option="{text: 'aa', value: 'a_a'}",
+            data-available-options="[{text: 'aa', value: 'a_a'}, {text: 'aaa', value: 'a_a_a'}, {text: 'aaaa', value: 'a_a_a_a'}]")

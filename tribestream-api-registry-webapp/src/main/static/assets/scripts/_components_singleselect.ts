@@ -13,6 +13,12 @@ angular.module('website-components-singleselect', [
             },
             templateUrl: 'app/templates/component_singleselect.html',
             controller: ['$scope', '$timeout', ($scope, $timeout) => $timeout(() => {
+                $scope.getOptionText = (item) => {
+                    if (item.text === undefined) {
+                        return item;
+                    }
+                    return item.text;
+                };
                 if ($scope.editable === undefined) {
                     $scope.editable = false;
                 } else {
@@ -26,7 +32,7 @@ angular.module('website-components-singleselect', [
                 $scope.optionsActivatedBottomUp = 0;
                 $scope.version = 0;
                 $scope.$watch('originalSelectedOption', () => {
-                    $scope.inputText = _.clone($scope.originalSelectedOption);
+                    $scope.inputText = $scope.getOptionText(_.clone($scope.originalSelectedOption));
                     $scope.selectedItem = _.clone($scope.originalSelectedOption);
                 });
                 $scope.$watch('originalAvailableOptions', () => {
@@ -40,7 +46,7 @@ angular.module('website-components-singleselect', [
                 $scope.onCancel = () => $timeout(() => $scope.$apply(() => {
                     $scope.fieldDirty = false;
                     $scope.optionsActivated = false;
-                    $scope.inputText = _.clone($scope.originalSelectedOption);
+                    $scope.inputText = $scope.getOptionText(_.clone($scope.originalSelectedOption));
                     $scope.selectedItem = _.clone($scope.originalSelectedOption);
                     $scope.$broadcast('fieldCanceled');
                 }));
@@ -49,10 +55,10 @@ angular.module('website-components-singleselect', [
                     $scope.optionsActivated = false;
                     if ($scope.selectedItem) {
                         $scope.originalSelectedOption = _.clone($scope.selectedItem);
-                        $scope.inputText = _.clone($scope.selectedItem);
+                        $scope.inputText = $scope.getOptionText(_.clone($scope.selectedItem));
                         $scope.selectedItem = _.clone($scope.selectedItem);
                     } else {
-                        $scope.inputText = _.clone($scope.originalSelectedOption);
+                        $scope.inputText = $scope.getOptionText(_.clone($scope.originalSelectedOption));
                         $scope.selectedItem = _.clone($scope.originalSelectedOption);
                     }
                     $scope.$broadcast('fieldCommitted');
@@ -128,17 +134,23 @@ angular.module('website-components-singleselect', [
             },
             templateUrl: 'app/templates/component_singleselect_available.html',
             controller: ['$scope', '$timeout', ($scope, $timeout) => {
+                $scope.getOptionText = (item) => {
+                    if (item.text === undefined) {
+                        return item;
+                    }
+                    return item.text;
+                };
                 $scope.showOptions = () => $timeout(() => $scope.$apply(() => {
                     $scope.selectedItem = null;
                     $scope.newOpt = null;
                     $scope.availableOptions = _.clone($scope.originalAvailableOptions);
                     let text = $scope.inputText ? $scope.inputText.trim() : '';
                     $scope.availableOptions = _.sortBy(_.filter($scope.availableOptions, (opt) => {
-                        return opt.startsWith(text);
+                        return $scope.getOptionText(opt).startsWith(text);
                     }), (item) => item);
-                    $scope.selectedItem = _.find($scope.availableOptions, (opt) => opt.startsWith(text));
+                    $scope.selectedItem = _.find($scope.availableOptions, (opt) => $scope.getOptionText(opt).startsWith(text));
                     if ($scope.editable) {
-                        if (_.find($scope.availableOptions, (opt) => opt === text)) {
+                        if (_.find($scope.availableOptions, (opt) => $scope.getOptionText(opt) === text)) {
                             $scope.newOpt = null;
                         } else {
                             $scope.newOpt = text;
