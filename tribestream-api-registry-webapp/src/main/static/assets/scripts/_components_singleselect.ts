@@ -76,7 +76,7 @@ angular.module('website-components-singleselect', [
                     $scope.selectedItem = _.clone(existing);
                     $scope.$broadcast('fieldCanceled');
                 }));
-                $scope.onCommit = () => $timeout(() => $scope.$apply(() => {
+                $scope.onCommit = (revertIfNoMatch) => $timeout(() => $scope.$apply(() => {
                     if ($scope.selectedItem) {
                         $scope.fieldDirty = false;
                         $scope.optionsActivated = false;
@@ -84,6 +84,15 @@ angular.module('website-components-singleselect', [
                         $scope.inputText = $scope.getOptionText($scope.selectedItem);
                         $scope.selectedItem = _.clone($scope.originalSelectedOption);
                         $scope.$broadcast('fieldCommitted');
+                    } else if(revertIfNoMatch) {
+                        $scope.fieldDirty = false;
+                        $scope.optionsActivated = false;
+                        let existing = _.find($scope.availableOptions, (item) => {
+                            let availValue = $scope.getOptionValue(item);
+                            return availValue === $scope.originalSelectedOption;
+                        });
+                        $scope.inputText = $scope.getOptionText(existing);
+                        $scope.selectedItem = _.clone(existing);
                     }
                 }));
                 $scope.onSelectTopDownOption = () => $timeout(() => $scope.$apply(() => {
@@ -108,7 +117,7 @@ angular.module('website-components-singleselect', [
                     deactivatePromise = $timeout(() => {
                         el.removeClass('active');
                         if (scope.fieldDirty) {
-                            scope.onCommit();
+                            scope.onCommit(true);
                         }
                     }, 500);
                 };
