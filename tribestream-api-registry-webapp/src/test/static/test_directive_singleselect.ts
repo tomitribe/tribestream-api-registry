@@ -181,4 +181,36 @@ describe('it tests our custom singleselect component', () => {
         });
     });
 
+    it('should do nothing when trying to commit new non-available entry', (done) => {
+        timeoutTryCatch(100, done, () => {
+            let scope = rootScope.$new();
+            scope.selected = 'aaa';
+            scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+            let element = angular.element('<div data-tribe-singleselect data-selected-option="selected" data-available-options="options"></div>');
+            // append to body so we can click on it.
+            element.appendTo(document.find('body'));
+            compile(element)(scope);
+            timeoutTryCatch(100, done, () => {
+                let selected = angular.element(element.find('div[data-tribe-singleselect-selected]'));
+                let input = angular.element(selected.find('input'));
+                timeoutTryCatch(100, done, () => {
+                    input.focus();
+                    let selectedScope = selected.scope();
+                    selectedScope.$apply(() => selectedScope.inputText = 'fff');
+                    timeoutTryCatch(100, done, () => {
+                        triggerKeyDown(input, 13); // enter
+                        timeoutTryCatch(100, done, () => {
+                            expect(selectedScope.selectedItem).to.equal('aaa');
+                            input.blur();
+                            timeoutTryCatch(100, done, () => {
+                                expect(selectedScope.inputText).to.equal('aaa');
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+
 });
