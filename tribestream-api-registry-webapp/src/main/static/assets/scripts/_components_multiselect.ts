@@ -8,10 +8,23 @@ angular.module('website-components-multiselect', [
             scope: {
                 originalAvailableOptions: '=availableOptions',
                 originalSelectedOptions: '=selectedOptions',
+                originalGetOptionText: '=getOptionText',
                 newLabel: '@?'
             },
             templateUrl: 'app/templates/component_multiselect.html',
             controller: ['$log', '$scope', '$timeout', ($log, $scope, $timeout) => $timeout(() => {
+                $scope.$watch('originalGetOptionText', () => {
+                    if ($scope.originalGetOptionText) {
+                        $scope.getOptionText = $scope.originalGetOptionText;
+                    } else {
+                        $scope.getOptionText = (item) => {
+                            if (!item || item.text === undefined) {
+                                return item;
+                            }
+                            return item.text;
+                        };
+                    }
+                });
                 $scope.$watch('originalSelectedOptions', () => {
                     $scope.selectedOptions = _.clone($scope.originalSelectedOptions);
                 });
@@ -105,7 +118,8 @@ angular.module('website-components-multiselect', [
                 onSelect: '&',
                 inputText: '=',
                 selectedItem: '=selectedOption',
-                newLabel: '@?'
+                newLabel: '@?',
+                getOptionText: '='
             },
             templateUrl: 'app/templates/component_multiselect_available.html',
             controller: ['$scope', '$timeout', ($scope, $timeout) => {
@@ -134,7 +148,7 @@ angular.module('website-components-multiselect', [
                 }));
                 $scope.selectedItem = null;
                 $scope.selectNext = () => $timeout(() => $scope.$apply(() => {
-                    let ordered = _.sortBy($scope.availableOptions, (item) => item);
+                    let ordered = _.sortBy($scope.availableOptions, (item) => $scope.getOptionText(item).toLowerCase());
                     if ($scope.selectedItem) {
                         var index = ordered.indexOf($scope.selectedItem) + 1;
                         if (index >= ordered.length) {
@@ -151,7 +165,7 @@ angular.module('website-components-multiselect', [
                     }
                 }));
                 $scope.selectPrevious = () => $timeout(() => $scope.$apply(() => {
-                    let ordered = _.sortBy($scope.availableOptions, (item) => item);
+                    let ordered = _.sortBy($scope.availableOptions, (item) => $scope.getOptionText(item).toLowerCase());
                     if ($scope.selectedItem) {
                         if ($scope.newOpt === $scope.selectedItem && ordered.length) {
                             $scope.selectedItem = _.last(ordered);

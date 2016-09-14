@@ -46,3 +46,10 @@
             data-available-options="[{text:'DELETE', value:'delete'}, {text:'HEAD', value:'head'}, {text:'GET', value:'get'}, {text:'OPTIONS', value:'options'}, {text:'POST', value:'post'}, {text:'PUT', value:'put'}, {text:'PATCH', value:'patch'}]",
             data-selected-option="'get'",
             data-get-option-text="toUppercase")
+
+    div
+        label Auth methods
+        div(data-tribe-multiselect,
+            data-new-label="New Method",
+            data-selected-options="[]",
+            data-available-options="['basic', 'form', 'digest', 'HTTP Signatures', 'Bearer']")

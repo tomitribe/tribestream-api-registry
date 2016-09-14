@@ -243,4 +243,30 @@ describe('it tests our custom singleselect component', () => {
         });
     });
 
+    it('should order available options list case insensitive', (done) => {
+        timeoutTryCatch(100, done, () => {
+            let scope = rootScope.$new();
+            scope.option = '';
+            scope.options = ['basic', 'form', 'digest', 'HTTP Signatures', 'Bearer'];
+            let element = angular.element('<div data-tribe-singleselect data-selected-option="option" data-available-options="options"></div>');
+            // append to body so we can click on it.
+            element.appendTo(document.find('body'));
+            compile(element)(scope);
+            timeoutTryCatch(100, done, () => {
+                let selected = angular.element(element.find('div[data-tribe-singleselect-selected]'));
+                let input = angular.element(selected.find('input'));
+                timeoutTryCatch(100, done, () => {
+                    input.focus();
+                    triggerKeyDown(input, 40); // arrowdown
+                    timeoutTryCatch(100, done, () => {
+                        let availableOptions = document.find('div.tribe-data-tribe-singleselect-available-body div.option');
+                        expect(_.map(angular.element(availableOptions), (item) => {
+                            return angular.element(item).scope().opt;
+                        })).to.deep.equal(['basic', 'Bearer', 'digest', 'form', 'HTTP Signatures']);
+                        done();
+                    });
+                });
+            });
+        });
+    });
 });
