@@ -3,9 +3,46 @@
         div(data-tribe-multiselect,
             data-selected-options="['bbb', 'ccc', 'aaa', 'eee', 'ddd']",
             data-available-options="['ddd', 'aaa', 'bbb', 'ccc', 'eee', 'fff', 'eeeee', 'eeee', 'ee', 'e', 'ggg', 'hhh', 'a', 'aa', 'aab', 'aabb', 'aabbbbb', 'aabbbbbbb', 'aabbbbbbbbb']")
-
     div
         div(data-tribe-multiselect,
             data-new-label="New Item",
             data-selected-options="['eee', 'bbb', 'aaa', 'ccc', 'ddd']",
             data-available-options="['aaa', 'bbb', 'ccc', 'ddd', 'eee', 'eeeee', 'fff', 'ggg', 'hhh']")
+    div
+        div(data-tribe-multiselect,
+            data-new-label="New Item",
+            data-selected-options="['eee', 'bbb']",
+            data-available-options="['aaa', 'bbb', 'ccc', 'ddd', 'eee', 'eeeee', 'fff', 'ggg', 'hhh']")
+        div(data-tribe-singleselect,
+            data-new-label="New Item",
+            data-editable="true",
+            data-selected-option="'aa'",
+            data-available-options="['aaaa', 'aaa', 'aa', 'bbb', 'ccc', 'ddd', 'eee', 'eeeee', 'fff', 'ggg', 'hhh']")
+
+    div
+        div(data-tribe-singleselect,
+            data-new-label="New Item",
+            data-selected-option="'aa'",
+            data-available-options="['aaaa', 'aaa', 'aa', 'bbb', 'ccc', 'ddd', 'eee', 'eeeee', 'fff', 'ggg', 'hhh']")
+
+    div
+        label object non-editable
+        div(data-tribe-singleselect,
+            data-new-label="New Item",
+            data-selected-option="'a_a'",
+            data-available-options="[{text: 'aa', value: 'a_a'}, {text: 'aaa', value: 'a_a_a'}, {text: 'aaaa', value: 'a_a_a_a'}]")
+
+    div
+        label object editable
+        div(data-tribe-singleselect,
+            data-new-label="New Item",
+            data-editable="true",
+            data-selected-option="'a_a'",
+            data-available-options="[{text: 'aa', value: 'a_a'}, {text: 'aaa', value: 'a_a_a'}, {text: 'aaaa', value: 'a_a_a_a'}]")
+
+    div
+        label method
+        div(data-tribe-singleselect,
+            data-available-options="[{text:'DELETE', value:'delete'}, {text:'HEAD', value:'head'}, {text:'GET', value:'get'}, {text:'OPTIONS', value:'options'}, {text:'POST', value:'post'}, {text:'PUT', value:'put'}, {text:'PATCH', value:'patch'}]",
+            data-selected-option="'get'",
+            data-get-option-text="toUppercase")

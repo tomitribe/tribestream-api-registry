@@ -1,7 +1,7 @@
 div
   .title
     h1
-      i(data-tribe-editable-option, data-empty-text="Verb", data-options="[{text:'DELETE', value:'delete'}, {text:'HEAD', value:'head'}, {text:'GET', value:'get'}, {text:'OPTIONS', value:'options'}, {text:'POST', value:'post'}, {text:'PUT', value:'put'}, {text:'PATCH', value:'patch'}]", data-value="endpoint.httpMethod")
+      div(data-tribe-singleselect, data-get-option-text="toUppercase", data-available-options="[{text:'DELETE', value:'delete'}, {text:'HEAD', value:'head'}, {text:'GET', value:'get'}, {text:'OPTIONS', value:'options'}, {text:'POST', value:'post'}, {text:'PUT', value:'put'}, {text:'PATCH', value:'patch'}]", data-selected-option="endpoint.httpMethod")
       i(data-tribe-editable-text, data-empty-text="Path", data-value="endpoint.path")
   h2 Summary
   i(data-tribe-editable-block, data-empty-text="No description", data-content="endpoint.operation.summary")
