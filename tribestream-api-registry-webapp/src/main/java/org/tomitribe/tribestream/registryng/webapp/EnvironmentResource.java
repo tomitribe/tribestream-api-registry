@@ -19,14 +19,13 @@
 package org.tomitribe.tribestream.registryng.webapp;
 
 import org.tomitribe.tribestream.registryng.Version;
-import org.apache.openejb.util.OpenEjbVersion;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
 @Path("server")
 public class EnvironmentResource {
-    private final Environment environment = new Environment(OpenEjbVersion.get().getVersion(), Version.VERSION);
+    private final Environment environment = new Environment(System.getProperty("openejb.version", "unknown"), Version.VERSION);
 
     @GET
     @Path("info")
