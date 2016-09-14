@@ -1,0 +1,75 @@
+@import "variables"
+
+[data-tribe-singleselect-selected]
+  > div
+    display: flex
+    div.text
+      display: flex
+      width: 100%
+      padding: 0 5px
+      align-items: center
+      span
+        margin: 5px 0
+        &.empty
+          font-style: italic
+          color: $app-input-border-color
+      input
+        margin: 5px 0
+        border: 0
+        padding: 0
+        height: 28px !important
+        width: 0
+        max-width: 100%
+        &:hover, &:focus
+          border: 0
+    div.edit-icon
+      opacity: 0
+      display: flex
+      flex-direction: column
+      justify-content: center
+      align-items: center
+      padding: 0 5px
+      border: 0
+      border-left: solid $app-input-border-color 1px
+      background-color: #f5f5f5
+      align-self: stretch
+
+[data-tribe-singleselect]
+  display: inline-block
+  > div
+    border: solid transparent 1px
+  &.active
+    display: block
+  &:hover
+    div.edit-icon
+      opacity: 1
+  &.active
+    [data-tribe-singleselect-selected]
+      div.edit-icon
+        opacity: 0
+      div.text
+        input
+          width: auto
+          flex-grow: 1
+        span
+          display: none
+  &:hover, &.active
+    > div
+      border-color: $app-input-border-color
+
+div.tribe-data-tribe-singleselect-available-body
+  min-width: 300px
+  .opts
+    padding: 0
+    > div
+      padding: 5px 8px
+    .option.selected
+      background-color: #f5f5f5
+  .new-opt
+    border-top: dashed $app-input-border-color 1px
+    &.selected
+      background-color: #f5f5f5
+    > span:first-of-type
+      font-weight: 800
+      margin-right: 5px
+

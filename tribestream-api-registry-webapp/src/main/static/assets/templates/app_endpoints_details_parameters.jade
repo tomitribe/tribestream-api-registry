@@ -22,9 +22,13 @@ div
             td
               i(data-tribe-editable-text, data-value="param.type", data-adjust="false")
             td
-              i(data-tribe-editable-option, data-value="param.in", data-options="[{text:'Query parameter', value:'query'}, {text:'Header', value:'header'}, {text:'Path', value:'path'}, {text:'Form data', value:'formData'}, {text:'Body', value:'body'}]")
+              div(data-tribe-singleselect,
+                  data-selected-option="param.in",
+                  data-available-options="[{text:'Query parameter', value:'query'}, {text:'Header', value:'header'}, {text:'Path', value:'path'}, {text:'Form data', value:'formData'}, {text:'Body', value:'body'}]")
             td
-              i(data-tribe-editable-option, data-value="param.required", data-empty-text="No", data-options="[{text: 'Yes', value: true}, {text: 'No', value: false}]")
+              div(data-tribe-singleselect,
+                  data-selected-option="param.required",
+                  data-available-options="[{text: 'Yes', value: true}, {text: 'No', value: false}]")
             td.description
               div
                 i(data-tribe-editable-block, data-content="param.description")

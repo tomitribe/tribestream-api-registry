@@ -1,0 +1,12 @@
+.tribe-data-tribe-singleselect-available-body.floating-menu
+    .opts
+        .option(x-ng-repeat="opt in availableOptions | orderBy:getOptionText",
+                x-ng-click="selectItem(opt)"
+                x-ng-class="{selected: opt === selectedItem}")
+            span {{getOptionText(opt)}}
+    .new-opt(x-ng-if="newOpt && editable", x-ng-class="{selected: newOpt === selectedItem}")
+        span(x-ng-if="newLabel") {{newLabel}}:
+        span(x-ng-if="!newLabel") New:
+        span {{inputText}}
+    .new-opt(x-ng-if="!newOpt && !editable && !selectedItem")
+        span No matches
