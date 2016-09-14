@@ -11,7 +11,7 @@ angular.module('website-components-multiselect', [
                 newLabel: '@?'
             },
             templateUrl: 'app/templates/component_multiselect.html',
-            controller: ['$scope', '$timeout', ($scope, $timeout) => $timeout(() => {
+            controller: ['$log', '$scope', '$timeout', ($log, $scope, $timeout) => $timeout(() => {
                 $scope.$watch('originalSelectedOptions', () => {
                     $scope.selectedOptions = _.clone($scope.originalSelectedOptions);
                 });
@@ -30,12 +30,16 @@ angular.module('website-components-multiselect', [
                     $scope.version = $scope.version + 1;
                 }));
                 $scope.fieldCommitted = () => $timeout(() => $scope.$apply(() => {
+                    $scope.onCommit();
                     $scope.$broadcast('fieldCommitted');
                 }));
                 $scope.onCommit = () => $timeout(() => $scope.$apply(() => {
-                    $scope.fieldDirty = false;
-                    $scope.optionsActivated = false;
-                    $scope.originalSelectedOptions = _.clone($scope.selectedOptions);
+                    if ($scope.fieldDirty) {
+                        $scope.fieldDirty = false;
+                        $scope.optionsActivated = false;
+                        $scope.originalSelectedOptions = _.clone($scope.selectedOptions);
+                        $log.debug('field committed. values: ' + $scope.selectedOptions);
+                    }
                 }));
                 $scope.fieldCanceled = () => {
                     $scope.fieldDirty = false;
@@ -66,7 +70,6 @@ angular.module('website-components-multiselect', [
                     cancelDeactivate();
                     deactivatePromise = $timeout(() => {
                         scope.onCommit();
-                        scope.fieldCommitted();
                         el.removeClass('active');
                     }, 500);
                 };
@@ -84,11 +87,13 @@ angular.module('website-components-multiselect', [
                     }
                 });
                 scope.$on('$destroy', () => el.remove());
+                scope.$on('fieldCanceled', () => $timeout(() => el.find('input').blur()));
+                scope.$on('fieldCommitted', () => $timeout(() => el.find('input').blur()));
             })
         };
     }])
 
-    .directive('tribeMultiselectAvailable', ['$document', '$window', ($document, $window) => {
+    .directive('tribeMultiselectAvailable', ['$document', '$window', '$timeout', ($document, $window, $timeout) => {
         return {
             restrict: 'A',
             scope: {
@@ -122,7 +127,7 @@ angular.module('website-components-multiselect', [
                         } else {
                             $scope.newOpt = $scope.inputText.trim();
                         }
-                        if(!$scope.selectedItem) {
+                        if (!$scope.selectedItem) {
                             $scope.selectedItem = $scope.newOpt;
                         }
                     }
@@ -170,11 +175,11 @@ angular.module('website-components-multiselect', [
                         }
                     }
                 }));
-                $scope.selectItem = (opt) => {
+                $scope.selectItem = (opt) => $timeout(() => $scope.$apply(() => {
                     $scope.selectedOptions.push(opt);
                     $scope.active = false;
                     $scope.inputText = '';
-                };
+                }));
                 $scope.$watch('inputText', () => {
                     $timeout(() => $scope.$apply(() => {
                         if (!$scope.inputText) {
@@ -203,6 +208,9 @@ angular.module('website-components-multiselect', [
                         scope.showOptions();
                         element.addClass('active');
                     } else {
+                        $timeout(() => scope.$apply(() => {
+                            scope.selectedItem = null;
+                        }));
                         floatingBody.detach();
                         element.removeClass('active');
                     }
@@ -236,6 +244,7 @@ angular.module('website-components-multiselect', [
                 selectedOptions: '=',
                 onChange: '&',
                 onCommit: '&',
+                onCancel: '&',
                 onSelectTopDownOption: '&',
                 onSelectBottomUpOption: '&',
                 onOptionsDeactivated: '&',
@@ -243,7 +252,7 @@ angular.module('website-components-multiselect', [
                 inputText: '='
             },
             templateUrl: 'app/templates/component_multiselect_selected.html',
-            controller: ['$scope', '$timeout', ($scope, $timeout) => {
+            controller: ['$log', '$scope', '$timeout', ($log, $scope, $timeout) => {
                 $scope.inputText = '';
                 $scope.releaseEngaged = false;
                 $scope.selectedItem = null;
@@ -309,14 +318,27 @@ angular.module('website-components-multiselect', [
                 };
                 $scope.keyEntered = (event) =>  $timeout(() => $scope.$apply(() => {
                     if (event.keyCode === 13 /* Enter */) {
-                        addItem();
-                        releaseSelection();
-                        $scope.onOptionsDeactivated();
-                        $scope.onChange();
+                        let isCommitChanges = !$scope.inputText && !$scope.selectedOption;
+                        $log.debug('enter key detected. commit values? ' + isCommitChanges);
+                        if (isCommitChanges) {
+                            $scope.onOptionsDeactivated();
+                            $scope.releaseEngaged = false;
+                            $scope.selectedItem = null;
+                            $scope.onCommit();
+                        } else {
+                            addItem();
+                            releaseSelection();
+                            $scope.onOptionsDeactivated();
+                            $scope.onChange();
+                        }
                     } else if (event.keyCode === 27 /* Escape */) {
+                        let isCancelChanges = !$scope.inputText;
                         $scope.inputText = '';
                         releaseSelection();
                         $scope.onOptionsDeactivated();
+                        if (isCancelChanges) {
+                            $scope.onCancel();
+                        }
                     } else if (event.keyCode === 8 /* Backspace */) {
                         if (!$scope.inputText) {
                             selectOrDeleteLast();
@@ -337,14 +359,6 @@ angular.module('website-components-multiselect', [
                     $scope.selectedOptions = _.without($scope.selectedOptions, item);
                     $scope.onChange();
                 };
-                $scope.$on('fieldCommitted', () => {
-                    $timeout(() => $scope.$apply(() => {
-                        addItem();
-                        $scope.releaseEngaged = false;
-                        $scope.selectedItem = null;
-                    }));
-                    $scope.onCommit();
-                });
                 $scope.$on('fieldCanceled', () => $timeout(() => $scope.$apply(() => {
                     $scope.inputText = '';
                     $scope.releaseEngaged = false;

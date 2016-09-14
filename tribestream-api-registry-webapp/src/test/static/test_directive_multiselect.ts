@@ -252,6 +252,91 @@ describe('it tests our custom multiselect component', () => {
         });
     });
 
+    it('should confirm edits with double enter', (done) => {
+        timeoutTryCatch(100, done, () => {
+            let scope = rootScope.$new();
+            scope.selected = ['aaa', 'bbb', 'ccc'];
+            scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+            let element = angular.element('<div data-tribe-multiselect data-selected-options="selected" data-available-options="options"></div>');
+            // append to body so we can click on it.
+            element.appendTo(document.find('body'));
+            compile(element)(scope);
+            timeoutTryCatch(100, done, () => {
+                let selected = angular.element(element.find('div[data-tribe-multiselect-selected]'));
+                let input = angular.element(selected.find('input'));
+                timeoutTryCatch(100, done, () => {
+                    input.focus();
+                    let selectedScope = selected.scope();
+                    selectedScope.$apply(() => selectedScope.inputText = 'fff');
+                    timeoutTryCatch(100, done, () => {
+                        triggerKeyDown(input, 13); // enter
+                        timeoutTryCatch(100, done, () => {
+                            expect(_.map(angular.element(selected.find('.items')), (item) => {
+                                return angular.element(item).scope().opt;
+                            })).to.deep.equal(['aaa', 'bbb', 'ccc', 'fff']);
+                            triggerKeyDown(input, 13); // enter again
+                            timeoutTryCatch(100, done, () => {
+                                expect(selected.scope().fieldDirty).to.equal(false);
+                                expect(_.map(angular.element(selected.find('.items')), (item) => {
+                                    return angular.element(item).scope().opt;
+                                })).to.deep.equal(['aaa', 'bbb', 'ccc', 'fff']);
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+
+    it('should cancel edits with double escape', (done) => {
+        timeoutTryCatch(100, done, () => {
+            let scope = rootScope.$new();
+            scope.selected = ['aaa', 'bbb', 'ccc'];
+            scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+            let element = angular.element('<div data-tribe-multiselect data-selected-options="selected" data-available-options="options"></div>');
+            // append to body so we can click on it.
+            element.appendTo(document.find('body'));
+            compile(element)(scope);
+            timeoutTryCatch(100, done, () => {
+                let selected = angular.element(element.find('div[data-tribe-multiselect-selected]'));
+                let input = angular.element(selected.find('input'));
+                timeoutTryCatch(100, done, () => {
+                    input.focus();
+                    let selectedScope = selected.scope();
+                    selectedScope.$apply(() => selectedScope.inputText = 'fff');
+                    timeoutTryCatch(100, done, () => {
+                        triggerKeyDown(input, 13); // enter
+                        timeoutTryCatch(100, done, () => {
+                            expect(_.map(angular.element(selected.find('.items')), (item) => {
+                                return angular.element(item).scope().opt;
+                            })).to.deep.equal(['aaa', 'bbb', 'ccc', 'fff']);
+                            selectedScope.$apply(() => selectedScope.inputText = 'ddd');
+                            triggerKeyDown(input, 27); // escape
+                            timeoutTryCatch(100, done, () => {
+                                timeoutTryCatch(100, done, () => {
+                                    expect(selectedScope.inputText).to.equal('');
+                                    expect(_.map(angular.element(selected.find('.items')), (item) => {
+                                        return angular.element(item).scope().opt;
+                                    })).to.deep.equal(['aaa', 'bbb', 'ccc', 'fff']);
+                                    triggerKeyDown(input, 27); // escape again
+                                    timeoutTryCatch(100, done, () => {
+                                        timeoutTryCatch(100, done, () => {
+                                            expect(_.map(angular.element(selected.find('.items')), (item) => {
+                                                return angular.element(item).scope().opt;
+                                            })).to.deep.equal(['aaa', 'bbb', 'ccc']);
+                                            done();
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+
     it('should show the "new item" label in the available oprions list', (done) => {
         timeoutTryCatch(100, done, () => {
             let scope = rootScope.$new();
