@@ -19,6 +19,7 @@
 package org.tomitribe.tribestream.registryng.entities;
 
 import io.swagger.models.Swagger;
+import org.hibernate.envers.Audited;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -60,6 +61,7 @@ import java.util.Collection;
         query = "SELECT DISTINCT d FROM OpenApiDocument d JOIN FETCH d.endpoints ORDER BY d.name ASC, d.version DESC")
 })
 @EntityListeners(OpenAPIDocumentSerializer.class)
+@Audited
 public class OpenApiDocument extends AbstractEntity {
 
     public static final String QRY_FIND_BY_NAME_AND_VERSION = "OpenApiDocument.findByNameAndVersion";

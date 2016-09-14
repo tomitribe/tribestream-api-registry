@@ -20,6 +20,7 @@ package org.tomitribe.tribestream.registryng.entities;
 
 import io.swagger.models.Operation;
 import org.hibernate.annotations.ForeignKey;
+import org.hibernate.envers.Audited;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -53,6 +54,7 @@ import javax.persistence.UniqueConstraint;
             "       AND lower(ep.verb) = lower(:verb) AND ep.path = :path")
 })
 @EntityListeners(OpenAPIDocumentSerializer.class)
+@Audited
 public class Endpoint extends AbstractEntity {
 
     public static final String QRY_FIND_ALL = "Endpoint.findAll";

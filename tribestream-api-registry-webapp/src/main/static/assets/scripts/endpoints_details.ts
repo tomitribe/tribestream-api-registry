@@ -11,6 +11,15 @@ angular.module('tribe-endpoints-details', [
             templateUrl: 'app/templates/app_endpoints_details_header.html',
             scope: true,
             controller: ['$scope', '$timeout', function ($scope, $timeout) {
+                $scope.toUppercase = (item) => {
+                    if (!item) {
+                        return null;
+                    }
+                    if (item.text) {
+                        return item.text.toUpperCase();
+                    }
+                    return item.toUpperCase();
+                };
                 $scope.$watch('application', function () {
                     // Compute endpoint URL
                     if ($scope.application && $scope.application.swagger && $scope.application.swagger.host && $scope.application.swagger.basePath) {
@@ -19,7 +28,7 @@ angular.module('tribe-endpoints-details', [
                                 // TODO: Reflect changes back to scheme into model
                                 if ($scope.endpoint.operation.schemes) {
                                     $scope.endpointProtocol = $scope.endpoint.operation.schemes.indexOf('https') >= 0 ? 'https' : 'http';
-                                } else if ($scope.application && $scope.application.swagger && $scope.application.swagger.schemes) {
+                                } else if ($scope.application && $scope.application.swagger && $scope.application.swagger.schemes) {
                                     $scope.endpointProtocol = $scope.application.swagger.schemes.indexOf('https') >= 0 ? 'https' : 'http';
                                 }
                                 $scope.resourceUrl = $scope.application.swagger.host + $scope.application.swagger.basePath + $scope.endpoint.path.substring(1);
@@ -231,9 +240,13 @@ angular.module('tribe-endpoints-details', [
                     });
                 };
                 $scope.addParam = function () {
-                    var params = $scope.$eval('endpoint.params');
+                    var params = $scope.$eval('endpoint.operation.parameters');
                     if (!params) {
-                        params = [];
+                        if (!$scope.endpoint.operation) {
+                            $scope.endpoint.operation = {};
+                        }
+                        $scope.endpoint.operation.parameters = [];
+                        params = $scope.endpoint.operation.parameters;
                     }
                     $timeout(function () {
                         $scope.$apply(function () {
@@ -294,10 +307,10 @@ angular.module('tribe-endpoints-details', [
                 let initList = (path, name) => {
                     $scope.$watch(path, () => {
                         let xapi = $scope.$eval(path);
-                        if(!xapi) {
+                        if (!xapi) {
                             return;
                         }
-                        if(!xapi[name]) {
+                        if (!xapi[name]) {
                             xapi[name] = [];
                         }
                     });
@@ -316,10 +329,12 @@ angular.module('tribe-endpoints-details', [
             templateUrl: 'app/templates/app_endpoints_details_response_request.html',
             scope: true,
             controller: ['$scope', '$timeout', function ($scope, $timeout) {
-                $scope.$watch('endpoint.operation', function() {
+                $scope.$watch('endpoint.operation', function () {
                     if ($scope.endpoint && $scope.endpoint.operation && $scope.endpoint.operation.responses) {
                         let positiveResponses = Object.keys($scope.endpoint.operation.responses)
-                              .filter((httpStatus) => { return httpStatus.match('2..') ? true : false; });
+                            .filter((httpStatus) => {
+                                return httpStatus.match('2..') ? true : false;
+                            });
 
                         if (positiveResponses && positiveResponses.length > 0) {
                             $scope.positiveResponse = $scope.endpoint.operation.responses[positiveResponses[0]];
@@ -456,7 +471,7 @@ angular.module('tribe-endpoints-details', [
                                 operation: {}
                             };
                         });
-                    }).then(function() {
+                    }).then(function () {
                         srv.getDetails($scope.applicationId, $scope.endpointId).then(function (detailsResponse) {
                             $timeout(function () {
                                 $scope.$apply(function () {
@@ -478,18 +493,18 @@ angular.module('tribe-endpoints-details', [
                             });
                         });
                     });
-                    $scope.save = function() {
+                    $scope.save = function () {
                         srv.saveEndpoint($scope.applicationId, $scope.endpointId, {
-                                // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
-                                httpMethod: $scope.endpoint.httpMethod,
-                                path: $scope.endpoint.path,
-                                operation: $scope.endpoint.operation
-                            })
+                            // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
+                            httpMethod: $scope.endpoint.httpMethod,
+                            path: $scope.endpoint.path,
+                            operation: $scope.endpoint.operation
+                        })
                             .then(
-                                function (saveResponse) {
-                                    systemMessagesService.info("Saved endpoint details! " + saveResponse.status);
-                                }
-                            );
+                            function (saveResponse) {
+                                systemMessagesService.info("Saved endpoint details! " + saveResponse.status);
+                            }
+                        );
                     };
                 }
             ]
