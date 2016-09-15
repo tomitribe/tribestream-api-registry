@@ -1,7 +1,4 @@
 div
-  .resp-body
-    h2 Request Body
-    div(data-tribe-editable-block, data-content="endpoint.respBody")
   .expected
     h2 Expected values
       div(x-ng-click="addExpectedValue();")
@@ -52,6 +49,9 @@ div
           td
             div(x-ng-click="removeErrorCode(val);")
               i.fa.fa-trash-o
+  .resp-body
+    h2 Request Body
+    div(data-tribe-editable-block, data-content="endpoint.respBody")
   .samples
     h2 Samples
     h3 Request Headers
