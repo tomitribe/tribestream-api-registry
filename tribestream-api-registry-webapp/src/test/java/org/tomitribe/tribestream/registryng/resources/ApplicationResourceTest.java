@@ -32,19 +32,21 @@ import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
 import org.tomitribe.tribestream.registryng.domain.SearchResult;
+import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.both;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -62,6 +64,16 @@ public class ApplicationResourceTest {
 
     @Application
     private Registry registry;
+
+    @Inject
+    private SearchEngine engine;
+
+    @Test(expected = NotAuthorizedException.class)
+    public void applicationEndpointsAreSecured() throws Exception {
+        registry.target(false).path("api/application")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(new GenericType<List<ApplicationWrapper>>() {});
+    }
 
     @Test
     public void shouldLoadAllApplications() throws Exception {
@@ -107,7 +119,7 @@ public class ApplicationResourceTest {
                     .findFirst()
                     .map((SearchResult sr) -> loadEndpoint(sr.getApplicationId(), sr.getEndpointId()))
                     .get();
-            assertEquals(Arrays.asList("application/json"), endpoint.getOperation().getProduces());
+            assertEquals(singletonList("application/json"), endpoint.getOperation().getProduces());
 
             // And: When loading all applications the number of applications has increased by 1
             assertEquals(oldApplicationCount + 1, loadAllApplications().size());

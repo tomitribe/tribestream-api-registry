@@ -22,8 +22,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.util.DeserializationModule;
+import org.apache.deltaspike.core.api.literal.NamedLiteral;
 
 import javax.enterprise.inject.Produces;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.CDI;
 import javax.inject.Named;
 
 public class SwaggerJsonMapperProducer {
@@ -33,14 +36,17 @@ public class SwaggerJsonMapperProducer {
     @Produces
     @Named(SWAGGER_OBJECT_MAPPER_NAME)
     public ObjectMapper createSwaggerObjectMapper() {
-        return createObjectMapper();
-    }
-
-    public static ObjectMapper createObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new DeserializationModule(true, true));
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
         return mapper;
+    }
+
+    public static ObjectMapper lookup() { // bridge for non CDI contexts ensuring we reuse the CDI instance
+        final BeanManager bm = CDI.current().getBeanManager();
+        return ObjectMapper.class.cast(bm.getReference(
+                bm.resolve(bm.getBeans(ObjectMapper.class, new NamedLiteral(SWAGGER_OBJECT_MAPPER_NAME))),
+                ObjectMapper.class, bm.createCreationalContext(null)));
     }
 }

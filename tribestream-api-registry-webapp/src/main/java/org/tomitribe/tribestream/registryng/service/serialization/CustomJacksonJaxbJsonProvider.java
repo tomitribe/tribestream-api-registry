@@ -36,7 +36,6 @@ import java.lang.reflect.Type;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 @Provider
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
@@ -45,7 +44,7 @@ public class CustomJacksonJaxbJsonProvider extends JacksonJaxbJsonProvider {
     private static final Logger LOGGER = Logger.getLogger(CustomJacksonJaxbJsonProvider.class.getName());
 
     public CustomJacksonJaxbJsonProvider() {
-        super(SwaggerJsonMapperProducer.createObjectMapper(), JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
+        super(SwaggerJsonMapperProducer.lookup(), JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
         configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
     }
 
