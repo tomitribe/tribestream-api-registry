@@ -18,9 +18,14 @@ div
         tbody
           tr(x-ng-repeat="param in endpoint.operation.parameters | orderBy:'param.name'")
             td
-              i(data-tribe-editable-text, data-value="param.name", data-adjust="false")
+              div(data-tribe-singleselect,
+                data-editable="true",
+                data-selected-option="param.name",
+                data-available-options="['Authorization', 'Date', 'Content-Type', 'Accept']")
             td
-              i(data-tribe-editable-text, data-value="param.type", data-adjust="false")
+              div(data-tribe-singleselect,
+                data-selected-option="param.type",
+                data-available-options="['integer', 'long', 'float', 'double', 'string', 'byte', 'binary', 'boolean', 'date', 'dateTime', 'password']")
             td
               div(data-tribe-singleselect,
                   data-selected-option="param.in",
