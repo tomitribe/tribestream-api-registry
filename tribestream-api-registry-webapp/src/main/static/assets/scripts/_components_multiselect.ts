@@ -25,9 +25,14 @@ angular.module('website-components-multiselect', [
                         };
                     }
                 });
-                $scope.$watch('originalSelectedOptions', () => {
-                    $scope.selectedOptions = _.clone($scope.originalSelectedOptions);
-                });
+                $scope.$watch('originalSelectedOptions', () => $timeout(() => $scope.$apply(() => {
+                    if(!$scope.originalSelectedOptions) {
+                        $scope.selectedOptions = [];
+                    } else {
+                        $scope.selectedOptions = _.clone($scope.originalSelectedOptions);
+                    }
+
+                })));
                 $scope.$watch('originalAvailableOptions', () => {
                     $scope.availableOptions = _.clone($scope.originalAvailableOptions);
                 });
