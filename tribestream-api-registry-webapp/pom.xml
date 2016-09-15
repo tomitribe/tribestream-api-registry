@@ -193,21 +193,6 @@
     <plugins>
 
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-war-plugin</artifactId>
-        <version>2.6</version>
-        <configuration>
-          <failOnMissingWebXml>false</failOnMissingWebXml>
-          <attachClasses>true</attachClasses>
-          <webResources>
-            <resource>
-              <directory>target/static-resources</directory>
-            </resource>
-          </webResources>
-        </configuration>
-      </plugin>
-
-      <plugin>
         <groupId>org.apache.tomee.maven</groupId>
         <artifactId>tomee-embedded-maven-plugin</artifactId>
         <version>7.0.1</version>
@@ -324,6 +309,58 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+
+    <profile>
+      <id>default</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-war-plugin</artifactId>
+            <version>2.6</version>
+            <configuration>
+              <failOnMissingWebXml>false</failOnMissingWebXml>
+              <attachClasses>true</attachClasses>
+              <webResources>
+                <resource>
+                  <directory>target/static-resources</directory>
+                </resource>
+              </webResources>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>custom-deploy</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-war-plugin</artifactId>
+            <version>2.6</version>
+            <configuration>
+              <classifier>${deploy-name}</classifier>
+              <failOnMissingWebXml>false</failOnMissingWebXml>
+              <attachClasses>true</attachClasses>
+              <webResources>
+                <resource>
+                  <directory>target/static-resources</directory>
+                </resource>
+              </webResources>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+  </profiles>
 
 </project>
 
