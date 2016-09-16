@@ -4,7 +4,8 @@ div(tabindex=0)
         data-on-select-top-down-option="onSelectTopDownOption()",
         data-on-select-bottom-up-option="onSelectBottomUpOption()",
         data-on-options-deactivated="onOptionsDeactivated()",
-        data-on-commit="onCommit()",
+        data-on-commit="fieldCommitted()",
+        data-on-cancel="fieldCanceled()",
         data-on-change="fieldChanged()",
         data-selected-option="selectedOption",
         data-input-text="inputText"
@@ -17,7 +18,8 @@ div(tabindex=0)
         data-selected-option="selectedOption",
         data-available-options="availableOptions",
         data-input-text="inputText",
-        data-new-label="{{newLabel}}"
+        data-new-label="{{newLabel}}",
+        data-get-option-text="getOptionText"
     )
     div(data-tribe-field-actions,
         data-version="version",
