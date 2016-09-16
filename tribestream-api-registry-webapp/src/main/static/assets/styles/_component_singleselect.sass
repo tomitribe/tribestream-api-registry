@@ -18,10 +18,13 @@
         border: 0
         padding: 0
         height: 28px !important
-        width: 0
+        width: 1px
         max-width: 100%
         &:hover, &:focus
           border: 0
+        &:focus
+          min-width: 10px
+          width: 100%
     div.edit-icon
       opacity: 0
       display: flex
