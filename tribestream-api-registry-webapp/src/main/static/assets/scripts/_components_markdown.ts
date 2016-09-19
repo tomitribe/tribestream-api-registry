@@ -57,11 +57,17 @@ angular.module('website-components-markdown', [
                         el.removeClass('active');
                     }, 500);
                 };
-                let anchorEl = el.find('> div > textarea')[0];
+                let focusAction = (cm) => {
+                    cancelDeactivate();
+                    cm.execCommand('selectAll');
+                };
+                let anchorEl = el.find('div.value > textarea')[0];
                 let actionClick = (editor, callback) => {
                     cancelDeactivate();
                     callback(editor);
+                    editor.codemirror.off('focus', focusAction);
                     editor.codemirror.focus();
+                    editor.codemirror.on('focus', focusAction);
                 };
                 let simplemde = new SimpleMDE({
                     element: anchorEl,
@@ -124,10 +130,7 @@ angular.module('website-components-markdown', [
                 simplemde.codemirror.on('change', () => {
                     scope.onChange(simplemde.value());
                 });
-                simplemde.codemirror.on('focus', () => {
-                    cancelDeactivate();
-                    simplemde.codemirror.execCommand('selectAll');
-                });
+                simplemde.codemirror.on('focus', focusAction);
                 simplemde.codemirror.on('blur', () => $timeout(deactivate));
                 let disablePreview = () => {
                     if (simplemde.isPreviewActive()) {
