@@ -36,6 +36,19 @@ describe('it tests our custom text component', () => {
         element.trigger(e);
     };
 
+    it('should have title', (done) => {
+        let scope = rootScope.$new();
+        scope.value = null;
+        let element = angular.element('<div data-tribe-text data-value="value"></div>');
+        compile(element)(scope);
+        // append to body so we can click on it.
+        element.appendTo(document.find('body'));
+        timeoutTryCatch(100, done, () => {
+            expect(element.find('> div').attr('title')).to.deep.equal('Click to edit');
+            done();
+        });
+    });
+
     it('should load selected option', (done) => {
         let scope = rootScope.$new();
         scope.value = 'aaa';
