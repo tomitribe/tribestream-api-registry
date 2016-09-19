@@ -26,7 +26,7 @@ gulp.task('css-third-party', function () {
         './bower_components/normalize-css/normalize.css',
         './bower_components/font-awesome/css/font-awesome.min.css',
         './bower_components/codemirror/lib/codemirror.css',
-        './bower_components/nvd3/build/nv.d3.min.css'
+        './bower_components/simplemde/dist/simplemde.min.css'
     ]).pipe(concat('_.css')).pipe(gulp.dest('../../../target/static-resources/app/third-party/styles/'));
     var mocha  = gulp.src([
         './bower_components/mocha/mocha.css'
@@ -135,6 +135,7 @@ gulp.task('js-third-party-test', function () {
         './bower_components/codemirror/mode/markdown/markdown.js',
         './bower_components/marked/lib/marked.js',
         './bower_components/angular-marked/dist/angular-marked.min.js',
+        './bower_components/simplemde/dist/simplemde.min.js',
         './bower_components/angular-mocks/angular-mocks.js'
     ]).pipe(concat('_tests_2.js')).pipe(gulp.dest('../../../target/static-resources/app/third-party/'));
     return es.concat(_1, _2);
@@ -179,7 +180,8 @@ gulp.task('js-third-party', function () {
         './bower_components/angular-ui-codemirror/ui-codemirror.min.js',
         './bower_components/codemirror/mode/markdown/markdown.js',
         './bower_components/marked/lib/marked.js',
-        './bower_components/angular-marked/dist/angular-marked.min.js'
+        './bower_components/angular-marked/dist/angular-marked.min.js',
+        './bower_components/simplemde/dist/simplemde.min.js'
     ]).pipe(concat('_.js')).pipe(gulp.dest('../../../target/static-resources/app/third-party/')));
 });
 
