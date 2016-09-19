@@ -16,6 +16,11 @@ angular.module('website-components-text', [
                 $scope.$watch('originalValue', () => $timeout(() => $scope.$apply(() => {
                     $scope.value = _.clone($scope.originalValue);
                 })));
+                $scope.$watch('value', () => $timeout(() => $scope.$apply(() => {
+                    if ($scope.value !== $scope.originalValue) {
+                        $scope.fieldDirty = true;
+                    }
+                })));
                 $scope.onCommit = () =>  $timeout(() => $scope.$apply(() => {
                     if ($scope.fieldDirty) {
                         $scope.fieldDirty = false;
@@ -39,18 +44,6 @@ angular.module('website-components-text', [
                         $scope.onCommit();
                     } else if (event.keyCode === 27 /* Escape */) {
                         $scope.onCancel();
-                    } else if (event.keyCode === 8 /* Backspace */) {
-                        $scope.onChange();
-                    } else if (event.keyCode === 37 /* ArrowLeft */) {
-                        // no-op
-                    } else if (event.keyCode === 39 /* ArrowRight */) {
-                        // no-op
-                    } else if (event.keyCode === 40 /* ArrowDown */) {
-                        $scope.onChange();
-                    } else if (event.keyCode === 38 /* ArrowUp */) {
-                        $scope.onChange();
-                    } else {
-                        $scope.onChange();
                     }
                 }));
             })],

@@ -31,7 +31,7 @@ describe('it tests our custom text component', () => {
     }, ms);
 
     let triggerKeyDown = function (element, keyCode) {
-        var e = $.Event("keyup");
+        var e = angular.element.Event("keyup");
         e.keyCode = keyCode;
         element.trigger(e);
     };
@@ -47,6 +47,42 @@ describe('it tests our custom text component', () => {
             let value = element.scope().value;
             expect(value).to.deep.equal('aaa');
             done();
+        });
+    });
+
+    it('should show action buttons on change', (done) => {
+        let scope = rootScope.$new();
+        scope.value = 1;
+        let element = angular.element('<div data-tribe-text data-type="number" data-value="value"></div>');
+        compile(element)(scope);
+        // append to body so we can click on it.
+        element.appendTo(document.find('body'));
+        timeoutTryCatch(100, done, () => {
+            let input = angular.element(element.find('input'));
+            expect(input.scope().value).to.deep.equal(1);
+
+            input.focus();
+            timeoutTryCatch(100, done, () => {
+                input.scope().value = 3;
+                input.scope().keyEntered({
+                    keyCode: 27
+                });
+                timeoutTryCatch(100, done, () => {
+                    expect(input.scope().value).to.deep.equal(1);
+                    input.scope().value = 3;
+                    timeoutTryCatch(100, done, () => {
+                        expect(document.find('div.tribe-field-actions-body').length).to.equal(1);
+                        input.scope().keyEntered({
+                            keyCode: 13
+                        });
+                        timeoutTryCatch(100, done, () => {
+                            expect(input.scope().value).to.deep.equal(3);
+                            expect(document.find('div.tribe-field-actions-body').length).to.equal(0);
+                            done();
+                        });
+                    });
+                });
+            });
         });
     });
 });
