@@ -79,6 +79,7 @@ angular.module('website-components-text', [
                     input.select();
                 });
                 element.find('> div').on('focus', () => input.focus());
+                scope.$on('$destroy', () => element.remove());
             })
         };
     }]);
