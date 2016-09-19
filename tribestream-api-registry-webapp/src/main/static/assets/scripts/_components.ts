@@ -2,7 +2,8 @@ angular.module('website-components', [
     'ui.codemirror',
     'hc.marked',
     'website-components-multiselect',
-    'website-components-singleselect'
+    'website-components-singleselect',
+    'website-components-text'
 ])
     .filter('uriencode', ['$window', function ($window) {
         return $window.encodeURIComponent;
