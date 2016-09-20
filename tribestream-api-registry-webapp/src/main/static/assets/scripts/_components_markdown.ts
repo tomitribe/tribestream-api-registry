@@ -1,8 +1,9 @@
 angular.module('website-components-markdown', [
-    'website-components-field-actions'
+    'website-components-field-actions',
+    'website-components-filters'
 ])
 
-    .directive('tribeMarkdown', ['$window', '$timeout', ($window, $timeout) => {
+    .directive('tribeMarkdown', ['$window', '$timeout', '$log', ($window, $timeout, $log) => {
         return {
             restrict: 'A',
             scope: {
@@ -10,6 +11,7 @@ angular.module('website-components-markdown', [
             },
             templateUrl: 'app/templates/component_markdown.html',
             controller: ['$log', '$scope', ($log, $scope) => $timeout(() => {
+                $scope.simplemde = null;
                 $scope.version = 0;
                 $scope.fieldDirty = false;
                 $scope.$watch('originalValue', () => $timeout(() => $scope.$apply(() => {
@@ -139,11 +141,14 @@ angular.module('website-components-markdown', [
                 };
                 scope.$on('fieldCanceled', disablePreview);
                 scope.$watch('value', () => $timeout(() => {
+                    $log.debug(`scope.fieldDirty = ${scope.fieldDirty}; scope.value = ${scope.value}`);
                     if (!scope.fieldDirty) {
                         simplemde.value(scope.value);
                     }
                 }));
-                scope.$on('$desploy', () => el.remove());
+                scope.$on('$destroy', () => {
+                    el.remove();
+                });
                 el.find('> div').on('focus', () => {
                     el.addClass('active');
                     $timeout(() => simplemde.codemirror.focus());
