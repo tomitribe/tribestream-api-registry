@@ -14,6 +14,7 @@ angular.module('website-components-markdown', [
                 $scope.simplemde = null;
                 $scope.version = 0;
                 $scope.fieldDirty = false;
+                $scope.cmFocused = false;
                 $scope.$watch('originalValue', () => $timeout(() => $scope.$apply(() => {
                     $scope.value = _.clone($scope.originalValue);
                 })));

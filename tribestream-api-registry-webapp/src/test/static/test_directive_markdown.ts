@@ -46,9 +46,11 @@ body content here
             expect(element.find('div.preview').html()).to.not.contain('<p>second paragraph</p>');
             timeoutTryCatch(100, done, () => {
                 let mainDiv = element.find('> div');
+                expect(mainDiv.scope().cmFocused).to.equal(false);
                 mainDiv.focus();
                 timeoutTryCatch(100, done, () => {
                     let elScope = mainDiv.scope();
+                    expect(elScope.cmFocused).to.equal(true);
                     elScope.$apply(() => elScope.value = `
 # title
 
