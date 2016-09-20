@@ -25,8 +25,8 @@ gulp.task('css-third-party', function () {
         './bower_components/open-sans/css/open-sans.min.css',
         './bower_components/normalize-css/normalize.css',
         './bower_components/font-awesome/css/font-awesome.min.css',
-        './bower_components/codemirror/lib/codemirror.css',
-        './bower_components/simplemde/dist/simplemde.min.css'
+        './bower_components/simplemde/dist/simplemde.min.css',
+        './bower_components/codemirror/lib/codemirror.css'
     ]).pipe(concat('_.css')).pipe(gulp.dest('../../../target/static-resources/app/third-party/styles/'));
     var mocha  = gulp.src([
         './bower_components/mocha/mocha.css'
