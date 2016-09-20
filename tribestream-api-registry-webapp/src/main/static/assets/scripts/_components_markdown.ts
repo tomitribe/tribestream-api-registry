@@ -25,6 +25,7 @@ angular.module('website-components-markdown', [
                     }
                 })));
                 $scope.onCommit = () =>  $timeout(() => $scope.$apply(() => {
+                    $scope.cmFocused = false;
                     if ($scope.fieldDirty) {
                         $scope.fieldDirty = false;
                         $scope.originalValue = _.clone($scope.value);
@@ -60,8 +61,12 @@ angular.module('website-components-markdown', [
                     }, 500);
                 };
                 let focusAction = (cm) => {
+                    $log.debug('codemirror focus; cm.getSelection() empty? ' + !!cm.getSelection());
                     cancelDeactivate();
-                    cm.execCommand('selectAll');
+                    if (!scope.cmFocused) {
+                        cm.execCommand('selectAll');
+                    }
+                    $timeout(() => scope.$apply(() => scope.cmFocused = true));
                 };
                 let anchorEl = el.find('div.value > textarea')[0];
                 let actionClick = (editor, callback) => {
@@ -133,7 +138,9 @@ angular.module('website-components-markdown', [
                     scope.onChange(simplemde.value());
                 });
                 simplemde.codemirror.on('focus', focusAction);
-                simplemde.codemirror.on('blur', () => $timeout(deactivate));
+                simplemde.codemirror.on('blur', () => $timeout(() => {
+                    deactivate();
+                }));
                 let disablePreview = () => {
                     if (simplemde.isPreviewActive()) {
                         simplemde.togglePreview();
