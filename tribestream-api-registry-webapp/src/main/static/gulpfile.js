@@ -11,6 +11,8 @@ var sass = require('gulp-sass');
 var es = require('event-stream');
 var autoprefixer = require('gulp-autoprefixer');
 var angularTemplateCache = require('gulp-angular-templatecache');
+var cssWrap = require('gulp-css-wrap');
+var merge = require('merge-stream');
 
 gulp.task('css', gulpsync.sync(['images', 'css-build', 'css-third-party', 'css-third-party-resources']));
 gulp.task('images', function () {
@@ -19,16 +21,19 @@ gulp.task('images', function () {
 });
 gulp.task('css-build', gulpsync.sync(['sass', 'autoprefixer', 'css-concat']));
 gulp.task('css-third-party', function () {
-    var regular = gulp.src([
+    var regular = merge(
+        gulp.src([
         './bower_components/lato/css/lato.min.css',
         './bower_components/montserrat-webfont/css/montserrat-webfont.min.css',
         './bower_components/open-sans/css/open-sans.min.css',
         './bower_components/normalize-css/normalize.css',
         './bower_components/font-awesome/css/font-awesome.min.css',
-        './bower_components/simplemde/dist/simplemde.min.css',
         './bower_components/codemirror/lib/codemirror.css'
-    ]).pipe(concat('_.css')).pipe(gulp.dest('../../../target/static-resources/app/third-party/styles/'));
-    var mocha  = gulp.src([
+        ]),
+        // wrap simplemde because it changes codemirror.
+        gulp.src(['./bower_components/simplemde/dist/simplemde.min.css']).pipe(cssWrap({selector: 'div[data-tribe-markdown]'}))
+    ).pipe(concat('_.css')).pipe(gulp.dest('../../../target/static-resources/app/third-party/styles/'));
+    var mocha = gulp.src([
         './bower_components/mocha/mocha.css'
     ]).pipe(concat('_tests.css')).pipe(gulp.dest('../../../target/static-resources/app/third-party/styles/'));
     es.concat(regular, mocha)
@@ -85,10 +90,10 @@ gulp.task('html-to-js', function () {
         .pipe(gulp.dest('../../../target/static-templates/'))
 });
 gulp.task('copy-templates', function () {
-    var asScripts =  gulp.src('../../../target/static-templates/_templates.js')
+    var asScripts = gulp.src('../../../target/static-templates/_templates.js')
         .pipe(gulp.dest('../../../target/static-resources/app/scripts/'));
 
-    var asTemplates =  gulp.src('../../../target/static-templates/html/templates/*')
+    var asTemplates = gulp.src('../../../target/static-templates/html/templates/*')
         .pipe(gulp.dest('../../../target/static-resources/app/templates/'));
 
     return es.concat(asScripts, asTemplates);
