@@ -83,6 +83,9 @@ describe('it tests our custom text component', () => {
                 timeoutTryCatch(100, done, () => {
                     expect(input.scope().value).to.deep.equal(1);
                     input.scope().value = 3;
+                    input.scope().keyEntered({
+                        keyCode: 999
+                    });
                     timeoutTryCatch(100, done, () => {
                         expect(document.find('div.tribe-field-actions-body').length).to.equal(1);
                         input.scope().keyEntered({
