@@ -30,13 +30,7 @@ describe('it tests our custom markdown component', () => {
         }
     }, ms);
 
-    let triggerKeyDown = function (element, keyCode) {
-        var e = angular.element.Event("keyup");
-        e.keyCode = keyCode;
-        element.trigger(e);
-    };
-
-    it('should load markdown', (done) => {
+    it('should load markdown; confirm and cancel edit;', (done) => {
         let scope = rootScope.$new();
         scope.myvalue = `
 # title
@@ -49,7 +43,57 @@ body content here
         element.appendTo(document.find('body'));
         timeoutTryCatch(100, done, () => {
             expect(element.find('div.preview').html()).to.contain('<p>body content here</p>');
-            done();
+            expect(element.find('div.preview').html()).to.not.contain('<p>second paragraph</p>');
+            timeoutTryCatch(100, done, () => {
+                let mainDiv = element.find('> div');
+                mainDiv.focus();
+                timeoutTryCatch(100, done, () => {
+                    let elScope = mainDiv.scope();
+                    elScope.$apply(() => elScope.value = `
+# title
+
+body content here
+
+second paragraph
+`);
+                    timeoutTryCatch(100, done, () => {
+                        expect(elScope.fieldDirty).to.equal(true);
+                        let actionBtns = document.find('div.tribe-field-actions-body');
+                        expect(actionBtns.length).to.equal(1);
+                        expect(element.find('div.preview').html()).to.contain('<p>body content here</p>');
+                        expect(element.find('div.preview').html()).to.contain('<p>second paragraph</p>');
+                        timeoutTryCatch(100, done, () => {
+                            actionBtns.find('div[ng-click="cancel()"]').click();
+                            timeoutTryCatch(100, done, () => {
+                                expect(element.find('div.preview').html()).to.contain('<p>body content here</p>');
+                                expect(element.find('div.preview').html()).to.not.contain('<p>second paragraph</p>');
+                                elScope.$apply(() => elScope.value = `
+# title
+
+body content here
+
+second paragraph
+`);
+                                timeoutTryCatch(100, done, () => {
+                                    expect(elScope.fieldDirty).to.equal(true);
+                                    let actionBtns = document.find('div.tribe-field-actions-body');
+                                    expect(actionBtns.length).to.equal(1);
+                                    expect(element.find('div.preview').html()).to.contain('<p>body content here</p>');
+                                    expect(element.find('div.preview').html()).to.contain('<p>second paragraph</p>');
+                                    timeoutTryCatch(100, done, () => {
+                                        actionBtns.find('div[ng-click="confirm()"]').click();
+                                        timeoutTryCatch(100, done, () => {
+                                            expect(element.find('div.preview').html()).to.contain('<p>body content here</p>');
+                                            expect(element.find('div.preview').html()).to.contain('<p>second paragraph</p>');
+                                            done();
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
         });
     });
 
