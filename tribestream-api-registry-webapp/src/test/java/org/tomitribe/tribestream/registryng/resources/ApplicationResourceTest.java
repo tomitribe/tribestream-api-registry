@@ -38,9 +38,11 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -77,7 +79,6 @@ public class ApplicationResourceTest {
 
 
     @Test
-    @Ignore
     public void shouldImportOpenAPIDocument() throws Exception {
 
         try {
@@ -88,7 +89,6 @@ public class ApplicationResourceTest {
             final ApplicationWrapper request = new ApplicationWrapper(swagger);
 
             // When: The Swagger document is posted to the application resource
-
             final Response response = registry.target().path("api/application")
                     .request(MediaType.APPLICATION_JSON_TYPE)
                     .buildPost(Entity.entity(request, MediaType.APPLICATION_JSON_TYPE))
@@ -99,8 +99,13 @@ public class ApplicationResourceTest {
 
             final ApplicationWrapper applicationWrapper = response.readEntity(ApplicationWrapper.class);
 
+            assertEquals(3, response.getLinks().size());
+
             assertEquals("List API versions", applicationWrapper.getSwagger().getPaths().get("/").getGet().getSummary());
             assertEquals("Show API version details", applicationWrapper.getSwagger().getPaths().get("/v2").getGet().getSummary());
+
+            final List<String> linkTargets = response.getLinks().stream().map(Link::getRel).collect(toList());
+            assertThat(linkTargets, hasItems("GET /", "GET /v2"));
 
             EndpointWrapper endpoint = getSearchPage().getResults().stream()
                     .filter((SearchResult sr) -> "/v2".equals(sr.getPath()) && "GET".equals(sr.getHttpMethod()))
@@ -145,6 +150,9 @@ public class ApplicationResourceTest {
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .buildPost(Entity.entity(createRequest, MediaType.APPLICATION_JSON_TYPE))
                 .invoke();
+
+        assertEquals(1, newApplicationWrapperResponse.getLinks().size());
+        assertNotNull(newApplicationWrapperResponse.getLink("self"));
 
         ApplicationWrapper newApplicationWrapper = newApplicationWrapperResponse.readEntity(ApplicationWrapper.class);
         assertNotNull(newApplicationWrapper);
