@@ -73,7 +73,6 @@ describe('it tests our custom text component', () => {
         timeoutTryCatch(100, done, () => {
             let input = angular.element(element.find('input'));
             expect(input.scope().value).to.deep.equal(1);
-
             input.focus();
             timeoutTryCatch(100, done, () => {
                 input.scope().value = 3;
@@ -82,16 +81,19 @@ describe('it tests our custom text component', () => {
                 });
                 timeoutTryCatch(100, done, () => {
                     expect(input.scope().value).to.deep.equal(1);
-                    input.scope().value = 3;
+                    input.focus();
                     timeoutTryCatch(100, done, () => {
-                        expect(document.find('div.tribe-field-actions-body').length).to.equal(1);
-                        input.scope().keyEntered({
-                            keyCode: 13
-                        });
+                        input.scope().value = 3;
                         timeoutTryCatch(100, done, () => {
-                            expect(input.scope().value).to.deep.equal(3);
-                            expect(document.find('div.tribe-field-actions-body').length).to.equal(0);
-                            done();
+                            expect(document.find('div.tribe-field-actions-body').length).to.equal(1);
+                            input.scope().keyEntered({
+                                keyCode: 13
+                            });
+                            timeoutTryCatch(100, done, () => {
+                                expect(input.scope().value).to.deep.equal(3);
+                                expect(document.find('div.tribe-field-actions-body').length).to.equal(0);
+                                done();
+                            });
                         });
                     });
                 });

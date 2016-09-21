@@ -67,6 +67,10 @@ angular.module('website-components-text', [
                     cancelDeactivate();
                     element.addClass('active');
                     input.select();
+                    $timeout(() => scope.$apply(() => {
+                        scope.version = scope.version + 1;
+                        scope.fieldDirty = true;
+                    }));
                 });
                 element.find('> div').on('focus', () => input.focus());
                 scope.$on('$destroy', () => element.remove());
