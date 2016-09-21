@@ -16,7 +16,7 @@ angular.module('website-components-markdown', [
                 $scope.fieldDirty = false;
                 $scope.cmFocused = false;
                 $scope.$watch('originalValue', () => $timeout(() => $scope.$apply(() => {
-                    $scope.value = _.clone($scope.originalValue);
+                    $scope.value = $scope.originalValue ? _.clone($scope.originalValue) : '';
                 })));
                 $scope.$watch('value', () => $timeout(() => $scope.$apply(() => {
                     if ($scope.value) {
@@ -151,7 +151,7 @@ angular.module('website-components-markdown', [
                 scope.$watch('value', () => $timeout(() => {
                     $log.debug(`scope.fieldDirty = ${scope.fieldDirty}; scope.value = ${scope.value}`);
                     if (!scope.fieldDirty) {
-                        simplemde.value(scope.value);
+                        simplemde.value(scope.value ? scope.value : '');
                     }
                 }));
                 scope.$on('$destroy', () => {
