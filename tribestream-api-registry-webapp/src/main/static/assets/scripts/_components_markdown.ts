@@ -67,7 +67,11 @@ angular.module('website-components-markdown', [
                     if (!scope.cmFocused) {
                         cm.execCommand('selectAll');
                     }
-                    $timeout(() => scope.$apply(() => scope.cmFocused = true));
+                    $timeout(() => scope.$apply(() => {
+                        scope.cmFocused = true;
+                        scope.version = scope.version + 1;
+                        scope.fieldDirty = true;
+                    }));
                 };
                 let anchorEl = el.find('div.value > textarea')[0];
                 let actionClick = (editor, callback) => {

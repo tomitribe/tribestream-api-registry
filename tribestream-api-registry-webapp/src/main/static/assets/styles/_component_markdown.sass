@@ -15,6 +15,7 @@ div[data-tribe-markdown]
   div.preview
     display: flex
     > div:first-of-type
+      padding: 10px
       min-height: 44px
       border: solid transparent 1px
       flex-grow: 1
@@ -34,3 +35,20 @@ div[data-tribe-markdown]
       display: none
     div.value
       display: block
+
+  div.preview, div.editor-preview
+    table
+      border: solid $app-input-border-color 1px
+      width: 100%
+      th, td
+        padding: 5px
+        text-align: left
+    pre
+      padding: 10px
+      border: solid $app-input-border-color 1px
+    code
+      border: 0
+      padding: 0
+      background-color: transparent
+    strong
+      font-weight: bold
