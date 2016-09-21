@@ -137,7 +137,7 @@ angular.module('website-components-markdown', [
                         })),
                         className: "fa fa-eye no-disable",
                         title: "Toggle Preview"
-                    }]
+                    }, 'guide']
                 });
                 simplemde.codemirror.on('change', () => {
                     scope.onChange(simplemde.value());
