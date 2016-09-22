@@ -54,6 +54,7 @@ angular.module('website-components-markdown', [
                 }));
             })],
             link: (scope, el) => $timeout(() => {
+                var simplemde = null;
                 var deactivatePromise = null;
                 let cancelDeactivate = () => {
                     if (deactivatePromise) {
@@ -66,6 +67,9 @@ angular.module('website-components-markdown', [
                     deactivatePromise = $timeout(() => {
                         scope.onCommit();
                         el.removeClass('active');
+                        if (simplemde && simplemde.isPreviewActive()) {
+                            SimpleMDE.togglePreview(simplemde);
+                        }
                     }, 500);
                 };
                 let focusAction = (cm) => {
@@ -88,7 +92,7 @@ angular.module('website-components-markdown', [
                     editor.codemirror.focus();
                     editor.codemirror.on('focus', focusAction);
                 };
-                let simplemde = new SimpleMDE({
+                simplemde = new SimpleMDE({
                     element: anchorEl,
                     status: false,
                     spellChecker: false,
