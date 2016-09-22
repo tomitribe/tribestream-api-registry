@@ -36,20 +36,25 @@ div[data-tribe-markdown]
     div.value
       display: block
 
-  div.preview, div.editor-preview
+  div.preview > div[x-ng-bind-html], div.editor-preview
+    *
+      font-family: "open sans", "Montserrat", Helvetica, Arial, sans-serif
+    pre, code
+      font-family: Consolas, "Liberation Mono", Courier, monospace
     h1, h2, h3, h4, h5, h6
       margin-top: 10px
       &:first-child
         margin-top: 10px
+    p, th, td, pre, code
+      font-size: 12px
     table
-      border: solid $app-input-border-color 1px
       width: 100%
       th, td
         padding: 5px
         text-align: left
     pre
       padding: 10px
-      border: solid $app-input-border-color 1px
+      background-color: #eeeeee
     code
       border: 0
       padding: 0
