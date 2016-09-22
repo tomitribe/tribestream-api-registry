@@ -54,6 +54,7 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 @RunWith(TomEEEmbeddedSingleRunner.class)
@@ -99,13 +100,15 @@ public class ApplicationResourceTest {
 
             final ApplicationWrapper applicationWrapper = response.readEntity(ApplicationWrapper.class);
 
-            assertEquals(3, response.getLinks().size());
-
             assertEquals("List API versions", applicationWrapper.getSwagger().getPaths().get("/").getGet().getSummary());
             assertEquals("Show API version details", applicationWrapper.getSwagger().getPaths().get("/v2").getGet().getSummary());
 
-            final List<String> linkTargets = response.getLinks().stream().map(Link::getRel).collect(toList());
-            assertThat(linkTargets, hasItems("GET /", "GET /v2"));
+            // And: The response contains links for self, history and the two endpoints
+            assertEquals(4, response.getLinks().size());
+            assertNotNull(response.getLink("self"));
+            assertNotNull(response.getLink("history"));
+            assertNotNull(response.getLink("GET /"));
+            assertNotNull(response.getLink("GET /v2"));
 
             EndpointWrapper endpoint = getSearchPage().getResults().stream()
                     .filter((SearchResult sr) -> "/v2".equals(sr.getPath()) && "GET".equals(sr.getHttpMethod()))
@@ -151,7 +154,6 @@ public class ApplicationResourceTest {
                 .buildPost(Entity.entity(createRequest, MediaType.APPLICATION_JSON_TYPE))
                 .invoke();
 
-        assertEquals(1, newApplicationWrapperResponse.getLinks().size());
         assertNotNull(newApplicationWrapperResponse.getLink("self"));
 
         ApplicationWrapper newApplicationWrapper = newApplicationWrapperResponse.readEntity(ApplicationWrapper.class);

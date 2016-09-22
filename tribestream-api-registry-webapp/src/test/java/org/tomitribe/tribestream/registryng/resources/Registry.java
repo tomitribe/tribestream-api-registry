@@ -24,6 +24,7 @@ import org.apache.openejb.testing.ContainerProperties;
 import org.apache.openejb.testing.RandomPort;
 import org.apache.tomee.loader.TomcatHelper;
 import org.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
+import org.tomitribe.util.Join;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
@@ -40,17 +41,20 @@ import java.security.Principal;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static javax.xml.bind.DatatypeConverter.printBase64Binary;
+import static org.tomitribe.util.Join.join;
 
 /**
  * Contains the configuration for the tests
  */
 @ContainerProperties({
         @ContainerProperties.Property(name = "hibernate.hbm2ddl.auto", value = "create-drop"),
-        @ContainerProperties.Property(name = "registryDatasource", value = "new://Resource?type=DataSource")
-        // ,@ContainerProperties.Property(name = "registryDatasource.LogSql", value = "true")
+        @ContainerProperties.Property(name = "registryDatasource", value = "new://Resource?type=DataSource"),
+        @ContainerProperties.Property(name = "registryDatasource.LogSql", value = "true")
 })
 @org.apache.openejb.testing.Application
 public class Registry {
+    public static final String TESTUSER = "utest";
+    public static final String TESTPASSWORD = "ptest";
     @RandomPort("http")
     private int port;
 
@@ -66,7 +70,7 @@ public class Registry {
         return client.register(new ClientRequestFilter() {
             @Override
             public void filter(final ClientRequestContext requestContext) throws IOException {
-                requestContext.getHeaders().put("Authorization", singletonList("Basic " + printBase64Binary("utest:ptest".getBytes("UTF-8"))));
+                requestContext.getHeaders().put("Authorization", singletonList("Basic " + printBase64Binary(join(":", TESTUSER, TESTPASSWORD).getBytes("UTF-8"))));
             }
         });
     }
@@ -83,12 +87,12 @@ public class Registry {
 
                         @Override
                         protected String getPassword(final String username) {
-                            return "utest".equals(username) ? "ptest" : null;
+                            return TESTUSER.equals(username) ? TESTPASSWORD : null;
                         }
 
                         @Override
                         protected Principal getPrincipal(final String username) {
-                            return "utest".equals(username) ? new GenericPrincipal("utest", "ptest", emptyList()) : null;
+                            return TESTUSER.equals(username) ? new GenericPrincipal(TESTUSER, TESTPASSWORD, emptyList()) : null;
                         }
                     });
         }
