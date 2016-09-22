@@ -92,6 +92,9 @@ angular.module('website-components-markdown', [
                     element: anchorEl,
                     status: false,
                     spellChecker: false,
+                    renderingConfig: {
+                        codeSyntaxHighlighting: true
+                    },
                     toolbar: ["bold", "italic", "heading", "quote"],
                     toolbar: [{
                         name: "bold",
