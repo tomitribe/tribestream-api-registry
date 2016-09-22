@@ -1,16 +1,42 @@
+angular.module('website-components-markdown-service', [])
+
+    .factory('tribeMarkdownService', [() => {
+        hljs.configure({
+            languages: ['xml', 'json', 'javascript', 'java', 'yaml']
+        });
+        return {
+            compileMd: function (content) {
+                if (content === null || content === undefined || content.trim() === '') {
+                    return '';
+                }
+                let compiledMd = angular.element('<div></div>');
+                angular.element(marked(content)).each((index, el) => {
+                    compiledMd.append(el);
+                });
+                compiledMd.find('code').each((index, codeTag) => {
+                    hljs.highlightBlock(codeTag)
+                });
+                return compiledMd.html();
+            }
+        };
+    }]);
+
+
 angular.module('website-components-markdown', [
     'website-components-field-actions',
-    'website-components-filters'
+    'website-components-filters',
+    'website-components-markdown-service'
 ])
 
-    .directive('tribeMarkdown', ['$window', '$timeout', '$log', ($window, $timeout, $log) => {
+
+    .directive('tribeMarkdown', ['$window', '$timeout', '$log', 'tribeMarkdownService', ($window, $timeout, $log, mdService) => {
         return {
             restrict: 'A',
             scope: {
                 originalValue: '=value'
             },
             templateUrl: 'app/templates/component_markdown.html',
-            controller: ['$log', '$scope', ($log, $scope) => $timeout(() => {
+            controller: ['$scope', ($scope) => $timeout(() => {
                 $scope.simplemde = null;
                 $scope.version = 0;
                 $scope.fieldDirty = false;
@@ -19,18 +45,7 @@ angular.module('website-components-markdown', [
                     $scope.value = $scope.originalValue ? _.clone($scope.originalValue) : '';
                 })));
                 $scope.$watch('value', () => $timeout(() => $scope.$apply(() => {
-                    if ($scope.value) {
-                        let compiledMd = angular.element('<div></div>');
-                        angular.element(marked($scope.value)).each((index, el) => {
-                            compiledMd.append(el);
-                        });
-                        compiledMd.find('code').each((index, codeTag) => {
-                            hljs.highlightBlock(codeTag)
-                        });
-                        $scope.preview = compiledMd.html();
-                    } else {
-                        $scope.preview = '';
-                    }
+                    $scope.preview = mdService.compileMd($scope.value);
                 })));
                 $scope.onCommit = () =>  $timeout(() => $scope.$apply(() => {
                     $scope.cmFocused = false;
@@ -96,9 +111,7 @@ angular.module('website-components-markdown', [
                     element: anchorEl,
                     status: false,
                     spellChecker: false,
-                    renderingConfig: {
-                        codeSyntaxHighlighting: true
-                    },
+                    previewRender: mdService.compileMd,
                     toolbar: ["bold", "italic", "heading", "quote"],
                     toolbar: [{
                         name: "bold",
