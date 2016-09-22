@@ -20,7 +20,14 @@ angular.module('website-components-markdown', [
                 })));
                 $scope.$watch('value', () => $timeout(() => $scope.$apply(() => {
                     if ($scope.value) {
-                        $scope.preview = marked($scope.value);
+                        let compiledMd = angular.element('<div></div>');
+                        angular.element(marked($scope.value)).each((index, el) => {
+                            compiledMd.append(el);
+                        });
+                        compiledMd.find('code').each((index, codeTag) => {
+                            hljs.highlightBlock(codeTag)
+                        });
+                        $scope.preview = compiledMd.html();
                     } else {
                         $scope.preview = '';
                     }
