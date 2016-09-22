@@ -14,7 +14,10 @@ angular.module('website-components-markdown-service', [])
                     compiledMd.append(el);
                 });
                 compiledMd.find('code').each((index, codeTag) => {
-                    hljs.highlightBlock(codeTag)
+                    let aCode = angular.element(codeTag);
+                    if (aCode.attr('class')) {
+                        hljs.highlightBlock(codeTag)
+                    }
                 });
                 return compiledMd.html();
             }
