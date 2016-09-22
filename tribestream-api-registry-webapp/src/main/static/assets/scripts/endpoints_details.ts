@@ -452,6 +452,19 @@ angular.module('tribe-endpoints-details', [
         };
     }])
 
+    .directive('appEndpointsDetailsHistory', [function() {
+        return {
+            restrict: 'A',
+            templateUrl: 'app/templates/app_endpoints_details_history.html',
+            scope: true,
+            controller: [
+                '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', 'systemMessagesService', 'tribeLinkHeaderService',
+                function ($scope, srv, tribeFilterService, $timeout, $filter, $log, systemMessagesService, tribeLinkHeaderService) {
+                }
+            ]
+        };
+    }])
+
     .directive('appEndpointsDetails', [function () {
         return {
             restrict: 'A',
@@ -461,10 +474,11 @@ angular.module('tribe-endpoints-details', [
                 'endpointId': '='
             },
             controller: [
-                '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', 'systemMessagesService'
-                function ($scope, srv, tribeFilterService, $timeout, $filter, $log, systemMessagesService) {
+                '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', 'systemMessagesService', 'tribeLinkHeaderService',
+                function ($scope, srv, tribeFilterService, $timeout, $filter, $log, systemMessagesService, tribeLinkHeaderService) {
                     $timeout(function () {
                         $scope.$apply(function () {
+                            $scope.history = null;
                             $scope.endpoint = {
                                 httpMethod: "",
                                 path: "",
@@ -473,6 +487,8 @@ angular.module('tribe-endpoints-details', [
                         });
                     }).then(function () {
                         srv.getDetails($scope.applicationId, $scope.endpointId).then(function (detailsResponse) {
+                            let links = tribeLinkHeaderService.parseLinkHeader(detailsResponse.headers('link'));
+                            $scope.historyLink = links['history']
                             $timeout(function () {
                                 $scope.$apply(function () {
                                     let detailsData = detailsResponse.data;
@@ -505,6 +521,51 @@ angular.module('tribe-endpoints-details', [
                                 systemMessagesService.info("Saved endpoint details! " + saveResponse.status);
                             }
                         );
+                    };
+                    // Triggered by the Show History button on the endpoint details page to show the revision log for that entity
+                    // TODO: Pagination!
+                    $scope.showHistory = function() {
+                        srv.getEndpointHistory($scope.historyLink).then(function(response) {
+
+                            let links = tribeLinkHeaderService.parseLinkHeader(response.headers('link'));
+                            for (let entry of response.data) {
+                                entry.link = links["revision " + entry.revisionId];
+                            }
+
+                            $timeout(function () {
+                                $scope.$apply(function () {
+                                    $scope.history = response.data;
+                                });
+                            });
+                        });
+                    };
+                    // Triggered by the "Close History" button to close the Revision Log in whatever form it will be
+                    // presented
+                    $scope.closeHistory = function() {
+                        $timeout(function () {
+                            $scope.$apply(function () {
+                                $scope.history = null;
+                            });
+                        });
+                    };
+                    // Triggered by selecting one revision, will load it and show it
+                    $scope.showHistoricEndpoint = function(historyItem) {
+                        $timeout(function () {
+                            $scope.$apply(function () {
+                                $scope.history = null;
+                            });
+                        });
+                        srv.getHistoricEndpoint(historyItem).then(function(response) {
+                            $timeout(function () {
+                                $scope.$apply(function () {
+                                    let detailsData = response.data;
+                                    $scope.historyItem = historyItem;
+                                    $scope.endpoint.httpMethod = detailsData.httpMethod;
+                                    $scope.endpoint.path = $filter('pathencode')(detailsData.path);
+                                    $scope.endpoint.operation = detailsData.operation;
+                                });
+                            });
+                        });
                     };
                 }
             ]

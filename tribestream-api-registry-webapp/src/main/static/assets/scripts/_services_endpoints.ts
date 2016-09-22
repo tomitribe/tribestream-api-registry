@@ -125,6 +125,30 @@ module services {
                             }
                         };
                     },
+                    getEndpointHistory: function (url) {
+                        return {
+                            then: function (successCallback, errorCallback) {
+                                if (url) {
+                                    $http.get(url)
+                                        .then(function (data) {
+                                            successCallback(data);
+                                        }, tribeErrorHandlerService.ensureErrorHandler(errorCallback));
+                                } else {
+                                    // TODO: What to do here?
+                                }
+                            }
+                        };
+                    },
+                    getHistoricEndpoint: function(historyItem) {
+                        return {
+                            then: function(successCallback, errorCallback) {
+                                $http.get(historyItem.link)
+                                    .then(function (data) {
+                                        successCallback(data);
+                                    }, tribeErrorHandlerService.ensureErrorHandler(errorCallback));
+                            }
+                        };
+                    },
                     getSeeContent: function (aggregateId) {
                         return {
                             then: function (successCallback, errorCallback) {
