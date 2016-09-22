@@ -120,4 +120,21 @@ second paragraph
         });
     });
 
+    it('should highlight code', (done) => {
+        let scope = rootScope.$new();
+        scope.myvalue = "\`\`\`xml\n <root><a>a</a></root> \n \`\`\`";
+        let element = angular.element('<div data-tribe-markdown data-value="myvalue"></div>');
+        compile(element)(scope);
+        // append to body so we can click on it.
+        element.appendTo(document.find('body'));
+        timeoutTryCatch(100, done, () => {
+            let toggleBtn = element.find('div.editor-toolbar > a.fa-eye');
+            toggleBtn.click();
+            timeoutTryCatch(100, done, () => {
+                expect(element.find('div.preview > div[x-ng-bind-html]').html()).to.contain('<code class="lang-xml hljs">');
+                done();
+            });
+        });
+    });
+
 });
