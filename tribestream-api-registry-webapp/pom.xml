@@ -128,11 +128,11 @@
       <exclusions>
         <exclusion>
           <groupId>org.jboss.spec.javax.transaction</groupId>
-          <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+          <artifactId>jboss-transaction-api_1.2_spec</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.hibernate.javax.persistence</groupId>
-          <artifactId>hibernate-jpa-2.0-api</artifactId>
+          <artifactId>hibernate-jpa-2.1-api</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
