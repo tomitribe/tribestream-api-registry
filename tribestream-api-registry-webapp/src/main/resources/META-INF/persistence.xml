@@ -39,6 +39,7 @@
             <property name="hibernate.order_updates" value="false"/>
             <property name="hibernate.generate_statistics" value="true"/>
             <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="hibernate.ejb.resource_scanner" value="org.tomitribe.tribestream.registryng.hibernate.NoScan" />
 
             <property name="show_sql" value="true"/>
         </properties>
