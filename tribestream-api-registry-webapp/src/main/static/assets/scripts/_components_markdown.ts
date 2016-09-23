@@ -1,9 +1,6 @@
 angular.module('website-components-markdown-service', [])
 
     .factory('tribeMarkdownService', [() => {
-        hljs.configure({
-            languages: ['xml', 'json', 'javascript', 'java', 'yaml']
-        });
         return {
             compileMd: function (content) {
                 if (content === null || content === undefined || content.trim() === '') {
