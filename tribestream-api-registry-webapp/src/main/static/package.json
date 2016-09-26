@@ -36,7 +36,9 @@
     "phantomjs-prebuilt": "^2.1.7",
     "tslint": "3.11.0",
     "typescript": "1.8.10",
-    "underscore.string": "3.3.4"
+    "underscore.string": "3.3.4",
+    "gulp-css-wrap": "0.1.2",
+    "merge-stream": "1.0.0"
   },
   "engine": "node >= 5.5.0"
 }
