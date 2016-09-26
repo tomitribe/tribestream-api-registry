@@ -5,6 +5,7 @@ div
     i.fa.fa-chevron-right
     a(x-ng-href="application/{{applicationId}}") {{application.swagger.info.title}}
     i.fa.fa-chevron-right
+    span(x-ng-if="historyItem") Revision {{historyItem.revisionId}} by {{historyItem.username}} created on {{historyItem.timestamp | date:'medium'}}
     .actions
       i(data-tribe-editable-option, data-empty-text="Actions", data-value="action", data-options="['Copy...', 'Release...', 'Export...', 'Share link...']")
   div
@@ -14,6 +15,8 @@ div
         div(data-app-endpoints-details-resource-information)
         div(data-app-endpoints-details-parameters)
         div(data-app-endpoints-details-response-request)
+        div(data-app-endpoints-details-history)
         div
           button.orange(x-ng-click="save()") Save
+          //button.orange(x-ng-click="showHistory()") Show History
     div(data-app-footer)

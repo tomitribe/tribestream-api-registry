@@ -18,8 +18,6 @@
  */
 package org.tomitribe.tribestream.registryng.resources;
 
-import io.swagger.models.HttpMethod;
-import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
 import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
@@ -43,12 +41,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+
+import static org.tomitribe.tribestream.registryng.resources.util.ApplicationWrapperUtil.mergeSwagger;
+import static org.tomitribe.tribestream.registryng.resources.util.ApplicationWrapperUtil.shrinkSwagger;
 
 @Path("/application")
 @ApplicationScoped
@@ -94,6 +92,10 @@ public class ApplicationResource {
         result.add(
                 Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path("application/{applicationId}").resolveTemplate("applicationId", application.getId()))
                         .rel("self")
+                        .build());
+        result.add(
+                Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path("history/application/{applicationId}").resolveTemplate("applicationId", application.getId()))
+                        .rel("history")
                         .build());
         for (Endpoint endpoint : application.getEndpoints()) {
             result.add(
@@ -258,47 +260,4 @@ public class ApplicationResource {
             target.getVendorExtensions().putAll(source.getVendorExtensions());
         }
     }
-
-    private Swagger mergeSwagger(final Swagger swagger, final Collection<Endpoint> endpoints) {
-        final Swagger result = Repository.createShallowCopy(swagger);
-        final HashMap<String, io.swagger.models.Path> newPaths = new HashMap<>();
-
-        if (endpoints != null) {
-            for (Endpoint endpoint : endpoints) {
-                io.swagger.models.Path newPath = newPaths.get(endpoint.getPath());
-                if (newPath == null) {
-                    newPath = new io.swagger.models.Path();
-                    newPaths.put(endpoint.getPath(), newPath);
-                }
-                newPath.set(endpoint.getVerb().toLowerCase(), endpoint.getOperation());
-            }
-        }
-        result.setPaths(newPaths);
-        return result;
-    }
-
-
-    private Swagger shrinkSwagger(final Swagger swagger) {
-        Swagger applicationClone = Repository.createShallowCopy(swagger);
-
-        Map<String, io.swagger.models.Path> paths = applicationClone.getPaths();
-        if (paths != null) {
-            Map<String, io.swagger.models.Path> shrunkPaths = new HashMap<>();
-
-            for (Map.Entry<String, io.swagger.models.Path> pathEntry : paths.entrySet()) {
-                io.swagger.models.Path shrunkPath = new io.swagger.models.Path();
-                shrunkPaths.put(pathEntry.getKey(), shrunkPath);
-                for (Map.Entry<HttpMethod, Operation> httpMethodOperationEntry : pathEntry.getValue().getOperationMap().entrySet()) {
-                    Operation shrunkOperation = new Operation();
-                    shrunkOperation.setDescription(httpMethodOperationEntry.getValue().getDescription());
-                    shrunkOperation.setSummary(httpMethodOperationEntry.getValue().getSummary());
-                    shrunkPath.set(httpMethodOperationEntry.getKey().name().toLowerCase(), shrunkOperation);
-                }
-            }
-
-            applicationClone.setPaths(shrunkPaths);
-        }
-        return applicationClone;
-    }
-
 }
