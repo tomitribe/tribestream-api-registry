@@ -8,8 +8,8 @@ div
     article
       div
         h1
-          i(data-tribe-editable-text, data-value="swagger.info.title")
-        div(data-tribe-editable-md, data-content="swagger.info.description")
+          div(data-tribe-text, data-value="swagger.info.title")
+        div(data-tribe-markdown, data-value="swagger.info.description")
         .see(x-ng-if="details.sees.length")
           span See:
           div
@@ -18,54 +18,12 @@ div
               a(x-ng-if="!see.href", x-ng-href="see/{{ see.aggregatedId }}", x-ng-bind-html="(see.title | tribeHtml) || (see.href | tribeHtml)")
       div
         h2 Resource Information
-        table
-          tbody
-            tr
-              td Endpoints
-              td
-                table
-                  thead
-                    tr
-                      th Verb
-                      th Path
-                      th Summary
-                  tbody
-                    tr(x-ng-repeat="endpoint in endpoints")
-                      td
-                        a(x-ng-href="application/{{app}}/endpoint/{{endpoint.id}}") {{endpoint.operation | pathencode}}
-                      td
-                        a(x-ng-href="application/{{app}}/endpoint/{{endpoint.id}}") {{endpoint.path | pathencode}}
-                      td
-                        span {{endpoint.summary}}
-            tr(x-ng-if="swagger.consumes.length")
-              td Request formats
-              td
-                .tribe-float
-                  span(x-ng-repeat="format in swagger.consumes") {{format}}
-            tr(x-ng-if="produces.length")
-              td Response formats
-              td
-                .tribe-float
-                  span(x-ng-repeat="format in swagger.produces") {{format}}
-            tr
-              td Requires authentication
-              td {{requiresAuthentication}}
-            tr
-              td Rate limited
-              td {{rateLimited}}
-            tr(x-ng-if="roles.length")
-              td Roles
-              td
-                .tags
-                  span(x-ng-repeat="role in roles", x-ng-click="filterByRole(role.text)") {{role.text}}
-            tr(x-ng-if="categories.length")
-              td Categories
-              td
-                .tags
-                  span(x-ng-repeat="category in categories", x-ng-click="filterByCategory(category.text)") {{category.text}}
-            tr(x-ng-if="tags.length")
-              td Tags
-              td
-                .tags
-                  span(x-ng-repeat="tag in swagger.tags", x-ng-click="filterByTag(tag.text)") {{tag.text}}
+        div
+          h3 Endpoints
+          ul.endpoint-info
+            li(x-ng-repeat="endpoint in endpoints")
+              a(x-ng-href="application/{{app}}/endpoint/{{endpoint.id}}")
+                span {{endpoint.operation | pathencode}}
+                span {{endpoint.path | pathencode}}
+                span {{endpoint.summary}}
   div(data-app-footer)
