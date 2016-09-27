@@ -216,29 +216,9 @@ angular.module('tribe-endpoints-details', [
                         });
                     });
                 });
-                $scope.$watch('endpoint.params', function () {
-                    var params = $scope.$eval('endpoint.params');
-                    if (!params) {
-                        return;
-                    }
-                    $timeout(function () {
-                        $scope.$apply(function () {
-                            _.each(params, function (p) {
-                                if (!p.sampleValues) {
-                                    p.sampleValues = [];
-                                }
-                            });
-                            $scope.params = params;
-                        });
-                    });
-                });
-                $scope.removeParam = function (p) {
-                    $timeout(function () {
-                        $scope.$apply(function () {
-                            $scope.endpoint.params = _.without($scope.endpoint.params, p);
-                        });
-                    });
-                };
+                $scope.removeParam = (p) => $timeout(() => $scope.$apply(() => {
+                    $scope.endpoint.operation.parameters = _.without($scope.endpoint.operation.parameters, p);
+                }));
                 $scope.addParam = function () {
                     var params = $scope.$eval('endpoint.operation.parameters');
                     if (!params) {
@@ -253,7 +233,7 @@ angular.module('tribe-endpoints-details', [
                             params.unshift({
                                 type: 'string',
                                 style: 'query',
-                                sampleValues: [],
+                                sampleValues: '',
                                 required: false
                             });
                             $scope.params = params;
