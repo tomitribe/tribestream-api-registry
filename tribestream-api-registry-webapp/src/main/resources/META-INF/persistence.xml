@@ -18,8 +18,11 @@
   ~ under the License.
   ~
   -->
-<persistence xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="
+                http://java.sun.com/xml/ns/persistence
+                http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
              version="2.0">
     <persistence-unit name="registry-ng">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
@@ -30,15 +33,15 @@
         <class>org.tomitribe.tribestream.registryng.entities.Endpoint</class>
         <class>org.tomitribe.tribestream.registryng.entities.Revision</class>
 
+        <class>org.tomitribe.tribestream.registryng.lucene.File$IndexId</class>
+        <class>org.tomitribe.tribestream.registryng.lucene.File</class>
+
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
 
         <properties>
-            <property name="hibernate.event.merge.entity_copy_observer" value="log"/>
-            <property name="org.hibernate.envers.store_data_at_delete" value="true"/>
-            <property name="hibernate.show_sql" value="false"/>
             <property name="hibernate.order_updates" value="false"/>
-            <property name="hibernate.generate_statistics" value="true"/>
             <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="org.hibernate.envers.store_data_at_delete" value="true"/>
 
             <property name="show_sql" value="true"/>
         </properties>

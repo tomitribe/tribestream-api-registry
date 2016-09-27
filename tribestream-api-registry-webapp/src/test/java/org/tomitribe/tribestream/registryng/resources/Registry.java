@@ -24,7 +24,6 @@ import org.apache.openejb.testing.ContainerProperties;
 import org.apache.openejb.testing.RandomPort;
 import org.apache.tomee.loader.TomcatHelper;
 import org.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
-import org.tomitribe.util.Join;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
@@ -47,9 +46,11 @@ import static org.tomitribe.util.Join.join;
  * Contains the configuration for the tests
  */
 @ContainerProperties({
+        @ContainerProperties.Property(name = "openejb.datasource.plugin.activated", value = "false"),
         @ContainerProperties.Property(name = "hibernate.hbm2ddl.auto", value = "create-drop"),
         @ContainerProperties.Property(name = "registryDatasource", value = "new://Resource?type=DataSource"),
-        @ContainerProperties.Property(name = "registryDatasource.LogSql", value = "true")
+        @ContainerProperties.Property(name = "registryDatasource.JdbcUrl", value = "jdbc:hsqldb:file:target/registry-test/db;hsqldb.tx=MVCC"),
+        @ContainerProperties.Property(name = "registryDatasource.LogSql", value = "false")
 })
 @org.apache.openejb.testing.Application
 public class Registry {

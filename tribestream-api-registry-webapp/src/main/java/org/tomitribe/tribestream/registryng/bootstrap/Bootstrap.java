@@ -20,11 +20,11 @@ package org.tomitribe.tribestream.registryng.bootstrap;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.models.Swagger;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 import org.tomitribe.tribestream.registryng.repository.Repository;
 import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
-import io.swagger.models.Swagger;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.DependsOn;
@@ -34,9 +34,11 @@ import javax.ejb.Startup;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * Seeds the database at startup with Swagger documents stored in META-INF/classes/seed-db.
@@ -61,12 +63,10 @@ public class Bootstrap {
     @PostConstruct
     public void init() {
         seedDatabase();
-
-        searchEngine.resetIndex();
+        searchEngine.waitForWrites();
     }
 
-    public void seedDatabase() {
-
+    private void seedDatabase() {
         final URL res = Thread.currentThread().getContextClassLoader().getResource("seed-db");
         if (res == null) {
             LOGGER.log(Level.WARNING, "Cannot find seed-db resource in the classpath.");
@@ -78,13 +78,7 @@ public class Bootstrap {
         }
 
         final File f = new File(res.getFile());
-        final File[] swaggerFiles = f.listFiles((dir, name) -> {
-            return name.endsWith(".json");
-        });
-
-        for (File swaggerFile: swaggerFiles) {
-            seedFile(swaggerFile);
-        }
+        Stream.of(f.listFiles((dir, name) -> name.endsWith(".json"))).forEach(this::seedFile);
 
     }
 
@@ -108,6 +102,7 @@ public class Bootstrap {
         } catch (final Exception e) {
             LOGGER.log(Level.WARNING, e, () -> String.format("Seeding %s failed!", swaggerFile.getName()));
         }
+        LOGGER.info("Memory = " + ManagementFactory.getMemoryMXBean().getHeapMemoryUsage());
     }
 
 }
