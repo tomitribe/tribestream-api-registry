@@ -1,5 +1,15 @@
 .components
     div
+        label markdown
+        div(data-tribe-markdown, data-value="'lalala'")
+
+    div
+        label markdown and text
+        .md-text
+            div(data-tribe-markdown, data-value="'I am markdown'")
+            div(data-tribe-text, data-value="'I am text'")
+
+    div
         div(data-tribe-multiselect,
             data-selected-options="['bbb', 'ccc', 'aaa', 'eee', 'ddd']",
             data-available-options="['ddd', 'aaa', 'bbb', 'ccc', 'eee', 'fff', 'eeeee', 'eeee', 'ee', 'e', 'ggg', 'hhh', 'a', 'aa', 'aab', 'aabb', 'aabbbbb', 'aabbbbbbb', 'aabbbbbbbbb']")
@@ -62,3 +72,8 @@
             data-new-label="New Method",
             data-selected-options="[]",
             data-available-options="['basic', 'form', 'digest', 'HTTP Signatures', 'Bearer']")
+
+    div
+        label text component
+        div(data-tribe-text, data-value="'lalala'")
+        div(data-tribe-text, data-type="number", data-value="1")

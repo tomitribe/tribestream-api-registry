@@ -216,29 +216,9 @@ angular.module('tribe-endpoints-details', [
                         });
                     });
                 });
-                $scope.$watch('endpoint.params', function () {
-                    var params = $scope.$eval('endpoint.params');
-                    if (!params) {
-                        return;
-                    }
-                    $timeout(function () {
-                        $scope.$apply(function () {
-                            _.each(params, function (p) {
-                                if (!p.sampleValues) {
-                                    p.sampleValues = [];
-                                }
-                            });
-                            $scope.params = params;
-                        });
-                    });
-                });
-                $scope.removeParam = function (p) {
-                    $timeout(function () {
-                        $scope.$apply(function () {
-                            $scope.endpoint.params = _.without($scope.endpoint.params, p);
-                        });
-                    });
-                };
+                $scope.removeParam = (p) => $timeout(() => $scope.$apply(() => {
+                    $scope.endpoint.operation.parameters = _.without($scope.endpoint.operation.parameters, p);
+                }));
                 $scope.addParam = function () {
                     var params = $scope.$eval('endpoint.operation.parameters');
                     if (!params) {
@@ -253,7 +233,7 @@ angular.module('tribe-endpoints-details', [
                             params.unshift({
                                 type: 'string',
                                 style: 'query',
-                                sampleValues: [],
+                                sampleValues: '',
                                 required: false
                             });
                             $scope.params = params;
@@ -375,16 +355,37 @@ angular.module('tribe-endpoints-details', [
                 $scope.removeErrorCode = function (code) {
                     $timeout(function () {
                         $scope.$apply(function () {
-                            $scope.endpoint.errors = _.without($scope.endpoint.errors, code);
+                            if (!$scope.endpoint.operation) {
+                                return;
+                            }
+                            if (!$scope.endpoint.operation['x-tribestream-api-registry']) {
+                                return;
+                            }
+                            if (!$scope.endpoint.operation['x-tribestream-api-registry']['response-codes']) {
+                                return;
+                            }
+                            $scope.endpoint.operation['x-tribestream-api-registry']['response-codes'] = _.without(
+                                $scope.endpoint.operation['x-tribestream-api-registry']['response-codes'],
+                                code
+                            );
                         });
                     });
                 };
                 $scope.addErrorCode = function () {
                     $timeout(function () {
                         $scope.$apply(function () {
-                            $scope.endpoint.errors.push({
-                                statusCode: 0,
-                                errorCode: 0,
+                            if (!$scope.endpoint.operation) {
+                                $scope.endpoint.operation = {};
+                            }
+                            if (!$scope.endpoint.operation['x-tribestream-api-registry']) {
+                                $scope.endpoint.operation['x-tribestream-api-registry'] = {};
+                            }
+                            if (!$scope.endpoint.operation['x-tribestream-api-registry']['response-codes']) {
+                                $scope.endpoint.operation['x-tribestream-api-registry']['response-codes'] = [];
+                            }
+                            $scope.endpoint.operation['x-tribestream-api-registry']['response-codes'].push({
+                                http_status: 0,
+                                error_code: 0,
                                 message: '',
                                 description: ''
                             });
@@ -408,7 +409,10 @@ angular.module('tribe-endpoints-details', [
                         });
                     });
                 };
-            }]
+            }],
+            link: (scope, el) => {
+                scope.$on('$destroy', () => el.remove());
+            }
         };
     }])
 
@@ -452,6 +456,19 @@ angular.module('tribe-endpoints-details', [
         };
     }])
 
+    .directive('appEndpointsDetailsHistory', [function() {
+        return {
+            restrict: 'A',
+            templateUrl: 'app/templates/app_endpoints_details_history.html',
+            scope: true,
+            controller: [
+                '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', 'systemMessagesService', 'tribeLinkHeaderService',
+                function ($scope, srv, tribeFilterService, $timeout, $filter, $log, systemMessagesService, tribeLinkHeaderService) {
+                }
+            ]
+        };
+    }])
+
     .directive('appEndpointsDetails', [function () {
         return {
             restrict: 'A',
@@ -461,10 +478,11 @@ angular.module('tribe-endpoints-details', [
                 'endpointId': '='
             },
             controller: [
-                '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', 'systemMessagesService'
-                function ($scope, srv, tribeFilterService, $timeout, $filter, $log, systemMessagesService) {
+                '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', 'systemMessagesService', 'tribeLinkHeaderService',
+                function ($scope, srv, tribeFilterService, $timeout, $filter, $log, systemMessagesService, tribeLinkHeaderService) {
                     $timeout(function () {
                         $scope.$apply(function () {
+                            $scope.history = null;
                             $scope.endpoint = {
                                 httpMethod: "",
                                 path: "",
@@ -473,6 +491,8 @@ angular.module('tribe-endpoints-details', [
                         });
                     }).then(function () {
                         srv.getDetails($scope.applicationId, $scope.endpointId).then(function (detailsResponse) {
+                            let links = tribeLinkHeaderService.parseLinkHeader(detailsResponse.headers('link'));
+                            $scope.historyLink = links['history']
                             $timeout(function () {
                                 $scope.$apply(function () {
                                     let detailsData = detailsResponse.data;
@@ -505,6 +525,51 @@ angular.module('tribe-endpoints-details', [
                                 systemMessagesService.info("Saved endpoint details! " + saveResponse.status);
                             }
                         );
+                    };
+                    // Triggered by the Show History button on the endpoint details page to show the revision log for that entity
+                    // TODO: Pagination!
+                    $scope.showHistory = function() {
+                        srv.getEndpointHistory($scope.historyLink).then(function(response) {
+
+                            let links = tribeLinkHeaderService.parseLinkHeader(response.headers('link'));
+                            for (let entry of response.data) {
+                                entry.link = links["revision " + entry.revisionId];
+                            }
+
+                            $timeout(function () {
+                                $scope.$apply(function () {
+                                    $scope.history = response.data;
+                                });
+                            });
+                        });
+                    };
+                    // Triggered by the "Close History" button to close the Revision Log in whatever form it will be
+                    // presented
+                    $scope.closeHistory = function() {
+                        $timeout(function () {
+                            $scope.$apply(function () {
+                                $scope.history = null;
+                            });
+                        });
+                    };
+                    // Triggered by selecting one revision, will load it and show it
+                    $scope.showHistoricEndpoint = function(historyItem) {
+                        $timeout(function () {
+                            $scope.$apply(function () {
+                                $scope.history = null;
+                            });
+                        });
+                        srv.getHistoricEndpoint(historyItem).then(function(response) {
+                            $timeout(function () {
+                                $scope.$apply(function () {
+                                    let detailsData = response.data;
+                                    $scope.historyItem = historyItem;
+                                    $scope.endpoint.httpMethod = detailsData.httpMethod;
+                                    $scope.endpoint.path = $filter('pathencode')(detailsData.path);
+                                    $scope.endpoint.operation = detailsData.operation;
+                                });
+                            });
+                        });
                     };
                 }
             ]

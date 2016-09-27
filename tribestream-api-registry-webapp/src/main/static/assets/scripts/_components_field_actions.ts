@@ -1,6 +1,6 @@
 angular.module('website-components-field-actions', [])
 
-    .directive('tribeFieldActions', ['$window', '$document', ($window, $document) => {
+    .directive('tribeFieldActions', ['$interval', '$document', ($interval, $document) => {
         return {
             restrict: 'A',
             scope: {
@@ -19,8 +19,11 @@ angular.module('website-components-field-actions', [])
                 floatingBody.detach();
                 var body = $document.find('body');
                 let adjustOffset = () => {
-                    let position = element.offset();
-                    floatingBody.offset(position);
+                    // do nothing if not attached to the DOM
+                    if(floatingBody.parent().length) {
+                        let position = element.offset();
+                        floatingBody.offset(position);
+                    }
                 };
                 scope.$watch('active', () => {
                     if (scope.active) {
@@ -30,11 +33,9 @@ angular.module('website-components-field-actions', [])
                         floatingBody.detach();
                     }
                 });
-                scope.$watch('version', () => adjustOffset());
-                var eWin = angular.element($window);
-                eWin.bind('resize', adjustOffset);
+                let adjustInterval = $interval(adjustOffset, 500);
                 scope.$on('$destroy', () => {
-                    eWin.unbind('resize', adjustOffset);
+                    $interval.cancel(adjustInterval);
                     floatingBody.remove();
                     element.remove();
                 });

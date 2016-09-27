@@ -1,0 +1,13 @@
+div(tabindex=0, title="Click to edit")
+    div
+        .text
+            input(type="{{type ? type : 'text'}}", x-ng-keyup="keyEntered($event);", x-ng-model="value")
+            span(x-ng-if="value") {{value}}
+            span.empty(x-ng-if="!value") Empty
+        .edit-icon
+            i.fa.fa-pencil
+    div(data-tribe-field-actions,
+        data-version="version",
+        data-active="fieldDirty",
+        data-on-confirm="onCommit()",
+        data-on-cancel="onCancel()")

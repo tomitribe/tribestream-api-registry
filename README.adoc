@@ -217,7 +217,7 @@ GET http://localhost:8080/registry/api/registry
 Create an endpoint
 
 ----
-PUT http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c/endpoint
+POST http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c/endpoint
 {
   "httpMethod":"get",
   "path":"/workNotifications/{region}/{function}",
@@ -252,6 +252,73 @@ Link: <http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9c
 Link: <http://localhost:8080/registry/api/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c/endpoint/f27efad1-a6a2-4066-af4e-b50a0194f46a>;rel="self"
 ----
 
+For applications and endpoints a revision log will be managed.
+This allows to review past changes.
+
+The revision log for an application is available via the `history` link that is returned when getting an application or an endpoint.
+In general the history is available under the history resource:
+
+----
+GET http://localhost:8080/registry/api/history/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c
+----
+
+The response contains a list of revision information:
+
+[source,json]
+----
+[
+  {
+    "revisionId": 9,
+    "timestamp": 1474532005121,
+    "username": "admin",
+    "revisionType": "MOD"
+  },
+  {
+    "revisionId": 7,
+    "timestamp": 1474531974419,
+    "username": "admin",
+    "revisionType": "MOD"
+  },
+  {
+    "revisionId": 1,
+    "timestamp": 1474531938316,
+    "revisionType": "ADD"
+  }
+]
+----
+
+The log is sorted by revision id in descending order, that is the latest revisions appear first.
+Please note that revision ids need not be consecutive!
+
+The timestamp contains the milliseconds since January, 1st 1970.
+
+The revision type can be one of the three strings `ADD`, `MOD` or `DEL`.
+
+The history resource supports pagination.
+The page to fetch can be specified via the `page` query parameter.
+Pages are 1-based, that is the first page is available via the `page` parameter `1`
+The page size can be specified via the `per_page` query parameter.
+The default page size is `20`.
+
+For each revision `n` presented in the result, the response contains one link `revision n`.
+In general the URL will look like this to get revision 7 from the example above:
+
+----
+GET http://localhost:8080/registry/api/history/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c/7
+----
+
+
+Revision logs for endpoints can be retrieved in a similar fashion:
+
+----
+GET http://localhost:8080/registry/api/history/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c/endpoint/f27efad1-a6a2-4066-af4e-b50a0194f46a
+----
+
+A certain revision of an endpoint can be obtained in a similar way as a historic application:
+
+----
+GET http://localhost:8080/registry/api/history/application/253a25ec-7c2c-4ca5-88f6-9cd115733f7c/endpoint/f27efad1-a6a2-4066-af4e-b50a0194f46a/7
+----
 
 === Tribestream API Registry vendor extension
 

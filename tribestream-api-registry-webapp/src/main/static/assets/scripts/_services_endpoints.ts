@@ -48,8 +48,6 @@ module services {
                         tribeErrorHandlerService.ensureErrorHandler(errorCallback)
                     );
                 };
-                var loadedRawEndpoints = [];
-                var loadedEndpointDetails = [];
                 return {
                     list: function () {
                         return {
@@ -85,15 +83,7 @@ module services {
                                     var data = rawData.data;
                                     var compiledResults = [];
                                     for (let rawEndpoint of data.results) {
-                                        var existing = _.find(loadedRawEndpoints, function (existinRaw) {
-                                            return existinRaw.endpointId === rawEndpoint.endpointId;
-                                        });
-                                        if (existing) {
-                                            compiledResults.push(existing);
-                                        } else {
-                                            loadedRawEndpoints.push(rawEndpoint);
-                                            compiledResults.push(rawEndpoint);
-                                        }
+                                        compiledResults.push(rawEndpoint);
                                     }
                                     successCallback({
                                         total: data.total,
@@ -124,28 +114,38 @@ module services {
                         return {
                             then: function (successCallback, errorCallback) {
                                 if (endpointId) {
-                                    var existingEntry = _.find(loadedEndpointDetails, function (entry) {
-                                        if (!loadedEndpointDetails.headers) {
-                                            return false;
-                                        }
-                                        let links = tribeLinkHeaderService.parseLinkHeader(loadedEndpointDetails.headers('link'));
-                                        return links && links.self && links.self.endsWith(`api/application/${app}/endpoint/${endpointId}`);
-                                    });
-                                    if (existingEntry) {
-                                        successCallback(existingEntry);
-                                    } else {
-                                        $http.get(`api/application/${app}/endpoint/${endpointId}`)
-                                            .then(function (data) {
-                                                loadedEndpointDetails.push(data);
-                                                successCallback(data);
-                                            }, tribeErrorHandlerService.ensureErrorHandler(errorCallback));
-                                    }
-
+                                    $http.get(`api/application/${app}/endpoint/${endpointId}`)
+                                        .then(function (data) {
+                                            successCallback(data);
+                                        }, tribeErrorHandlerService.ensureErrorHandler(errorCallback));
                                 } else {
                                     var newEntry = {};
-                                    loadedEndpointDetails.push(newEntry);
                                     successCallback(newEntry);
                                 }
+                            }
+                        };
+                    },
+                    getEndpointHistory: function (url) {
+                        return {
+                            then: function (successCallback, errorCallback) {
+                                if (url) {
+                                    $http.get(url)
+                                        .then(function (data) {
+                                            successCallback(data);
+                                        }, tribeErrorHandlerService.ensureErrorHandler(errorCallback));
+                                } else {
+                                    // TODO: What to do here?
+                                }
+                            }
+                        };
+                    },
+                    getHistoricEndpoint: function(historyItem) {
+                        return {
+                            then: function(successCallback, errorCallback) {
+                                $http.get(historyItem.link)
+                                    .then(function (data) {
+                                        successCallback(data);
+                                    }, tribeErrorHandlerService.ensureErrorHandler(errorCallback));
                             }
                         };
                     },

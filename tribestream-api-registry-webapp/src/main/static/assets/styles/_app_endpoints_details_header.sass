@@ -7,22 +7,25 @@ div[data-app-endpoints-details-header]
     margin-bottom: $section-margin-bottom
     padding-bottom: 20px
     border-bottom: dashed $app-input-border-color 1px
+    div[data-tribe-markdown]
+      width: 100%
     a
       text-decoration: none
       &:hover
         text-decoration: underline
     div.title
       margin-bottom: 10px
+      margin-top: 10px
       > h1
         transform: translate(-10px, 0)
         margin: 0
         padding: 0
         display: flex
         align-items: center
-        > i[data-tribe-editable-text]
-          flex-grow: 1
+        > div[data-tribe-text]
+          &.active
+            flex-grow: 1
           > div
-            width: 100%
             input, span
               color: #000000
         > div[data-tribe-singleselect]
@@ -31,7 +34,7 @@ div[data-app-endpoints-details-header]
             font-style: normal
             color: #000000
             font-size: 25px !important
-        div.value span, a, i[data-tribe-editable-text] input, i[data-tribe-editable-text] span
+        div.value span, a, div[data-tribe-text] input, div[data-tribe-text] span
           font-size: 25px !important
           font-weight: 600 !important
           margin-right: 5px
@@ -41,6 +44,15 @@ div[data-app-endpoints-details-header]
         div.value span
           margin-right: 5px !important
           color: #000000
+        div[data-tribe-singleselect]
+          margin-right: 5px
+          &.active
+            input
+              margin: 12px 0
+        div[data-tribe-text]
+          &.active
+            input
+              margin: 4px 0
     > h2
       margin: 0
       text-transform: uppercase

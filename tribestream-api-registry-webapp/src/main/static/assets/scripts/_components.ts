@@ -1,40 +1,12 @@
 angular.module('website-components', [
     'ui.codemirror',
     'hc.marked',
+    'website-components-filters',
     'website-components-multiselect',
-    'website-components-singleselect'
+    'website-components-singleselect',
+    'website-components-text',
+    'website-components-markdown'
 ])
-    .filter('uriencode', ['$window', function ($window) {
-        return $window.encodeURIComponent;
-    }])
-
-    .filter('pathencode', [function () {
-        return function (input) {
-            // The root path is the most simple case
-            if (input === '/') {
-                return '/';
-            }
-            return input.split('/')
-                .map((part) => {
-                    return part.match('\{.*\}') ? ':' + part.slice(1, -1) : part
-                })
-                .join('/');
-        }
-    }])
-
-    .filter('tribeHtml', ['$sce', function ($sce) {
-        return function (input) {
-            return $sce.trustAsHtml(input);
-        }
-    }])
-
-    .filter('tribeHtmlText', [function () {
-        return function (input) {
-            var el = angular.element('<div></div>');
-            el.append(input);
-            return el.text();
-        }
-    }])
 
     .directive('tribeEditableButtonText', [function () {
         return {

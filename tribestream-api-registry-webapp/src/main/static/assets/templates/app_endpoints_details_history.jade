@@ -1,0 +1,26 @@
+div(ng-show="history")
+  h2 History
+  div
+    div
+      table
+        thead
+          tr
+            th Revision
+            th Timestamp
+            th Username
+            th Comment
+            th
+        tbody
+          tr(x-ng-repeat="historyItem in history")
+            td
+              span {{historyItem.revisionId}}
+            td
+              span {{historyItem.timestamp | date:'medium'}}
+            td
+              span {{historyItem.username}}
+            td
+              span {{historyItem.usercomment}}
+            td
+              i.fa.fa-edit(x-ng-click="showHistoricEndpoint(historyItem)")
+  button.orange(x-ng-click="closeHistory()") Close
+
