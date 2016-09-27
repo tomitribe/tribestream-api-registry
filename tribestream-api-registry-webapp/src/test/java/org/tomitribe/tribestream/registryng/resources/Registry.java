@@ -49,7 +49,8 @@ import static org.tomitribe.util.Join.join;
         @ContainerProperties.Property(name = "openejb.datasource.plugin.activated", value = "false"),
         @ContainerProperties.Property(name = "hibernate.hbm2ddl.auto", value = "create-drop"),
         @ContainerProperties.Property(name = "registryDatasource", value = "new://Resource?type=DataSource"),
-        @ContainerProperties.Property(name = "registryDatasource.JdbcUrl", value = "jdbc:hsqldb:file:target/registry-test/db;hsqldb.tx=MVCC"),
+        @ContainerProperties.Property(name = "registryDatasource.JdbcDriver", value = "org.h2.Driver"),
+        @ContainerProperties.Property(name = "registryDatasource.JdbcUrl", value = "jdbc:h2:mem:registry"),
         @ContainerProperties.Property(name = "registryDatasource.LogSql", value = "false")
 })
 @org.apache.openejb.testing.Application
