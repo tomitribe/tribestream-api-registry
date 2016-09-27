@@ -3,7 +3,7 @@
 div[data-app-application-details]
   > div
     > div:first-of-type
-      > div
+      > div // navigation top bar
         border-bottom: solid #efefef 1px
         padding: 20px
         height: 66px
@@ -26,53 +26,45 @@ div[data-app-application-details]
           text-decoration: none
           &:hover
             text-decoration: underline
-
-      > article
-        background-color: $app-white
-        padding: 0 40px
+      > article // details body
+        padding: 10px 40px 0 40px
         > div:first-of-type
-          padding-bottom: 20px
-          border-bottom: dashed $app-input-border-color 1px
-        > div:last-of-type
-          margin-top: 20px
-        h1
-          transform: translate(-5px, 0)
-          input
-            font-size: 30px !important
-            color: #000000
-        h2
-          margin: 0 0 20px 0
-          text-transform: uppercase
-          font-weight: 700 !important
-          font-size: 20px
-          color: #000000
-        div.see
-          display: flex
-          margin: 20px 0
+          > h1
+            transform: translate(-10px, 0)
           > div
-            margin-left: 10px
-            > p
-              margin: 0
-        td
-          padding: 10px 0 0 0
-        td:first-of-type
-          margin-bottom: 10px
-          font-weight: 500 !important
-          font-size: 15px
-          color: #000000
-          white-space: nowrap
-          padding-right: 20px
-        i[data-tribe-editable-block]
-          div
-            font-weight: 400 !important
-        div.tags
-          display: flex
-          flex-wrap: wrap
-          > span
-            margin: 0 5px 5px 0
-            background-color: transparent
-            border: solid #e6e6e6 1px
-            padding: 3px 8px
-            border-radius: 5px
-            font-size: 10px
-            white-space: nowrap
+            transform: translate(-10px, 0)
+        h1
+          margin: 0
+        h2, h3
+          text-transform: uppercase
+          margin: 15px 0
+        h1, h1 input, h1 span
+          font-size: 25px !important
+          font-weight: $app-font-weight-h1 !important
+        h2
+          font-size: 18px !important
+          font-weight: $app-font-weight-h2 !important
+        h3
+          font-size: 14px !important
+          font-weight: $app-font-weight-h3 !important
+        ul, li
+          list-style: none
+          margin: 0
+        ul
+          margin-left: 10px
+        a
+          text-decoration: none
+          span
+            &:first-child
+              text-transform: uppercase
+            &:last-child
+              font-style: italic
+          &:hover
+            span
+              color: $tomitribe-orange
+        ul.endpoint-info
+          li
+            margin-bottom: 5px
+            > a
+              span
+                margin-right: 5px
