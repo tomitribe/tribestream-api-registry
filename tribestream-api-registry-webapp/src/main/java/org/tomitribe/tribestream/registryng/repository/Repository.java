@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -259,7 +260,7 @@ public class Repository {
 
                     em.persist(endpoint);
                     em.flush();
-                    searchEngine.indexEndpoint(endpoint);
+                    searchEngine.indexEndpoint(endpoint, true);
                 }
             }
         }
@@ -283,7 +284,7 @@ public class Repository {
         update(application);
 
         em.flush();
-        searchEngine.indexEndpoint(endpoint);
+        searchEngine.indexEndpoint(endpoint, true);
 
         return endpoint;
     }
@@ -323,6 +324,7 @@ public class Repository {
         if (endpoint.getOperation() != null) {
             endpoint.setDocument(convertToJson(endpoint.getOperation()));
         }
+        searchEngine.indexEndpoint(endpoint, false);
         return em.merge(endpoint);
     }
 
@@ -341,6 +343,7 @@ public class Repository {
         if (document == null) {
             return false;
         } else {
+            ofNullable(document.getEndpoints()).ifPresent(e -> e.forEach(searchEngine::deleteEndpoint));
             em.remove(document);
             return true;
         }

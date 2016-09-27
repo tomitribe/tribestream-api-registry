@@ -394,18 +394,23 @@ public class SearchEngine {
         Collection<Endpoint> allEndpoints = repository.findAllEndpoints();
         LOGGER.info(() -> String.format("FOUND %s endpoints", allEndpoints.size()));
         for (Endpoint endpoint : allEndpoints) {
-            indexEndpoint(endpoint); // sync here!
+            indexEndpoint(endpoint, false); // sync here!
         }
         return new AsyncResult<Object>(true);
     }
 
-    public void indexEndpoint(final Endpoint endpoint) {
+    public void indexEndpoint(final Endpoint endpoint, final boolean update) {
         LOGGER.info(() -> String.format("Indexing %s %s", endpoint.getVerb(), endpoint.getPath()));
         final String webCtx = endpoint.getApplication().getSwagger().getBasePath();
         try {
             final Document eDoc = createDocument(endpoint, webCtx);
             addFacets(endpoint, webCtx != null ? webCtx : "/", eDoc);
-            writer.addDocument(facetsConfig.build(taxonomyWriter, eDoc));
+            final Document document = facetsConfig.build(taxonomyWriter, eDoc);
+            if (update) {
+                writer.addDocument(document);
+            } else {
+                writer.updateDocument(/*todo: have a real id*/new Term(ENDPOINT_ID_FIELD, endpoint.getId()), document.getFields());
+            }
             writer.commit(); // flush by app
             waitWrite();
         } catch (final Exception ioe) {
@@ -417,15 +422,19 @@ public class SearchEngine {
         LOGGER.info(() -> String.format("Deleting Index %s %s", endpoint.getVerb(), endpoint.getPath()));
         final String webCtx = endpoint.getApplication().getSwagger().getBasePath();
         try {
-            writer.deleteDocuments(new BooleanQuery.Builder()
-                    .add(new TermQuery(new Term(APPLICATION_ID_FIELD, endpoint.getApplication().getId())), BooleanClause.Occur.MUST)
-                    .add(new TermQuery(new Term(ENDPOINT_ID_FIELD, endpoint.getId())), BooleanClause.Occur.MUST)
-                    .build());
+            writer.deleteDocuments(endpointQuery(endpoint));
             writer.commit(); // flush by app
             waitWrite();
         } catch (final Exception ioe) {
             LOGGER.log(Level.WARNING, ioe, () -> String.format("Can't flush index for application %s", webCtx));
         }
+    }
+
+    private BooleanQuery endpointQuery(final Endpoint endpoint) {
+        return new BooleanQuery.Builder()
+                .add(new TermQuery(new Term(APPLICATION_ID_FIELD, endpoint.getApplication().getId())), BooleanClause.Occur.MUST)
+                .add(new TermQuery(new Term(ENDPOINT_ID_FIELD, endpoint.getId())), BooleanClause.Occur.MUST)
+                .build();
     }
 
     private void waitWrite() throws InterruptedException {
