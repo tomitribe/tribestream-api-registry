@@ -115,24 +115,14 @@ public class LoginResource {
     }
 
     private PrincipalDto principalToDto(final Principal userPrincipal) {
-        Subject subject = null;
+        
         final Map<String, String> userAttributes = new HashMap<>(10);
 
         // with tomcat by default, including our FastJaasRealm
         if (GenericPrincipal.class.isInstance(userPrincipal)) {
             final GenericPrincipal principal = GenericPrincipal.class.cast(userPrincipal);
-            final Principal up = principal.getUserPrincipal();
-
             final LoginContext loginContext = (LoginContext) Reflections.get(principal, "loginContext");
-            subject = null != loginContext ? loginContext.getSubject() : null;
         }
-
-//        if (subject != null) {
-//            final Set<UserAttributePrincipal> userAttr = subject.getPrincipals(UserAttributePrincipal.class);
-//            for (final UserAttributePrincipal userAttributePrincipal : userAttr) {
-//                userAttributes.put(userAttributePrincipal.getName(), userAttributePrincipal.getValue());
-//            }
-//        }
 
         return new PrincipalDto(userPrincipal.getName(), roles(userPrincipal), userAttributes);
     }
