@@ -31,7 +31,18 @@ public class LoginContext {
     private HttpServletRequest request;
 
     public String getUsername() {
-        return ofNullable(request.getUserPrincipal()).map(Principal::getName)
+        Principal userPrincipal = null;
+        try {
+            // if no request injected, this is probably provisioning or some batch operations.
+            // let's set the user to a technical user - we can't really test if request is null because it will never
+            // really be - it's a proxy
+            userPrincipal = request.getUserPrincipal();
+
+        } catch (final NullPointerException npe) {
+            return System.getProperty("tribe.revision.username", "tribe-provisioning");
+        }
+
+        return ofNullable(userPrincipal).map(Principal::getName)
                 .orElseThrow(() -> new IllegalStateException("No user in current context"));
     }
 }
