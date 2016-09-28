@@ -1,21 +1,29 @@
-div
-  .selected
-    div
-      div
-        i.fa.fa-caret-up
-        i.fa.fa-caret-down
-    div
-      div
-        .opt(x-ng-repeat="opt in selectedOptions", x-ng-click="unselectItem(opt)")
-          span.opt {{opt}}
-          i.fa.fa-times-circle
-        input(type="text", x-ng-keyup="textEntered($event);", x-ng-model="filterText")
-        span.text {{filterText}}
-        span.empty not selected yet
-  .available
-    div
-      .empty(x-ng-show="!filteredAvailable.length")
-        span Empty
-      .opt(x-ng-repeat="opt in availableOptions | orderBy:'toString()' | filter:filterText as filteredAvailable", x-ng-click="selectItem(opt)", x-ng-show="filteredAvailable.length")
-        div
-          span.opt {{opt}}
+div(tabindex=0)
+    div(data-tribe-multiselect-selected,
+        data-selected-options="selectedOptions",
+        data-on-select-top-down-option="onSelectTopDownOption()",
+        data-on-select-bottom-up-option="onSelectBottomUpOption()",
+        data-on-options-deactivated="onOptionsDeactivated()",
+        data-on-commit="fieldCommitted()",
+        data-on-cancel="fieldCanceled()",
+        data-on-change="fieldChanged()",
+        data-selected-option="selectedOption",
+        data-input-text="inputText"
+    )
+    div(data-tribe-multiselect-available,
+        data-active="optionsActivated",
+        data-active-top-down="optionsActivatedTopDown",
+        data-active-bottom-up="optionsActivatedBottomUp",
+        data-selected-options="selectedOptions",
+        data-selected-option="selectedOption",
+        data-available-options="availableOptions",
+        data-input-text="inputText",
+        data-new-label="{{newLabel}}",
+        data-get-option-text="getOptionText"
+    )
+    div(data-tribe-field-actions,
+        data-version="version",
+        data-active="fieldDirty",
+        data-on-confirm="fieldCommitted()",
+        data-on-cancel="fieldCanceled()"
+    )

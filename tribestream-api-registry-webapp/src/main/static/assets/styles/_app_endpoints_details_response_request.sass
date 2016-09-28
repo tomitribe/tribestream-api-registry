@@ -1,23 +1,35 @@
 @import "variables"
 @import "app_endpoints_details_common"
+@import "common_table"
 
 div[data-app-endpoints-details-response-request]
+  div[data-tribe-markdown]
+    display: block
+  td
+    padding-right: 5px
+    > div
+      width: 100%
   > div
     h2
       display: flex
       align-items: center
-      > span
-        font-size: 22px
-        color: $text-color
-        font-weight: 700 !important
-        text-transform: uppercase
+      font-size: $app-font-size-h2
+      color: $text-color
+      font-weight: $app-font-weight-h2 !important
+      text-transform: uppercase
       > div
         background-color: #d6d6d6
         padding: 0 5px
         margin-left: 10px
         > i
           color: #ffffff
-
+    h3
+      font-size: $app-font-size-h3
+      color: $text-color
+      font-weight: $app-font-weight-h3 !important
+      text-transform: uppercase
+    h3 + div
+      margin-bottom: 20px
     div.resp-body
       > h2
         margin: $h-margin-bottom 0 0 0
@@ -25,18 +37,7 @@ div[data-app-endpoints-details-response-request]
       margin-top: $h-margin-bottom
       padding-bottom: 20px
       border-bottom: dashed $app-input-border-color 1px
-      table
-        table-layout: fixed
-        width: 100%
-      th
-        background-color: #f8f9fa
-        text-align: left
-        color: #000000
-        padding: 5px
-        text-transform: uppercase
-        font-size: 15px
-        font-weight: 600 !important
-
+      @include common-table()
       th:last-of-type, td:last-of-type
         width: 35px
       td
@@ -64,13 +65,20 @@ div[data-app-endpoints-details-response-request]
             font-size: 18px
           &:hover
             background-color: #404142
-      td
-        padding: 5px 0 0 0
-
+      @include table-row-highlight($table-hover-color)
       tr:hover
         td:last-of-type
           > div
             display: flex
             margin: 0 5px
-    div.samples > h2
-      margin-top: $section-margin-bottom
+    div.expected
+      td, th
+        &:first-of-type
+          width: 200px
+    div.values
+      td, th
+        &:nth-of-type(1), &:nth-of-type(2)
+          width: 130px
+    div.samples
+      h2
+        margin: $section-margin-bottom 0 20px 0

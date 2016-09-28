@@ -18,19 +18,11 @@
  */
 package org.tomitribe.tribestream.registryng.domain;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.models.Swagger;
-
-import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
 
 public class ApplicationWrapper {
 
     private Swagger swagger;
-
-    @JsonProperty("_links")
-    private Map<String, String> links = new HashMap<>();
 
     public ApplicationWrapper() {
     }
@@ -47,18 +39,6 @@ public class ApplicationWrapper {
 
     public void setSwagger(Swagger swagger) {
         this.swagger = swagger;
-    }
-
-    public void setLinks(Map<String, String> links) {
-        this.links = links;
-    }
-
-    public Map<String, String> getLinks() {
-        return links;
-    }
-
-    public void addLink(final String name, final URI uri) {
-        links.put(name, uri.toASCIIString());
     }
 
 }

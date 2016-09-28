@@ -19,16 +19,15 @@
 package org.tomitribe.tribestream.registryng.entities;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.envers.Audited;
 
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Version;
+import java.util.Date;
 
 @MappedSuperclass
-@Audited
 public class AbstractEntity {
 
     @Id
@@ -40,6 +39,18 @@ public class AbstractEntity {
     @Version
     @Column(name = "VER", nullable = false)
     private int entityVersion;
+
+    @Column
+    private Date createdAt;
+
+    @Column
+    private Date updatedAt;
+
+    @Column
+    private String createdBy;
+
+    @Column
+    private String updatedBy;
 
 
     public String getId() {
@@ -56,5 +67,37 @@ public class AbstractEntity {
 
     public void setEntityVersion(int entityVersion) {
         this.entityVersion = entityVersion;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
     }
 }

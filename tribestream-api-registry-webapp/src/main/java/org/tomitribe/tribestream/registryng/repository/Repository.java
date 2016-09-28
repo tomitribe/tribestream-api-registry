@@ -19,8 +19,14 @@
 package org.tomitribe.tribestream.registryng.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hibernate.envers.AuditReader;
+import org.hibernate.envers.AuditReaderFactory;
+import org.hibernate.envers.query.AuditEntity;
+import org.hibernate.envers.query.AuditQuery;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
+import org.tomitribe.tribestream.registryng.entities.HistoryEntry;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
+import org.tomitribe.tribestream.registryng.security.LoginContext;
 import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
@@ -35,9 +41,15 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import java.io.StringWriter;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Central access to all OpenAPI documents.
@@ -47,12 +59,17 @@ import java.util.Map;
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class Repository {
 
+    private static final Logger LOGGER = Logger.getLogger(Repository.class.getName());
+
     @PersistenceContext
     private EntityManager em;
 
     @Inject
     @Named(SwaggerJsonMapperProducer.SWAGGER_OBJECT_MAPPER_NAME)
     private ObjectMapper mapper;
+
+    @Inject
+    private LoginContext loginContext;
 
     public static String getApplicationId(Swagger swagger) {
         return swagger.getInfo().getTitle() + "-" + swagger.getInfo().getVersion();
@@ -71,24 +88,85 @@ public class Repository {
         return result;
     }
 
-    public OpenApiDocument findByApplicationId(String applicationId) throws NoResultException {
+    public OpenApiDocument findByApplicationId(final String applicationId) throws NoResultException {
         try {
             return em.createNamedQuery(OpenApiDocument.QRY_FIND_BY_APPLICATIONID, OpenApiDocument.class)
                 .setParameter("applicationId", applicationId)
                 .getSingleResult();
         } catch (NoResultException e) {
+            LOGGER.log(Level.FINE, "Could not find application by id {0}", applicationId);
             return null;
         }
     }
 
-    public OpenApiDocument findByApplicationIdWithEndpoints(String applicationId) {
+    public OpenApiDocument findByApplicationIdAndRevision(final String applicationid, final int revision) {
+        AuditReader auditReader = AuditReaderFactory.get(em);
+        OpenApiDocument openApiDocument = auditReader.find(OpenApiDocument.class, applicationid, revision);
+
+        // Resolve the references here, because the Resource implementation will not be able to do that because
+        // it is running another transaction
+        for (Endpoint endpoint: openApiDocument.getEndpoints()) {
+            endpoint.getDocument();
+        }
+
+        return openApiDocument;
+    }
+
+    public <T> List<HistoryEntry<T>> getRevisions(
+            final Class<T>  entityClass,
+            final String id,
+            final int first,
+            final int pageSize) throws NoResultException {
+        AuditReader auditReader = AuditReaderFactory.get(em);
+        AuditQuery query = auditReader.createQuery().forRevisionsOfEntity(entityClass, false, true);
+        query.add(
+                AuditEntity.id().eq(id)
+        );
+        query.addOrder(
+                AuditEntity.revisionNumber().desc()
+        );
+        query.setFirstResult(first).setMaxResults(pageSize);
+
+        List<Object[]> objects = query.getResultList();
+        return objects.stream().map(HistoryEntry<T>::new).collect(toList());
+    }
+
+    /**
+     * Returns the number of revisions available for the entity with the given id.
+     * @param id
+     * @return
+     */
+    public <T> int getNumberOfRevisions(final Class<T> entityClass, final String id) {
+        final AuditQuery query = AuditReaderFactory.get(em).createQuery().forRevisionsOfEntity(entityClass, true, true);
+        query.add(
+                AuditEntity.id().eq(id)
+        );
+        query.addProjection(AuditEntity.revisionNumber().count());
+
+        return ((Number) query.getSingleResult()).intValue();
+    }
+
+
+    public OpenApiDocument findByApplicationIdWithEndpoints(final String applicationId) {
         try {
             return em.createNamedQuery(OpenApiDocument.QRY_FIND_BY_APPLICATIONID_WITH_ENDPOINTS, OpenApiDocument.class)
                 .setParameter("applicationId", applicationId)
                 .getSingleResult();
         } catch (NoResultException e) {
+            LOGGER.log(Level.FINE, "Could not find application by id {0}", applicationId);
             return null;
         }
+    }
+
+    public Endpoint findEndpointByIdAndRevision(final String endpointId, final int revision) {
+        final AuditReader auditReader = AuditReaderFactory.get(em);
+        final Endpoint endpoint = auditReader.find(Endpoint.class, endpointId, revision);
+
+        // Resolve the application here, because the caller will not be able to, as it will
+        // be running in a different transaction
+        endpoint.getApplication().getId();
+
+        return endpoint;
     }
 
     public OpenApiDocument findApplicationByNameAndVersion(final String name, final String version) {
@@ -98,6 +176,7 @@ public class Repository {
                     .setParameter("version", version)
                     .getSingleResult();
         } catch (NoResultException e) {
+            LOGGER.log(Level.FINE, "Could not find application by name '{0}' and version '{1}'", new Object[]{name, version});
             return null;
         }
     }
@@ -117,6 +196,7 @@ public class Repository {
         try {
             return em.find(Endpoint.class, endpointId);
         } catch (NoResultException e) {
+            LOGGER.log(Level.FINE, "Could not find endpoint by id %s", endpointId);
             // Not really nice, should be an Optional.
             // Forwarding the exception makes the caller only receive an indistinguishable EJBException
             return null;
@@ -131,6 +211,7 @@ public class Repository {
                 .setParameter("path", path.startsWith("/") ? path : "/" + path)
                 .getSingleResult();
         } catch (NoResultException e) {
+            LOGGER.log(Level.FINE, "Could not find endpoint by application id '{0}', verb '{1}' and path '{2}'", new Object[]{applicationId, verb, path});
             return null;
         }
     }
@@ -140,7 +221,7 @@ public class Repository {
             .getResultList();
     }
 
-    public OpenApiDocument insert(Swagger swagger) {
+    public OpenApiDocument insert(final Swagger swagger) {
 
         final OpenApiDocument document = new OpenApiDocument();
         document.setName(swagger.getInfo().getTitle());
@@ -150,27 +231,51 @@ public class Repository {
         clone.setPaths(null);
         document.setSwagger(clone);
 
+        Date now = new Date();
+        document.setCreatedAt(now);
+        document.setUpdatedAt(now);
+        document.setCreatedBy(loginContext.getUsername());
+        document.setUpdatedBy(loginContext.getUsername());
         em.persist(document);
 
         // Store the endpoints in a separate table
-        for (Map.Entry<String, Path> stringPathEntry : swagger.getPaths().entrySet()) {
-            final String path = stringPathEntry.getKey();
-            final Path pathObject = stringPathEntry.getValue();
-            for (Map.Entry<HttpMethod, Operation> httpMethodOperationEntry : pathObject.getOperationMap().entrySet()) {
-                final String verb = httpMethodOperationEntry.getKey().name();
-                final Operation operation = httpMethodOperationEntry.getValue();
+        if (swagger.getPaths() != null) {
+            for (Map.Entry<String, Path> stringPathEntry : swagger.getPaths().entrySet()) {
+                final String path = stringPathEntry.getKey();
+                final Path pathObject = stringPathEntry.getValue();
+                for (Map.Entry<HttpMethod, Operation> httpMethodOperationEntry : pathObject.getOperationMap().entrySet()) {
+                    final String verb = httpMethodOperationEntry.getKey().name().toUpperCase();
+                    final Operation operation = httpMethodOperationEntry.getValue();
 
-                Endpoint endpoint = new Endpoint();
-                endpoint.setApplication(document);
-                endpoint.setPath(path);
-                endpoint.setVerb(verb);
-                endpoint.setOperation(operation);
+                    Endpoint endpoint = new Endpoint();
+                    endpoint.setApplication(document);
+                    endpoint.setPath(path);
+                    endpoint.setVerb(verb);
+                    endpoint.setOperation(operation);
 
-                em.persist(endpoint);
+                    em.persist(endpoint);
+                }
             }
         }
-
         return document;
+    }
+
+    public Endpoint insert(final Endpoint endpoint, final String applicationId) {
+        OpenApiDocument application = findByApplicationId(applicationId);
+        application.getEndpoints().add(endpoint);
+
+        endpoint.setApplication(application);
+        Date now = new Date();
+        endpoint.setCreatedAt(now);
+        endpoint.setUpdatedAt(now);
+        endpoint.setCreatedBy(loginContext.getUsername());
+        endpoint.setUpdatedBy(loginContext.getUsername());
+
+        application.setUpdatedAt(now);
+        application.setUpdatedBy(loginContext.getUsername());
+        em.persist(endpoint);
+        update(application);
+        return endpoint;
     }
 
     public static Swagger createShallowCopy(Swagger swagger) {
@@ -191,5 +296,53 @@ public class Repository {
         result.setTags(swagger.getTags());
         result.setExternalDocs(swagger.getExternalDocs());
         return result;
+    }
+
+    public OpenApiDocument update(OpenApiDocument document) {
+        document.setUpdatedAt(new Date());
+        document.setUpdatedBy(loginContext.getUsername());
+        if (document.getSwagger() != null) {
+            document.setDocument(convertToJson(document.getSwagger()));
+        }
+        return em.merge(document);
+    }
+
+    public Endpoint update(Endpoint endpoint) {
+        endpoint.setUpdatedAt(new Date());
+        endpoint.setUpdatedBy(loginContext.getUsername());
+        if (endpoint.getOperation() != null) {
+            endpoint.setDocument(convertToJson(endpoint.getOperation()));
+        }
+        return em.merge(endpoint);
+    }
+
+    private String convertToJson(Object object) {
+        try (StringWriter sw = new StringWriter()) {
+            mapper.writeValue(sw, object);
+            sw.flush();
+            return sw.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean deleteApplication(final String applicationId) {
+        final OpenApiDocument document = findByApplicationId(applicationId);
+        if (document == null) {
+            return false;
+        } else {
+            em.remove(document);
+            return true;
+        }
+    }
+
+    public boolean deleteEndpoint(String applicationId, String endpointId) {
+        final Endpoint endpoint = findEndpointById(endpointId);
+        if (endpoint == null || !applicationId.equals(endpoint.getApplication().getId())) {
+            return false;
+        } else {
+            em.remove(endpoint);
+            return true;
+        }
     }
 }

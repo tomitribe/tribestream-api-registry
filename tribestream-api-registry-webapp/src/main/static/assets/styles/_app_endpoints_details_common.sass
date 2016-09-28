@@ -2,3 +2,12 @@ $text-color: #000000
 $h-margin-bottom: 10px
 $section-margin-bottom: 20px
 $app-max-width: 100%
+
+@mixin table-row-highlight($color)
+  tr
+    border-top: dashed $color 1px
+    &:first-of-type
+      border-color: transparent
+    > td
+      > div
+        margin-bottom: 5px

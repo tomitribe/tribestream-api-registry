@@ -18,12 +18,12 @@
  */
 package org.tomitribe.tribestream.registryng.resources;
 
-import org.tomitribe.tribestream.registryng.security.PrincipalDto;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.openejb.loader.SystemInstance;
 import org.apache.openejb.spi.SecurityService;
 import org.apache.openejb.util.reflection.Reflections;
 import org.apache.tomee.catalina.TomcatSecurityService;
+import org.tomitribe.tribestream.registryng.security.PrincipalDto;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.security.RolesAllowed;
@@ -42,7 +42,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -50,6 +49,8 @@ import javax.ws.rs.core.SecurityContext;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Singleton
 @Lock(LockType.READ)
@@ -58,6 +59,8 @@ import java.util.Map;
 @Consumes("application/json")
 @Produces("application/json")
 public class LoginResource {
+
+    private static final Logger LOGGER = Logger.getLogger(LoginResource.class.getName());
 
     @Context
     private HttpServletRequest request;
@@ -86,19 +89,21 @@ public class LoginResource {
 
         try {
             request.login(username, password);
+            LOGGER.log(Level.INFO, () -> String.format("Successful login of user '%s'", username));
 
             return Response.ok(principalToDto(tomcatPrincipal())).build();
 
         } catch (NullPointerException e) {
-            return Response.status(400).build();
-        } catch (final Exception e) {
-            throw new WebApplicationException(e, Response.Status.UNAUTHORIZED);
-
+            LOGGER.log(Level.WARNING, e, () -> String.format("Unexpected exception during login of user %s", username));
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        } catch (final ServletException e) {
+            LOGGER.log(Level.INFO, e, () -> String.format("Login failed for user %s", username));
+            return Response.status(Response.Status.UNAUTHORIZED).build();
         } finally {
             try {
                 request.logout();
             } catch (final ServletException e) {
-                // no-op
+                LOGGER.log(Level.WARNING, e, () -> String.format("Unexpected exception during login of user %s", username));
             }
         }
     }
@@ -118,11 +123,8 @@ public class LoginResource {
             final GenericPrincipal principal = GenericPrincipal.class.cast(userPrincipal);
             final Principal up = principal.getUserPrincipal();
 
-            // subject isn't accessible
-            if (subject == null) {
-                final LoginContext loginContext = (LoginContext) Reflections.get(principal, "loginContext");
-                subject = null != loginContext ? loginContext.getSubject() : null;
-            }
+            final LoginContext loginContext = (LoginContext) Reflections.get(principal, "loginContext");
+            subject = null != loginContext ? loginContext.getSubject() : null;
         }
 
 //        if (subject != null) {

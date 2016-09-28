@@ -10,8 +10,9 @@ var jade = require('gulp-pug');
 var sass = require('gulp-sass');
 var es = require('event-stream');
 var autoprefixer = require('gulp-autoprefixer');
-var KarmaServer = require('karma').Server;
 var angularTemplateCache = require('gulp-angular-templatecache');
+var cssWrap = require('gulp-css-wrap');
+var merge = require('merge-stream');
 
 gulp.task('css', gulpsync.sync(['images', 'css-build', 'css-third-party', 'css-third-party-resources']));
 gulp.task('images', function () {
@@ -20,15 +21,25 @@ gulp.task('images', function () {
 });
 gulp.task('css-build', gulpsync.sync(['sass', 'autoprefixer', 'css-concat']));
 gulp.task('css-third-party', function () {
-    return gulp.src([
+    var regular = merge(
+        gulp.src([
         './bower_components/lato/css/lato.min.css',
         './bower_components/montserrat-webfont/css/montserrat-webfont.min.css',
         './bower_components/open-sans/css/open-sans.min.css',
         './bower_components/normalize-css/normalize.css',
         './bower_components/font-awesome/css/font-awesome.min.css',
-        './bower_components/codemirror/lib/codemirror.css',
-        './bower_components/nvd3/build/nv.d3.min.css'
-    ]).pipe(concat('_.css')).pipe(gulp.dest('../../../target/static-resources/app/third-party/styles/'));
+        './bower_components/codemirror/lib/codemirror.css'
+        ]),
+        // wrap simplemde and highlightjs because it changes existing codemirror code.
+        gulp.src([
+            './bower_components/simplemde/dist/simplemde.min.css',
+            './bower_components/highlightjs/styles/default.css'
+        ]).pipe(cssWrap({selector: 'div[data-tribe-markdown]'}))
+    ).pipe(concat('_.css')).pipe(gulp.dest('../../../target/static-resources/app/third-party/styles/'));
+    var mocha = gulp.src([
+        './bower_components/mocha/mocha.css'
+    ]).pipe(concat('_tests.css')).pipe(gulp.dest('../../../target/static-resources/app/third-party/styles/'));
+    es.concat(regular, mocha)
 });
 gulp.task('css-third-party-resources', function () {
     var font = gulp.src([
@@ -82,11 +93,63 @@ gulp.task('html-to-js', function () {
         .pipe(gulp.dest('../../../target/static-templates/'))
 });
 gulp.task('copy-templates', function () {
-    return gulp.src('../../../target/static-templates/_templates.js')
+    var asScripts = gulp.src('../../../target/static-templates/_templates.js')
         .pipe(gulp.dest('../../../target/static-resources/app/scripts/'));
+
+    var asTemplates = gulp.src('../../../target/static-templates/html/templates/*')
+        .pipe(gulp.dest('../../../target/static-resources/app/templates/'));
+
+    return es.concat(asScripts, asTemplates);
 });
 
 gulp.task('js', gulpsync.sync(['compile-ts', 'copy-ts', 'js-third-party']));
+gulp.task('js-test', gulpsync.sync(['compile-ts-test', 'copy-ts-test', 'js-third-party-test']));
+gulp.task('compile-ts-test', function () {
+    return gulp.src('./../../test/static/**/*.ts')
+        .pipe(sourcemaps.init())
+        .pipe(ts({
+            'target': 'es5',
+            'sourceMap': true,
+            'out': '_tests.js'
+        }))
+        .pipe(uglify({
+            mangle: false // otherwhise the sourcemap/debugger does not work properly.
+        }))
+        .pipe(sourcemaps.write({includeContent: false}))
+        .pipe(gulp.dest('../../../target/static-resources/app/scripts/'));
+});
+gulp.task('copy-ts-test', function () {
+    var testCode = gulp.src('./../../test/static/**/*.ts')
+        .pipe(gulp.dest('../../../target/static-resources/app/scripts/'));
+    return es.concat(testCode);
+});
+gulp.task('js-third-party-test', function () {
+    var _1 = gulp.src([
+        './bower_components/mocha/mocha.js',
+        './bower_components/chai/chai.js'
+    ]).pipe(concat('_tests_1.js')).pipe(gulp.dest('../../../target/static-resources/app/third-party/'));
+    var _2 = gulp.src([
+        './bower_components/underscore/underscore-min.js',
+        './bower_components/jquery/dist/jquery.min.js',
+        './bower_components/js-base64/base64.min.js',
+        './bower_components/angular/angular.min.js',
+        './bower_components/angular-route/angular-route.min.js',
+        './bower_components/foundation-apps/dist/js/foundation-apps.min.js',
+        './bower_components/ngstorage/ngStorage.min.js',
+        './bower_components/angular-cookies/angular-cookies.min.js',
+        './bower_components/angular-resource/angular-resource.min.js',
+        './bower_components/codemirror/lib/codemirror.js',
+        './bower_components/angular-ui-codemirror/ui-codemirror.min.js',
+        './bower_components/codemirror/mode/markdown/markdown.js',
+        './bower_components/marked/lib/marked.js',
+        './bower_components/angular-marked/dist/angular-marked.min.js',
+        './bower_components/simplemde/dist/simplemde.min.js',
+        './bower_components/highlightjs/highlight.pack.js',
+        './bower_components/angular-mocks/angular-mocks.js'
+    ]).pipe(concat('_tests_2.js')).pipe(gulp.dest('../../../target/static-resources/app/third-party/'));
+    return es.concat(_1, _2);
+});
+
 gulp.task('lint-ts', function () {
     return gulp.src('./assets/**/*.ts')
         .pipe(tslint())
@@ -112,16 +175,12 @@ gulp.task('copy-ts', function () {
 });
 
 gulp.task('js-third-party', function () {
-    var _1 = gulp.src([
+    return es.concat(gulp.src([
         './bower_components/underscore/underscore-min.js',
         './bower_components/jquery/dist/jquery.min.js',
-        './bower_components/js-base64/base64.min.js'
-    ]).pipe(concat('_1.js')).pipe(gulp.dest('../../../target/static-resources/app/third-party/'));
-    var _2 = gulp.src([
+        './bower_components/js-base64/base64.min.js',
         './bower_components/angular/angular.min.js',
-        './bower_components/angular-route/angular-route.min.js'
-    ]).pipe(concat('_2.js')).pipe(gulp.dest('../../../target/static-resources/app/third-party/'));
-    var _3 = gulp.src([
+        './bower_components/angular-route/angular-route.min.js',
         './bower_components/foundation-apps/dist/js/foundation-apps.min.js',
         './bower_components/ngstorage/ngStorage.min.js',
         './bower_components/angular-cookies/angular-cookies.min.js',
@@ -130,16 +189,10 @@ gulp.task('js-third-party', function () {
         './bower_components/angular-ui-codemirror/ui-codemirror.min.js',
         './bower_components/codemirror/mode/markdown/markdown.js',
         './bower_components/marked/lib/marked.js',
-        './bower_components/angular-marked/dist/angular-marked.min.js'
-    ]).pipe(concat('_3.js')).pipe(gulp.dest('../../../target/static-resources/app/third-party/'));
-    // internet explorer has a file size limit of around 280kb (Yeah... no idea why)
-    return es.concat(_1, _2, _3);
-});
-
-gulp.task('test', function (done) {
-    new KarmaServer({
-        configFile: __dirname + '/karma.conf.js'
-    }, done).start();
+        './bower_components/angular-marked/dist/angular-marked.min.js',
+        './bower_components/simplemde/dist/simplemde.min.js',
+        './bower_components/highlightjs/highlight.pack.js'
+    ]).pipe(concat('_.js')).pipe(gulp.dest('../../../target/static-resources/app/third-party/')));
 });
 
 gulp.task('copy-all', function () {
@@ -157,12 +210,11 @@ gulp.task('clean', function (callback) {
     }, callback);
 });
 
-gulp.task('build', gulpsync.sync(['clean', 'html', 'js', 'css', 'copy-all']));
-gulp.task('build-with-tests', gulpsync.sync(['build', 'test']));
+gulp.task('build', gulpsync.sync(['clean', 'html', 'js', 'js-test', 'css', 'copy-all']));
 
 gulp.task('default', gulpsync.sync(['build']), function () {
     gulp.watch(
-        ['./assets/**/*', '../../test/**/*.js'],
+        ['./assets/**/*', '../../test/**/*'],
         gulpsync.sync(['build'])
     );
 });

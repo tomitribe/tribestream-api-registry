@@ -1,0 +1,27 @@
+div(tabindex=0)
+    div(data-tribe-singleselect-selected,
+        data-on-select-top-down-option="onSelectTopDownOption()",
+        data-on-select-bottom-up-option="onSelectBottomUpOption()",
+        data-on-cancel="onCancel()",
+        data-on-commit="onCommit()"
+        data-on-change="onChange()"
+        data-input-text="inputText"
+    )
+    div(data-tribe-singleselect-available,
+        data-active="optionsActivated",
+        data-active-top-down="optionsActivatedTopDown",
+        data-active-bottom-up="optionsActivatedBottomUp",
+        data-available-options="availableOptions",
+        data-input-text="inputText",
+        data-selected-item="selectedItem",
+        data-version="version",
+        data-new-label="{{newLabel}}",
+        data-editable="editable",
+        data-get-option-text="getOptionText"
+    )
+    div(data-tribe-field-actions,
+        data-version="version",
+        data-active="fieldDirty",
+        data-on-confirm="onCommit()",
+        data-on-cancel="onCancel()"
+    )

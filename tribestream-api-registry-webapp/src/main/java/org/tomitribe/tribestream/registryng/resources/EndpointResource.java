@@ -18,56 +18,247 @@
  */
 package org.tomitribe.tribestream.registryng.resources;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.models.HttpMethod;
+import io.swagger.models.Operation;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.repository.Repository;
-import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
+import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.inject.Named;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-@Path("/endpoint")
+@Path("/application/{applicationId}/endpoint")
 @ApplicationScoped
 @Produces(MediaType.APPLICATION_JSON)
 public class EndpointResource {
 
     private final Repository repository;
 
+    private final SearchEngine searchEngine;
 
     @Inject
     public EndpointResource(
-        Repository repository,
-        @Named(SwaggerJsonMapperProducer.SWAGGER_OBJECT_MAPPER_NAME) ObjectMapper jsonMapper) {
+            Repository repository,
+            SearchEngine searchEngine) {
         this.repository = repository;
+        this.searchEngine = searchEngine;
     }
 
-    public EndpointResource() {
+    protected EndpointResource() {
         this(null, null);
     }
 
     @GET
     @Path("/{endpointId}")
-    public Response getEndpoint(@Context UriInfo uriInfo,
-                                @PathParam("endpointId") final String endpointId) {
-        final Endpoint endpoint = repository.findEndpointById(endpointId);
+    public Response getEndpoint(
+            @Context UriInfo uriInfo,
+            @PathParam("applicationId") final String applicationId,
+            @PathParam("endpointId") final String endpointId) {
+
+        Endpoint endpoint = repository.findEndpointById(endpointId);
+
         if (endpoint == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        EndpointWrapper endpointWrapper = new EndpointWrapper(endpoint.getVerb(), endpoint.getPath(), endpoint.getOperation());
-        endpointWrapper.addLink("self", uriInfo.getBaseUriBuilder().path("endpoint").path(endpoint.getId()).build());
-        endpointWrapper.addLink("application", uriInfo.getBaseUriBuilder().path("application").path(endpoint.getApplication().getId()).build());
+        if (!applicationId.equals(endpoint.getApplication().getId())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
-        return Response.ok(endpointWrapper).build();
+        final EndpointWrapper endpointWrapper = new EndpointWrapper(endpoint.getVerb().toLowerCase(), endpoint.getPath(), endpoint.getOperation());
+
+        return Response.ok()
+                .links(getLinks(uriInfo, applicationId, endpoint.getId()))
+                .entity(endpointWrapper).build();
     }
 
+    private Link[] getLinks(UriInfo uriInfo, String applicationId, String endpointId) {
+        return new Link[] {
+                Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path("application/{applicationId}/endpoint/{endpointId}")
+                        .resolveTemplate("applicationId", applicationId)
+                        .resolveTemplate("endpointId", endpointId))
+                        .rel("self")
+                        .build(),
+                Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path("history/application/{applicationId}/endpoint/{endpointId}")
+                        .resolveTemplate("applicationId", applicationId)
+                        .resolveTemplate("endpointId", endpointId))
+                        .rel("history")
+                        .build(),
+                Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path("application/{applicationId}").resolveTemplate("applicationId", applicationId))
+                        .rel("application")
+                        .build()
+        };
+    }
+
+    @DELETE
+    @Path("/{endpointId}")
+    public Response removeEndpoint(
+            @Context UriInfo uriInfo,
+            @PathParam("applicationId") final String applicationId,
+            @PathParam("endpointId") final String endpointId) {
+
+        Endpoint endpoint = repository.findEndpointById(endpointId);
+
+        if (endpoint == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        if (!repository.deleteEndpoint(applicationId, endpointId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        } else {
+            searchEngine.doReindex();
+            return Response.status(Response.Status.OK).build();
+        }
+    }
+
+
+    @POST
+    @Path("/")
+    public Response createService(
+            @Context UriInfo uriInfo,
+            @PathParam("applicationId") final String applicationId,
+            final EndpointWrapper endpointWrapper) {
+
+        final Operation operation = endpointWrapper.getOperation();
+
+        final Endpoint endpoint = new Endpoint();
+        endpoint.setVerb(endpointWrapper.getHttpMethod().toUpperCase());
+        endpoint.setPath(endpointWrapper.getPath());
+        endpoint.setOperation(endpointWrapper.getOperation());
+
+        validate(endpoint);
+
+        final Endpoint document = repository.insert(endpoint, applicationId);
+
+        final Endpoint newDocument = repository.findEndpointById(document.getId());
+
+        searchEngine.doReindex();
+
+        return Response.status(Response.Status.CREATED)
+                .entity(new EndpointWrapper(newDocument.getVerb().toLowerCase(), newDocument.getPath(), newDocument.getOperation()))
+                .links(getLinks(uriInfo, applicationId, newDocument.getId()))
+                .build();
+
+    }
+
+    @PUT
+    @Path("/{endpointId}")
+    public Response updateService(
+            @Context UriInfo uriInfo,
+            @PathParam("applicationId") final String applicationId,
+            @PathParam("endpointId") final String endpointId,
+            final EndpointWrapper endpointWrapper) {
+
+        final Endpoint oldEndpoint = repository.findEndpointById(endpointId);
+        if (oldEndpoint == null || !applicationId.equals(oldEndpoint.getApplication().getId())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        merge(oldEndpoint, endpointWrapper);
+
+        validate(oldEndpoint);
+
+        // TODO: Handle added/updated/removed paths
+
+        repository.update(oldEndpoint);
+
+        final Endpoint updatedDocument = repository.findEndpointById(endpointId);
+
+        final EndpointWrapper newEndpointWrapper = new EndpointWrapper(updatedDocument.getVerb(), updatedDocument.getPath(), updatedDocument.getOperation());
+
+        searchEngine.doReindex();
+
+        return Response.status(Response.Status.OK)
+                .links(getLinks(uriInfo, applicationId, endpointId))
+                .entity(newEndpointWrapper)
+                .build();
+
+
+    }
+
+    private void validate(Endpoint endpoint) {
+        try {
+            HttpMethod.valueOf(endpoint.getVerb().toUpperCase());
+        } catch (NullPointerException | IllegalArgumentException e) {
+            throw new WebApplicationException(String.format("Verb %s is not supported!", endpoint.getVerb()), Response.Status.BAD_REQUEST);
+        }
+
+        // TODO: Add proper validation of path including placeholders
+        // Whitespace is not allowed at leat
+        if (endpoint.getPath().contains(" ")) {
+            throw new WebApplicationException(String.format("Path %s is invalid!", endpoint.getPath()), Response.Status.BAD_REQUEST);
+        }
+    }
+
+    private void merge(Endpoint target, EndpointWrapper source) {
+
+        if (source.getPath() != null) {
+            target.setPath(source.getPath());
+        }
+        if (source.getHttpMethod() != null) {
+            target.setVerb(source.getHttpMethod());
+        }
+        merge(target.getOperation(), source.getOperation());
+    }
+
+    private void merge(Operation target, Operation source) {
+        if (source.getSummary() != null) {
+            target.setSummary(source.getSummary());
+        }
+        if (source.getDescription() != null) {
+            target.setDescription(source.getDescription());
+        }
+        if (source.getOperationId() != null) {
+            target.setOperationId(source.getOperationId());
+        }
+        if (source.getResponses() != null) {
+            target.setResponses(source.getResponses());
+        }
+        if (source.getSchemes() != null) {
+            target.setSchemes(source.getSchemes());
+        }
+        if (source.getConsumes() != null) {
+            target.setConsumes(source.getConsumes());
+        }
+        if (source.getProduces() != null) {
+            target.setProduces(source.getProduces());
+        }
+        if (source.getSecurity() != null) {
+            target.setSecurity(source.getSecurity());
+        }
+        if (source.getParameters() != null) {
+            target.setParameters(source.getParameters());
+        }
+        if (source.getResponses() != null) {
+            target.setResponses(source.getResponses());
+        }
+        if (source.getSecurity() != null) {
+            target.setSecurity(source.getSecurity());
+        }
+        if (source.getTags() != null) {
+            target.setTags(source.getTags());
+        }
+        if (source.isDeprecated() != null) {
+            target.setDeprecated(source.isDeprecated());
+        }
+        if (source.getExternalDocs() != null) {
+            target.setExternalDocs(target.getExternalDocs());
+        }
+        if (source.getVendorExtensions() != null) {
+            target.getVendorExtensions().clear();
+            target.getVendorExtensions().putAll(source.getVendorExtensions());
+        }
+    }
 }

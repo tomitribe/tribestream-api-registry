@@ -28,6 +28,20 @@ angular.module('tribe-main', [
                 .when('/', {
                     templateUrl: 'app/templates/page_endpoints.html'
                 })
+                .when('/showcase', {
+                    templateUrl: 'app/templates/page_components.html',
+                    controller: ['$scope', ($scope) => {
+                        $scope.toUppercase = (item) => {
+                            if (!item) {
+                                return null;
+                            }
+                            if (item.text) {
+                                return item.text.toUpperCase();
+                            }
+                            return item.toUpperCase();
+                        };
+                    }]
+                })
                 .when('/see/:aggregatedId', {
                     templateUrl: 'app/templates/page_see.html',
                     controller: ['$scope', '$routeParams', function ($scope, $routeParams) {
@@ -40,12 +54,11 @@ angular.module('tribe-main', [
                         $scope.app = $routeParams.app;
                     }]
                 })
-                .when('/endpoint/:app/:method/:url*', {
+                .when('/application/:app/endpoint/:endpointId', {
                     templateUrl: 'app/templates/page_endpoints_details.html',
                     controller: ['$scope', '$routeParams', function ($scope, $routeParams) {
-                        $scope.app = $routeParams.app;
-                        $scope.method = $routeParams.method;
-                        $scope.path = $routeParams.url;
+                        $scope.applicationId = $routeParams.app;
+                        $scope.endpointId = $routeParams.endpointId;
                     }]
                 })
                 .when('/login', {

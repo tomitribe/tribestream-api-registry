@@ -25,8 +25,6 @@ import org.tomitribe.tribestream.registryng.repository.Repository;
 import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 import io.swagger.models.Swagger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.DependsOn;
@@ -36,8 +34,9 @@ import javax.ejb.Startup;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Seeds the database at startup with Swagger documents stored in META-INF/classes/seed-db.
@@ -47,7 +46,7 @@ import java.net.URL;
 @DependsOn("SearchEngine")
 public class Bootstrap {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Bootstrap.class);
+    private static final Logger LOGGER = Logger.getLogger(Bootstrap.class.getName());
 
     @EJB
     private Repository repository;
@@ -68,18 +67,19 @@ public class Bootstrap {
 
     public void seedDatabase() {
 
-        URL res = Thread.currentThread().getContextClassLoader().getResource("seed-db");
+        final URL res = Thread.currentThread().getContextClassLoader().getResource("seed-db");
+        if (res == null) {
+            LOGGER.log(Level.WARNING, "Cannot find seed-db resource in the classpath.");
+            return;
+        }
         if (!"file".equals(res.getProtocol())) {
-            LOGGER.error("Cannot load initial OpenAPI documents!");
+            LOGGER.log(Level.WARNING, "Cannot load initial OpenAPI documents because seed-db is at {0}!", res);
             return;
         }
 
         final File f = new File(res.getFile());
-        final File[] swaggerFiles = f.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(final File dir, final String name) {
-                return name.endsWith(".json");
-            }
+        final File[] swaggerFiles = f.listFiles((dir, name) -> {
+            return name.endsWith(".json");
         });
 
         for (File swaggerFile: swaggerFiles) {
@@ -88,7 +88,7 @@ public class Bootstrap {
 
     }
 
-    private void seedFile(File swaggerFile) {
+    private void seedFile(final File swaggerFile) {
         LOGGER.info("Seeding " + swaggerFile.getName());
 
         try {
@@ -99,13 +99,14 @@ public class Bootstrap {
 
             if (repository.findApplicationByNameAndVersion(swagger.getInfo().getTitle(), swagger.getInfo().getVersion()) == null) {
                 OpenApiDocument openApiDocument = repository.insert(swagger);
-                LOGGER.info("Persisted application {}-{}", openApiDocument.getName(), openApiDocument.getVersion());
+                LOGGER.log(Level.INFO, "Persisted application {0}-{1}", new Object[]{openApiDocument.getName(), openApiDocument.getVersion()});
+
             } else {
-                LOGGER.info("Application {}-{} already available in DB ", swagger.getInfo().getTitle(), swagger.getInfo().getVersion());
+                LOGGER.log(Level.INFO, "Application {0}-{1} already available in DB ", new Object[]{swagger.getInfo().getTitle(), swagger.getInfo().getVersion()});
             }
 
-        } catch (Exception e) {
-            LOGGER.warn("Seeding {} failed!", e, swaggerFile.getName());
+        } catch (final Exception e) {
+            LOGGER.log(Level.WARNING, e, () -> String.format("Seeding %s failed!", swaggerFile.getName()));
         }
     }
 

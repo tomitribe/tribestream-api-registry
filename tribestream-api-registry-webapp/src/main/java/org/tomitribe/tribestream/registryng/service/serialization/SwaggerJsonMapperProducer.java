@@ -19,6 +19,7 @@
 package org.tomitribe.tribestream.registryng.service.serialization;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.util.DeserializationModule;
 
@@ -39,6 +40,7 @@ public class SwaggerJsonMapperProducer {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new DeserializationModule(true, true));
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
         return mapper;
     }
 }

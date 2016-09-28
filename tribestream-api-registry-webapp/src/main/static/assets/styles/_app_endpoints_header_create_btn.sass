@@ -1,0 +1,27 @@
+@import "variables"
+
+i[data-app-endpoints-header-create-btn]
+  div.button-face
+    display: flex
+    &:hover
+      cursor: pointer
+    > div
+      background-color: $tomitribe-orange
+      border: solid $tomitribe-orange 1px
+      padding: 5px 8px
+      i, span
+        color: #ffffff
+      font-style: normal
+      &:first-of-type
+        border-radius: 3px 0 0 3px
+      &:last-of-type
+        border-radius: 0 3px 3px 0
+
+div.button-applications
+  ul
+    list-style: none
+    margin: 0
+    li
+      padding: 5px 10px
+      a
+        text-decoration: none

@@ -23,10 +23,11 @@ import org.tomitribe.tribestream.registryng.service.PathTransformUtil;
 import java.util.Set;
 
 public class SearchResult {
-    private String deployableId;
+    private String applicationId;
     private String endpointId;
     private String aggregatedId;
     private String application;
+    private String applicationVersion;
     private String httpMethod;
     private String path;
     private String description;
@@ -35,19 +36,22 @@ public class SearchResult {
     private boolean secured;
     private boolean rateLimited;
     private float score;
+    private String link;
 
     public SearchResult() {
         // no-op
     }
 
-    public SearchResult(final String aggregatedId, final String deployableId, final String endpointId, final String application,
+    public SearchResult(final String aggregatedId, final String applicationId, final String endpointId,
+                        final String application, final String applicationVersion,
                         final String httpMethod, final String path,
                         final String description, final Set<String> consumes, final Set<String> produces,
                         final boolean secured, final boolean rateLimited, final float score) {
         this.aggregatedId = aggregatedId;
-        this.deployableId = deployableId;
+        this.applicationId = applicationId;
         this.endpointId = endpointId;
         this.application = application;
+        this.applicationVersion = applicationVersion;
         this.httpMethod = httpMethod;
         this.path = PathTransformUtil.bracesToColon(path);
         this.description = description;
@@ -74,12 +78,12 @@ public class SearchResult {
         this.score = score;
     }
 
-    public String getDeployableId() {
-        return deployableId;
+    public String getApplicationId() {
+        return applicationId;
     }
 
-    public void setDeployableId(final String deployableId) {
-        this.deployableId = deployableId;
+    public void setApplicationId(final String applicationId) {
+        this.applicationId = applicationId;
     }
 
     public String getEndpointId() {
@@ -154,4 +158,19 @@ public class SearchResult {
         this.produces = produces;
     }
 
+    public String getApplicationVersion() {
+        return applicationVersion;
+    }
+
+    public void setApplicationVersion(String applicationVersion) {
+        this.applicationVersion = applicationVersion;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
+    public String getLink() {
+        return link;
+    }
 }
