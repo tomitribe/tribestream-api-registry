@@ -1,6 +1,6 @@
 .tribe-data-tribe-multiselect-available-body.floating-menu
     .opts
-        .option(x-ng-repeat="opt in availableOptions | orderBy",
+        .option(x-ng-repeat="opt in availableOptions | orderBy:getOptionText",
                 x-ng-click="selectItem(opt)"
                 x-ng-class="{selected: opt === selectedItem}")
             span {{opt}}

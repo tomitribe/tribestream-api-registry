@@ -40,8 +40,6 @@ import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 @Path("/application/{applicationId}/endpoint")
 @ApplicationScoped
@@ -93,6 +91,11 @@ public class EndpointResource {
                         .resolveTemplate("applicationId", applicationId)
                         .resolveTemplate("endpointId", endpointId))
                         .rel("self")
+                        .build(),
+                Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path("history/application/{applicationId}/endpoint/{endpointId}")
+                        .resolveTemplate("applicationId", applicationId)
+                        .resolveTemplate("endpointId", endpointId))
+                        .rel("history")
                         .build(),
                 Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path("application/{applicationId}").resolveTemplate("applicationId", applicationId))
                         .rel("application")
@@ -186,15 +189,15 @@ public class EndpointResource {
     }
 
     private void validate(Endpoint endpoint) {
-        if (HttpMethod.valueOf(endpoint.getVerb().toUpperCase()) == null) {
+        try {
+            HttpMethod.valueOf(endpoint.getVerb().toUpperCase());
+        } catch (NullPointerException | IllegalArgumentException e) {
             throw new WebApplicationException(String.format("Verb %s is not supported!", endpoint.getVerb()), Response.Status.BAD_REQUEST);
         }
-        try {
-            URI newPathURI = new URI(endpoint.getPath());
-            if (!endpoint.getPath().equals(newPathURI.getRawPath())) {
-                throw new WebApplicationException(String.format("Path %s must not contain scheme, host, query or fragment!", endpoint.getPath()), Response.Status.BAD_REQUEST);
-            }
-        } catch (URISyntaxException e) {
+
+        // TODO: Add proper validation of path including placeholders
+        // Whitespace is not allowed at leat
+        if (endpoint.getPath().contains(" ")) {
             throw new WebApplicationException(String.format("Path %s is invalid!", endpoint.getPath()), Response.Status.BAD_REQUEST);
         }
     }

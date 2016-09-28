@@ -1,7 +1,4 @@
 div
-  .resp-body
-    h2 Request Body
-    div(data-tribe-editable-block, data-content="endpoint.respBody")
   .expected
     h2 Expected values
       div(x-ng-click="addExpectedValue();")
@@ -17,13 +14,13 @@ div
       tbody
         tr(x-ng-repeat="val in endpoint.expectedValues")
           td
-            i(data-tribe-editable-text, data-empty-text="not set", data-adjust="false", data-value="val.name")
+            div(data-tribe-text, data-value="val.name")
           td
-            i(data-tribe-editable-text, data-empty-text="not set", data-adjust="false", data-value="val.type")
+            div(data-tribe-text, data-value="val.type")
           td
-            i(data-tribe-editable-block, data-empty-text="not set", data-content="val.values")
+            div(data-tribe-markdown, data-value="val.values")
           td
-            i(data-tribe-editable-block, data-empty-text="not set", data-content="val.description")
+            div(data-tribe-markdown, data-value="val.description")
           td
             div(x-ng-click="removeExpectedValue(val);")
               i.fa.fa-trash-o
@@ -42,23 +39,26 @@ div
       tbody
         tr(x-ng-repeat="val in endpoint.operation['x-tribestream-api-registry']['response-codes'] | orderBy:'http_status'")
           td
-            i(data-tribe-editable-text, data-adjust="false", data-value="val.http_status")
+            div(data-tribe-text, data-value="val.http_status")
           td
-            i(data-tribe-editable-text, data-adjust="false", data-value="val.error_code")
+            div(data-tribe-text, data-value="val.error_code")
           td
-            i(data-tribe-editable-block, data-content="val.message")
+            div(data-tribe-markdown, data-value="val.message")
           td
-            i(data-tribe-editable-block, data-content="val.description")
+            div(data-tribe-markdown, data-value="val.description")
           td
             div(x-ng-click="removeErrorCode(val);")
               i.fa.fa-trash-o
+  .resp-body
+    h2 Response Body
+    div(data-tribe-markdown, data-value="endpoint.respBody")
   .samples
     h2 Samples
     h3 Request Headers
-    div(data-tribe-editable-block, data-content="endpoint.samples.responseHeaders")
+    div(data-tribe-markdown, data-value="endpoint.samples.responseHeaders")
     h3 Response Parameters
-    div(data-tribe-editable-block, data-content="endpoint.samples.responseParameters")
+    div(data-tribe-markdown, data-value="endpoint.samples.responseParameters")
     h3 Response Body
-    div(data-tribe-editable-block, data-content="exampleResponseXml")
+    div(data-tribe-markdown, data-value="exampleResponseXml")
     h3 Response Body Error
-    div(data-tribe-editable-block, data-content="errorResponseXml")
+    div(data-tribe-markdown, data-value="errorResponseXml")

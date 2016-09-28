@@ -2,7 +2,8 @@
 
 $color: #f2f0f0
 
-i[data-tribe-editable-text], i[data-tribe-editable-number]
+[data-tribe-editable-text], [data-tribe-editable-number]
+  display: inline-block
   font-style: normal
   outline: $tomitribe-orange
   *
@@ -11,14 +12,16 @@ i[data-tribe-editable-text], i[data-tribe-editable-number]
     display: inline-block
     border: solid transparent 1px
     input
+      flex-grow: 1
       width: 100%
 
-i[data-tribe-editable-text], i[data-tribe-editable-number]
+[data-tribe-editable-text], [data-tribe-editable-number]
   > div
     max-width: 100%
     overflow: hidden
     > span
       white-space: nowrap
+      margin-left: 5px
       &.empty
         font-style: italic
         font-size: 12px
@@ -26,7 +29,7 @@ i[data-tribe-editable-text], i[data-tribe-editable-number]
     > input
       display: none
       max-width: 100%
-      margin: 0 !important
+      margin: 0 0 0 5px !important
       padding: 0 !important
       border: 0 !important
       height: inherit !important
@@ -40,11 +43,14 @@ i[data-tribe-editable-text], i[data-tribe-editable-number]
       > input
         display: inherit
 
-i[data-tribe-editable-text], i[data-tribe-editable-number]
+[data-tribe-editable-text], [data-tribe-editable-number]
   > div
+    min-height: 40px
     position: relative
     $width: 20px
     min-width: $width * 2
+    display: flex
+    align-items: center
     > div
       display: none
       position: absolute
@@ -58,8 +64,6 @@ i[data-tribe-editable-text], i[data-tribe-editable-number]
       justify-content: center
       align-items: center
       > i
-        color: #aaabac
-        font-size: 10px
         line-height: .6
   &:hover, &.empty
     > div
@@ -69,6 +73,7 @@ i[data-tribe-editable-text], i[data-tribe-editable-number]
       > div
         display: flex
   &.edit
+    display: block
     > div
       border-color: #f2f0f0
       > div

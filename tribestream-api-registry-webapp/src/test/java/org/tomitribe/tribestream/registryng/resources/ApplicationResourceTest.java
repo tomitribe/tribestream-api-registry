@@ -40,9 +40,11 @@ import javax.inject.Named;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,6 +56,7 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 @RunWith(TomEEEmbeddedSingleRunner.class)
@@ -89,7 +92,6 @@ public class ApplicationResourceTest {
 
 
     @Test
-    @Ignore
     public void shouldImportOpenAPIDocument() throws Exception {
 
         try {
@@ -100,7 +102,6 @@ public class ApplicationResourceTest {
             final ApplicationWrapper request = new ApplicationWrapper(swagger);
 
             // When: The Swagger document is posted to the application resource
-
             final Response response = registry.target().path("api/application")
                     .request(MediaType.APPLICATION_JSON_TYPE)
                     .buildPost(Entity.entity(request, MediaType.APPLICATION_JSON_TYPE))
@@ -113,6 +114,13 @@ public class ApplicationResourceTest {
 
             assertEquals("List API versions", applicationWrapper.getSwagger().getPaths().get("/").getGet().getSummary());
             assertEquals("Show API version details", applicationWrapper.getSwagger().getPaths().get("/v2").getGet().getSummary());
+
+            // And: The response contains links for self, history and the two endpoints
+            assertEquals(4, response.getLinks().size());
+            assertNotNull(response.getLink("self"));
+            assertNotNull(response.getLink("history"));
+            assertNotNull(response.getLink("GET /"));
+            assertNotNull(response.getLink("GET /v2"));
 
             EndpointWrapper endpoint = getSearchPage().getResults().stream()
                     .filter((SearchResult sr) -> "/v2".equals(sr.getPath()) && "GET".equals(sr.getHttpMethod()))
@@ -157,6 +165,8 @@ public class ApplicationResourceTest {
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .buildPost(Entity.entity(createRequest, MediaType.APPLICATION_JSON_TYPE))
                 .invoke();
+
+        assertNotNull(newApplicationWrapperResponse.getLink("self"));
 
         ApplicationWrapper newApplicationWrapper = newApplicationWrapperResponse.readEntity(ApplicationWrapper.class);
         assertNotNull(newApplicationWrapper);

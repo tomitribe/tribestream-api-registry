@@ -3,6 +3,12 @@
 @import "common_table"
 
 div[data-app-endpoints-details-response-request]
+  div[data-tribe-markdown]
+    display: block
+  td
+    padding-right: 5px
+    > div
+      width: 100%
   > div
     h2
       display: flex
@@ -76,6 +82,3 @@ div[data-app-endpoints-details-response-request]
     div.samples
       h2
         margin: $section-margin-bottom 0 20px 0
-      h3 + div
-        .CodeMirror
-          border-color: #f2f0f0

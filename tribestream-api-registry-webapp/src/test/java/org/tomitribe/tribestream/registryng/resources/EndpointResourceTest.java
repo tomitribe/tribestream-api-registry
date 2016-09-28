@@ -94,7 +94,7 @@ public class EndpointResourceTest {
 
         // And: When I reload the application it doesn't contain the endpoint
         final ApplicationWrapper updatedApplication = loadApplication(searchResult.getApplicationId());
-        final HttpMethod httpMethod = HttpMethod.valueOf(searchResult.getHttpMethod());
+        final HttpMethod httpMethod = HttpMethod.valueOf(searchResult.getHttpMethod().toUpperCase());
         final String path = searchResult.getPath();
         assertTrue(
                 updatedApplication.getSwagger().getPaths().get(path) == null

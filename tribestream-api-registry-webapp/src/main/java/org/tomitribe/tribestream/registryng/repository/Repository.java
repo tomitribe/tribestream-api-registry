@@ -23,7 +23,12 @@ import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.Swagger;
+import org.hibernate.envers.AuditReader;
+import org.hibernate.envers.AuditReaderFactory;
+import org.hibernate.envers.query.AuditEntity;
+import org.hibernate.envers.query.AuditQuery;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
+import org.tomitribe.tribestream.registryng.entities.HistoryEntry;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 import org.tomitribe.tribestream.registryng.security.LoginContext;
 import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
@@ -43,6 +48,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Central access to all OpenAPI documents.
@@ -81,26 +88,85 @@ public class Repository {
         return result;
     }
 
-    public OpenApiDocument findByApplicationId(String applicationId) throws NoResultException {
+    public OpenApiDocument findByApplicationId(final String applicationId) throws NoResultException {
         try {
             return em.createNamedQuery(OpenApiDocument.QRY_FIND_BY_APPLICATIONID, OpenApiDocument.class)
-                .setParameter("applicationId", applicationId)
-                .getSingleResult();
+                    .setParameter("applicationId", applicationId)
+                    .getSingleResult();
         } catch (NoResultException e) {
             LOGGER.log(Level.FINE, "Could not find application by id {0}", applicationId);
             return null;
         }
     }
 
-    public OpenApiDocument findByApplicationIdWithEndpoints(String applicationId) {
+    public OpenApiDocument findByApplicationIdAndRevision(final String applicationid, final int revision) {
+        AuditReader auditReader = AuditReaderFactory.get(em);
+        OpenApiDocument openApiDocument = auditReader.find(OpenApiDocument.class, applicationid, revision);
+
+        // Resolve the references here, because the Resource implementation will not be able to do that because
+        // it is running another transaction
+        for (Endpoint endpoint: openApiDocument.getEndpoints()) {
+            endpoint.getDocument();
+        }
+
+        return openApiDocument;
+    }
+
+    public <T> List<HistoryEntry<T>> getRevisions(
+            final Class<T>  entityClass,
+            final String id,
+            final int first,
+            final int pageSize) throws NoResultException {
+        AuditReader auditReader = AuditReaderFactory.get(em);
+        AuditQuery query = auditReader.createQuery().forRevisionsOfEntity(entityClass, false, true);
+        query.add(
+                AuditEntity.id().eq(id)
+        );
+        query.addOrder(
+                AuditEntity.revisionNumber().desc()
+        );
+        query.setFirstResult(first).setMaxResults(pageSize);
+
+        List<Object[]> objects = query.getResultList();
+        return objects.stream().map(HistoryEntry<T>::new).collect(toList());
+    }
+
+    /**
+     * Returns the number of revisions available for the entity with the given id.
+     * @param id
+     * @return
+     */
+    public <T> int getNumberOfRevisions(final Class<T> entityClass, final String id) {
+        final AuditQuery query = AuditReaderFactory.get(em).createQuery().forRevisionsOfEntity(entityClass, true, true);
+        query.add(
+                AuditEntity.id().eq(id)
+        );
+        query.addProjection(AuditEntity.revisionNumber().count());
+
+        return ((Number) query.getSingleResult()).intValue();
+    }
+
+
+    public OpenApiDocument findByApplicationIdWithEndpoints(final String applicationId) {
         try {
             return em.createNamedQuery(OpenApiDocument.QRY_FIND_BY_APPLICATIONID_WITH_ENDPOINTS, OpenApiDocument.class)
-                .setParameter("applicationId", applicationId)
-                .getSingleResult();
+                    .setParameter("applicationId", applicationId)
+                    .getSingleResult();
         } catch (NoResultException e) {
             LOGGER.log(Level.FINE, "Could not find application by id {0}", applicationId);
             return null;
         }
+    }
+
+    public Endpoint findEndpointByIdAndRevision(final String endpointId, final int revision) {
+        final AuditReader auditReader = AuditReaderFactory.get(em);
+        final Endpoint endpoint = auditReader.find(Endpoint.class, endpointId, revision);
+
+        // Resolve the application here, because the caller will not be able to, as it will
+        // be running in a different transaction
+        endpoint.getApplication().getId();
+
+        return endpoint;
     }
 
     public OpenApiDocument findApplicationByNameAndVersion(final String name, final String version) {
@@ -117,12 +183,12 @@ public class Repository {
 
     public List<OpenApiDocument> findAllApplications() {
         return em.createNamedQuery(OpenApiDocument.QRY_FIND_ALL, OpenApiDocument.class)
-            .getResultList();
+                .getResultList();
     }
 
     public List<OpenApiDocument> findAllApplicationsWithEndpoints() {
         return em.createNamedQuery(OpenApiDocument.QRY_FIND_ALL_WITH_ENDPOINTS, OpenApiDocument.class)
-            .getResultList();
+                .getResultList();
     }
 
     public Endpoint findEndpointById(String endpointId) {
@@ -140,10 +206,10 @@ public class Repository {
     public Endpoint findEndpoint(final String applicationId, final String verb, final String path) {
         try {
             return em.createNamedQuery(Endpoint.QRY_FIND_BY_APPLICATIONID_VERB_AND_PATH, Endpoint.class)
-                .setParameter("applicationId", applicationId)
-                .setParameter("verb", verb)
-                .setParameter("path", path.startsWith("/") ? path : "/" + path)
-                .getSingleResult();
+                    .setParameter("applicationId", applicationId)
+                    .setParameter("verb", verb)
+                    .setParameter("path", path.startsWith("/") ? path : "/" + path)
+                    .getSingleResult();
         } catch (NoResultException e) {
             LOGGER.log(Level.FINE, "Could not find endpoint by application id '{0}', verb '{1}' and path '{2}'", new Object[]{applicationId, verb, path});
             return null;
@@ -152,7 +218,7 @@ public class Repository {
 
     public Collection<Endpoint> findAllEndpoints() {
         return em.createNamedQuery(Endpoint.QRY_FIND_ALL_WITH_APPLICATION, Endpoint.class)
-            .getResultList();
+                .getResultList();
     }
 
     public OpenApiDocument insert(final Swagger swagger) {
@@ -208,11 +274,11 @@ public class Repository {
         Date now = new Date();
         endpoint.setCreatedAt(now);
         endpoint.setUpdatedAt(now);
-        endpoint.setCreatedBy(loginContext.getUsername());
-        endpoint.setUpdatedBy(loginContext.getUsername());
+        endpoint.setCreatedBy(getUser());
+        endpoint.setUpdatedBy(getUser());
 
         application.setUpdatedAt(now);
-        application.setUpdatedBy(loginContext.getUsername());
+        application.setUpdatedBy(getUser());
         em.persist(endpoint);
         update(application);
         return endpoint;
