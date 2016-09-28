@@ -58,7 +58,6 @@ angular.module('website-components-markdown', [
                         $document.off('keyup', keyPress);
                     }
                 });
-
                 scope.$on('$destroy', () => {
                     content.remove();
                     el.remove();
@@ -211,8 +210,7 @@ angular.module('website-components-markdown', [
                             scope.helpVisible = true;
                         })),
                         className: "fa fa-question-circle",
-                        title: "Markdown Guide",
-
+                        title: "Markdown Guide"
                     }]
                 });
                 simplemde.codemirror.on('change', () => {
