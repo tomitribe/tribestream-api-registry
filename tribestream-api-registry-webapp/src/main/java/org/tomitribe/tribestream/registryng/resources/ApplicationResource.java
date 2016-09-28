@@ -102,7 +102,7 @@ public class ApplicationResource {
                     Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path("application/{applicationId}/endpoint/{endpointId}")
                             .resolveTemplate("applicationId", application.getId())
                             .resolveTemplate("endpointId", endpoint.getId()))
-                            .rel(endpoint.getVerb() + " " + endpoint.getPath())
+                            .rel(endpoint.getVerb().toUpperCase() + " " + endpoint.getPath())
                             .build());
         }
 
