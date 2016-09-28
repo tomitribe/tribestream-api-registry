@@ -29,7 +29,9 @@ import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
 import org.tomitribe.tribestream.registryng.domain.SearchResult;
+import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 
+import javax.inject.Inject;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -51,6 +53,9 @@ public class EndpointResourceTest {
 
     @Application
     private Registry registry;
+
+    @Inject
+    private SearchEngine engine;
 
     @Test
     public void shouldDeleteEndpoint() throws Exception {
@@ -152,6 +157,8 @@ public class EndpointResourceTest {
         assertNotNull(updatedApplication.getSwagger().getPaths().get(newPath).getPatch());
         assertEquals(newSummary, updatedApplication.getSwagger().getPaths().get(newPath).getPatch().getSummary());
 
+        engine.waitForWrites();
+
         // And: The searchpage also has the new properties
         Optional<SearchResult> updatedEndpointSearchResult = getSearchPage().getResults().stream()
                 .filter((SearchResult sr) -> sr.getLink().equals(searchResult.getLink()))
@@ -201,6 +208,8 @@ public class EndpointResourceTest {
         assertNotNull(updatedApplication.getSwagger().getPath(newPath).getHead());
 
         assertEquals(newSummary, updatedApplication.getSwagger().getPaths().get(newPath).getHead().getSummary());
+
+        engine.waitForWrites();
 
         // And: The searchpage also has the new properties
         Optional<SearchResult> updatedEndpointSearchResult = getSearchPage().getResults().stream()

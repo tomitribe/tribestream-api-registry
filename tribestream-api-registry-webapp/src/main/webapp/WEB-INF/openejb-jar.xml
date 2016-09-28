@@ -20,7 +20,7 @@
   ~
   -->
 <openejb-jar>
-  <pojo-deployment class-name="org.tomitribe.tribestream.registryng.webapp.RegistryNgApplication">
+  <pojo-deployment class-name="jaxrs-application">
     <properties>
         cxf.jaxrs.skip-provider-scanning = true
         cxf.jaxrs.providers = org.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider,org.apache.openejb.server.cxf.rs.EJBAccessExceptionMapper

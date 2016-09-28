@@ -96,8 +96,8 @@ public class Repository {
     public OpenApiDocument findByApplicationId(final String applicationId) throws NoResultException {
         try {
             return em.createNamedQuery(OpenApiDocument.QRY_FIND_BY_APPLICATIONID, OpenApiDocument.class)
-                .setParameter("applicationId", applicationId)
-                .getSingleResult();
+                    .setParameter("applicationId", applicationId)
+                    .getSingleResult();
         } catch (NoResultException e) {
             LOGGER.log(Level.FINE, "Could not find application by id {0}", applicationId);
             return null;
@@ -155,8 +155,8 @@ public class Repository {
     public OpenApiDocument findByApplicationIdWithEndpoints(final String applicationId) {
         try {
             return em.createNamedQuery(OpenApiDocument.QRY_FIND_BY_APPLICATIONID_WITH_ENDPOINTS, OpenApiDocument.class)
-                .setParameter("applicationId", applicationId)
-                .getSingleResult();
+                    .setParameter("applicationId", applicationId)
+                    .getSingleResult();
         } catch (NoResultException e) {
             LOGGER.log(Level.FINE, "Could not find application by id {0}", applicationId);
             return null;
@@ -188,12 +188,12 @@ public class Repository {
 
     public List<OpenApiDocument> findAllApplications() {
         return em.createNamedQuery(OpenApiDocument.QRY_FIND_ALL, OpenApiDocument.class)
-            .getResultList();
+                .getResultList();
     }
 
     public List<OpenApiDocument> findAllApplicationsWithEndpoints() {
         return em.createNamedQuery(OpenApiDocument.QRY_FIND_ALL_WITH_ENDPOINTS, OpenApiDocument.class)
-            .getResultList();
+                .getResultList();
     }
 
     public Endpoint findEndpointById(String endpointId) {
@@ -211,10 +211,10 @@ public class Repository {
     public Endpoint findEndpoint(final String applicationId, final String verb, final String path) {
         try {
             return em.createNamedQuery(Endpoint.QRY_FIND_BY_APPLICATIONID_VERB_AND_PATH, Endpoint.class)
-                .setParameter("applicationId", applicationId)
-                .setParameter("verb", verb)
-                .setParameter("path", path.startsWith("/") ? path : "/" + path)
-                .getSingleResult();
+                    .setParameter("applicationId", applicationId)
+                    .setParameter("verb", verb)
+                    .setParameter("path", path.startsWith("/") ? path : "/" + path)
+                    .getSingleResult();
         } catch (NoResultException e) {
             LOGGER.log(Level.FINE, "Could not find endpoint by application id '{0}', verb '{1}' and path '{2}'", new Object[]{applicationId, verb, path});
             return null;
@@ -223,7 +223,7 @@ public class Repository {
 
     public Collection<Endpoint> findAllEndpoints() {
         return em.createNamedQuery(Endpoint.QRY_FIND_ALL_WITH_APPLICATION, Endpoint.class)
-            .getResultList();
+                .getResultList();
     }
 
     public OpenApiDocument insert(final Swagger swagger) {
@@ -236,11 +236,13 @@ public class Repository {
         clone.setPaths(null);
         document.setSwagger(clone);
 
+        final String username = getUser();
+
         Date now = new Date();
         document.setCreatedAt(now);
         document.setUpdatedAt(now);
-        document.setCreatedBy(loginContext.getUsername());
-        document.setUpdatedBy(loginContext.getUsername());
+        document.setCreatedBy(username);
+        document.setUpdatedBy(username);
         em.persist(document);
 
         // Store the endpoints in a separate table
@@ -267,6 +269,10 @@ public class Repository {
         return document;
     }
 
+    protected String getUser() {
+        return loginContext.getUsername();
+    }
+
     public Endpoint insert(final Endpoint endpoint, final String applicationId) {
         OpenApiDocument application = findByApplicationId(applicationId);
         application.getEndpoints().add(endpoint);
@@ -275,11 +281,11 @@ public class Repository {
         Date now = new Date();
         endpoint.setCreatedAt(now);
         endpoint.setUpdatedAt(now);
-        endpoint.setCreatedBy(loginContext.getUsername());
-        endpoint.setUpdatedBy(loginContext.getUsername());
+        endpoint.setCreatedBy(getUser());
+        endpoint.setUpdatedBy(getUser());
 
         application.setUpdatedAt(now);
-        application.setUpdatedBy(loginContext.getUsername());
+        application.setUpdatedBy(getUser());
         em.persist(endpoint);
         update(application);
 

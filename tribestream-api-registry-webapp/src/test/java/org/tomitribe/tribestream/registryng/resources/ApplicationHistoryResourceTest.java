@@ -128,7 +128,7 @@ public class ApplicationHistoryResourceTest {
 
         assertEquals(historyItems.size() + 1, newHistoryItems.size());
 
-        newHistoryItems.stream().forEach(System.out::println);
+        newHistoryItems.forEach(System.out::println);
 
         // And: Username is set to the current user and revisiontype is MOD
         assertEquals("MOD", newHistoryItems.get(0).getRevisionType());

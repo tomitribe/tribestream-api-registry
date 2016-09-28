@@ -46,9 +46,9 @@ import java.util.stream.Stream;
 @Singleton
 @Startup
 @DependsOn("SearchEngine")
-public class Bootstrap {
+public class Provisioning {
 
-    private static final Logger LOGGER = Logger.getLogger(Bootstrap.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Provisioning.class.getName());
 
     @EJB
     private Repository repository;
@@ -87,8 +87,8 @@ public class Bootstrap {
 
         try {
             final Swagger swagger = mapper.readValue(
-                swaggerFile,
-                Swagger.class
+                    swaggerFile,
+                    Swagger.class
             );
 
             if (repository.findApplicationByNameAndVersion(swagger.getInfo().getTitle(), swagger.getInfo().getVersion()) == null) {

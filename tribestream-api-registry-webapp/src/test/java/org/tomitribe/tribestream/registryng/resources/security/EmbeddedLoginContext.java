@@ -16,16 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.tomitribe.tribestream.registryng.security;
+package org.tomitribe.tribestream.registryng.resources.security;
 
-public class PrincipalDto {
-    private final String name;
+import org.tomitribe.tribestream.registryng.security.LoginContext;
 
-    public PrincipalDto(final String name) {
-        this.name = name;
-    }
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Specializes;
 
-    public String getName() {
-        return name;
+// in org.tomitribe.tribestream.registryng.bootstrap.Provisioning we don't have a request so auditable user
+@Specializes
+@ApplicationScoped
+public class EmbeddedLoginContext  extends LoginContext {
+    @Override
+    public String getUsername() {
+        try {
+            return super.getUsername();
+        } catch (final NullPointerException /*no request*/  | IllegalStateException /*no principal*/ ise) {
+            return "embedded";
+        }
     }
 }

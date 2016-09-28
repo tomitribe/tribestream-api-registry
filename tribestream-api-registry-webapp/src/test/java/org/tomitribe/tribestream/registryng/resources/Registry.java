@@ -22,6 +22,7 @@ import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.catalina.realm.RealmBase;
 import org.apache.openejb.testing.ContainerProperties;
 import org.apache.openejb.testing.RandomPort;
+import org.apache.openejb.testing.WebResource;
 import org.apache.tomee.loader.TomcatHelper;
 import org.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
 
@@ -53,6 +54,7 @@ import static org.tomitribe.util.Join.join;
         @ContainerProperties.Property(name = "registryDatasource.JdbcUrl", value = "jdbc:h2:mem:registry;DB_CLOSE_ON_EXIT=FALSE"),
         @ContainerProperties.Property(name = "registryDatasource.LogSql", value = "false")
 })
+@WebResource("src/main/webapp") // should work by default but bug in tomee 7.0.1, fixed in 7.0.2
 @org.apache.openejb.testing.Application
 public class Registry {
     public static final String TESTUSER = "utest";
@@ -61,14 +63,25 @@ public class Registry {
     private int port;
 
     public WebTarget target() {
-        return client().target("http://localhost:" + port);
+        return target(true);
     }
 
-    public Client client() { // TODO: close them somehow, not a big deal for tests
+    public Client client() {
+        return client(true);
+    }
+
+    public WebTarget target(final boolean secured) {
+        return client(secured).target("http://localhost:" + port);
+    }
+
+    public Client client(final boolean secured) { // TODO: close them somehow, not a big deal for tests
         final Client client = ClientBuilder.newBuilder()
                 .property("skip.default.json.provider.registration", true)
                 .register(new CustomJacksonJaxbJsonProvider())
                 .build();
+        if (!secured) {
+            return client;
+        }
         return client.register(new ClientRequestFilter() {
             @Override
             public void filter(final ClientRequestContext requestContext) throws IOException {

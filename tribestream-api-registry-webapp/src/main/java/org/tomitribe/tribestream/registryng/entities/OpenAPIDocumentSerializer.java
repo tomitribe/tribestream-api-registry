@@ -28,15 +28,7 @@ import javax.persistence.PrePersist;
 import java.io.StringWriter;
 
 public class OpenAPIDocumentSerializer {
-
-    private ObjectMapper mapper;
-
-    public OpenAPIDocumentSerializer() {
-        // Would like to get it injected, but unfortunately entity listeners are not CDI enabled
-        // and I didn't get programmatic access to work with a NamedLiteral.
-        mapper = SwaggerJsonMapperProducer.createObjectMapper();
-    }
-
+    private volatile ObjectMapper mapper;
 
     @PrePersist
     public void prepersist(Object entity) {
@@ -66,7 +58,7 @@ public class OpenAPIDocumentSerializer {
 
     private String convertToJson(Object object) {
         try (StringWriter sw = new StringWriter()) {
-            mapper.writeValue(sw, object);
+            mapper().writeValue(sw, object);
             sw.flush();
             return sw.toString();
         } catch (Exception e) {
@@ -76,10 +68,21 @@ public class OpenAPIDocumentSerializer {
 
     private <T> T readJson(String s, Class<T> clazz) {
         try {
-            return mapper.readValue(s, clazz);
+            return mapper().readValue(s, clazz);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private ObjectMapper mapper() {
+        if (mapper == null) {
+            synchronized (this) {
+                if (mapper == null) {
+                    mapper = SwaggerJsonMapperProducer.lookup();
+                }
+            }
+        }
+        return mapper;
     }
 
 }

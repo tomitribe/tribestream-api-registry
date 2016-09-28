@@ -18,21 +18,10 @@
  */
 package org.tomitribe.tribestream.registryng.resources;
 
-import org.apache.catalina.realm.GenericPrincipal;
-import org.apache.openejb.loader.SystemInstance;
-import org.apache.openejb.spi.SecurityService;
-import org.apache.openejb.util.reflection.Reflections;
-import org.apache.tomee.catalina.TomcatSecurityService;
 import org.tomitribe.tribestream.registryng.security.PrincipalDto;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.security.RolesAllowed;
-import javax.ejb.Lock;
-import javax.ejb.LockType;
-import javax.ejb.Singleton;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.security.auth.login.LoginContext;
+import javax.enterprise.context.ApplicationScoped;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -46,38 +35,24 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.security.Principal;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@Singleton
-@Lock(LockType.READ)
-@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 @Path("login")
-@Consumes("application/json")
-@Produces("application/json")
+@ApplicationScoped
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class LoginResource {
-
     private static final Logger LOGGER = Logger.getLogger(LoginResource.class.getName());
-
-    @Context
-    private HttpServletRequest request;
 
     @Context
     private SecurityContext securityContext;
 
-    private SecurityService securityService;
-
-    @PostConstruct
-    public void init() {
-        this.securityService = SystemInstance.get().getComponent(SecurityService.class);
-    }
-
     @POST
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.MULTIPART_FORM_DATA})
     public Response authenticate(@FormParam("username") final String username,
-                                 @FormParam("password") final String password) {
+                                 @FormParam("password") final String password,
+                                 @Context final HttpServletRequest request) {
 
         if (username == null || username.trim().isEmpty()) {
             throw new NullPointerException("`username` is required.");
@@ -90,13 +65,10 @@ public class LoginResource {
             request.login(username, password);
             LOGGER.log(Level.INFO, () -> String.format("Successful login of user '%s'", username));
 
-            return Response.ok(principalToDto(tomcatPrincipal())).build();
+            return Response.ok(principalToDto(request.getUserPrincipal())).build();
 
-        } catch (NullPointerException e) {
-            LOGGER.log(Level.WARNING, e, () -> String.format("Unexpected exception during login of user %s", username));
-            return Response.status(Response.Status.BAD_REQUEST).build();
         } catch (final ServletException e) {
-            LOGGER.log(Level.INFO, e, () -> String.format("Login failed for user %s", username));
+            LOGGER.log(Level.SEVERE, e, () -> String.format("Login failed for user %s", username));
             return Response.status(Response.Status.UNAUTHORIZED).build();
         } finally {
             try {
@@ -109,36 +81,11 @@ public class LoginResource {
 
     @GET
     @RolesAllowed("tribe-console") // default console role - might not be relevant to enforce a role
-    public PrincipalDto getAuthenticatedPrincipal() {
+    public PrincipalDto getAuthenticatedPrincipal(@Context final HttpServletRequest request) {
         return principalToDto(request.getUserPrincipal());
     }
 
     private PrincipalDto principalToDto(final Principal userPrincipal) {
-        
-        final Map<String, String> userAttributes = new HashMap<>(10);
-
-        // with tomcat by default, including our FastJaasRealm
-        if (GenericPrincipal.class.isInstance(userPrincipal)) {
-            final GenericPrincipal principal = GenericPrincipal.class.cast(userPrincipal);
-            final LoginContext loginContext = (LoginContext) Reflections.get(principal, "loginContext");
-        }
-
-        return new PrincipalDto(userPrincipal.getName(), roles(userPrincipal), userAttributes);
-    }
-
-    private Principal tomcatPrincipal() {
-        final Principal userPrincipal = securityService.getCallerPrincipal();
-        if (TomcatSecurityService.TomcatUser.class.isInstance(userPrincipal)) {
-            return TomcatSecurityService.TomcatUser.class.cast(userPrincipal).getTomcatPrincipal();
-        }
-        return userPrincipal;
-    }
-
-    private String[] roles(final Principal userPrincipal) {
-        Principal pcp = userPrincipal;
-        if (!GenericPrincipal.class.isInstance(userPrincipal)) {
-            pcp = tomcatPrincipal();
-        }
-        return GenericPrincipal.class.isInstance(pcp) ? GenericPrincipal.class.cast(pcp).getRoles() : null;
+        return new PrincipalDto(userPrincipal.getName());
     }
 }
