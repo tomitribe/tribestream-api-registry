@@ -23,7 +23,6 @@ import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 import org.tomitribe.tribestream.registryng.repository.Repository;
-import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -55,18 +54,13 @@ public class ApplicationResource {
 
     private final Repository repository;
 
-    private final SearchEngine searchEngine;
-
     @Inject
-    public ApplicationResource(
-        Repository repository,
-        SearchEngine searchEngine) {
+    public ApplicationResource(final Repository repository) {
         this.repository = repository;
-        this.searchEngine = searchEngine;
     }
 
     public ApplicationResource() {
-        this(null, null);
+        this(null);
     }
 
     @GET
@@ -144,8 +138,6 @@ public class ApplicationResource {
 
         final ApplicationWrapper applicationWrapper = new ApplicationWrapper(shrinkSwagger(mergeSwagger(newDocument.getSwagger(), newDocument.getEndpoints())));
 
-        searchEngine.doReindex();
-
         return Response.status(Response.Status.CREATED)
                 .entity(applicationWrapper)
                 .links(buildLinks(uriInfo, newDocument))
@@ -193,11 +185,10 @@ public class ApplicationResource {
 
         repository.update(oldDocument);
 
+        // TODO: dont update/find
         final OpenApiDocument updatedDocument = repository.findByApplicationIdWithEndpoints(applicationId);
 
         final ApplicationWrapper applicationWrapper = new ApplicationWrapper(shrinkSwagger(updatedDocument.getSwagger()));
-
-        searchEngine.doReindex();
 
         return Response.status(Response.Status.OK).links(buildLinks(uriInfo, updatedDocument)).entity(applicationWrapper).build();
     }
@@ -208,11 +199,9 @@ public class ApplicationResource {
     public Response deleteService(
             @Context UriInfo uriInfo,
             @PathParam("id") final String applicationId) {
-
         if (!repository.deleteApplication(applicationId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         } else {
-            searchEngine.doReindex();
             return Response.status(Response.Status.OK).build();
         }
     }

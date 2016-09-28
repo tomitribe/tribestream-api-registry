@@ -19,6 +19,10 @@
 package org.tomitribe.tribestream.registryng.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.models.HttpMethod;
+import io.swagger.models.Operation;
+import io.swagger.models.Path;
+import io.swagger.models.Swagger;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
@@ -27,11 +31,8 @@ import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.entities.HistoryEntry;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 import org.tomitribe.tribestream.registryng.security.LoginContext;
+import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
-import io.swagger.models.HttpMethod;
-import io.swagger.models.Operation;
-import io.swagger.models.Path;
-import io.swagger.models.Swagger;
 
 import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
@@ -49,6 +50,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -70,6 +72,9 @@ public class Repository {
 
     @Inject
     private LoginContext loginContext;
+
+    @Inject
+    private SearchEngine searchEngine;
 
     public static String getApplicationId(Swagger swagger) {
         return swagger.getInfo().getTitle() + "-" + swagger.getInfo().getVersion();
@@ -254,6 +259,8 @@ public class Repository {
                     endpoint.setOperation(operation);
 
                     em.persist(endpoint);
+                    em.flush();
+                    searchEngine.indexEndpoint(endpoint, true);
                 }
             }
         }
@@ -275,6 +282,10 @@ public class Repository {
         application.setUpdatedBy(loginContext.getUsername());
         em.persist(endpoint);
         update(application);
+
+        em.flush();
+        searchEngine.indexEndpoint(endpoint, true);
+
         return endpoint;
     }
 
@@ -313,6 +324,7 @@ public class Repository {
         if (endpoint.getOperation() != null) {
             endpoint.setDocument(convertToJson(endpoint.getOperation()));
         }
+        searchEngine.indexEndpoint(endpoint, false);
         return em.merge(endpoint);
     }
 
@@ -331,6 +343,7 @@ public class Repository {
         if (document == null) {
             return false;
         } else {
+            ofNullable(document.getEndpoints()).ifPresent(e -> e.forEach(searchEngine::deleteEndpoint));
             em.remove(document);
             return true;
         }
@@ -341,6 +354,7 @@ public class Repository {
         if (endpoint == null || !applicationId.equals(endpoint.getApplication().getId())) {
             return false;
         } else {
+            searchEngine.deleteEndpoint(endpoint);
             em.remove(endpoint);
             return true;
         }

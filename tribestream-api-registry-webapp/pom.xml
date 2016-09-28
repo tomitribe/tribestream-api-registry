@@ -89,6 +89,13 @@
     </dependency>
 
     <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>1.4.192</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
       <version>${version.commons-codec}</version>
@@ -218,11 +225,6 @@
         </configuration>
         <dependencies>
           <dependency>
-            <groupId>org.tomitribe</groupId>
-            <artifactId>tomitribe-util</artifactId>
-            <version>${version.tomitribe-util}</version>
-          </dependency>
-          <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${version.commons-io}</version>
@@ -249,7 +251,6 @@
             <openapirepo.dir>${project.basedir}/target/test-classes</openapirepo.dir>
           </systemVariables>
           <libs>
-            <lib>org.tomitribe:tomitribe-util:${version.tomitribe-util}</lib>
             <lib>commons-io:commons-io:${version.commons-io}</lib>
           </libs>
         </configuration>

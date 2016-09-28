@@ -53,17 +53,14 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.Version;
 import org.tomitribe.tribestream.registryng.domain.CloudItem;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
 import org.tomitribe.tribestream.registryng.domain.SearchResult;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
+import org.tomitribe.tribestream.registryng.lucene.JPADirectoryFactory;
 import org.tomitribe.tribestream.registryng.repository.Repository;
 import org.tomitribe.util.Duration;
-import org.tomitribe.util.Files;
 import org.tomitribe.util.IO;
 import org.tomitribe.util.Join;
 
@@ -80,7 +77,6 @@ import javax.ejb.Startup;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -99,8 +95,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
-import static java.util.Arrays.asList;
+import static java.lang.Thread.sleep;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.lucene.facet.DrillDownQuery.term;
 import static org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension.PROP_CATEGORIES;
 import static org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension.PROP_ROLES;
@@ -113,7 +111,6 @@ import static org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExte
 public class SearchEngine {
     private static final Logger LOGGER = Logger.getLogger(SearchEngine.class.getName());
 
-    private static final String DEPLOYABLE_ID_FIELD = "deployableId";
     private static final String APPLICATION_ID_FIELD = "applicationId";
     private static final String ENDPOINT_ID_FIELD = "endpointId";
     private static final String VERB = "verb";
@@ -122,16 +119,15 @@ public class SearchEngine {
     private static final String DOC = "doc";
     private static final String SUMMARY = "summary";
 
-    private final String directoryPath;
     private final Duration duration;
     private final Repository repository;
+    private final Directory indexDir;
+    private final Directory indexFacetsDir;
 
     @Resource
     private SessionContext ctx;
 
-    private volatile Directory indexDir;
-    private volatile Directory indexFacetsDir;
-//    private OnTheFlyIndexation observer;
+    //    private OnTheFlyIndexation observer;
     private DirectoryReader reader;
     private IndexSearcher searcher;
     private IndexWriter writer;
@@ -144,18 +140,19 @@ public class SearchEngine {
     private volatile boolean closed;
     private Analyzer analyzer;
 
+    private Duration writeTimeout = new Duration("1 minute"); // TODO: config
+
     @Inject
-    public SearchEngine(//@Config(name = {"tribe.registry.search.lucene.directory", "registry.search.lucene.directory"}, defaultValue = "") final String directoryPath,
-                            //@Config(name = {"tribe.registry.search.lucene.future-timeout", "registry.search.lucene.future-timeout"}, defaultValue = "10 seconds")
-                            //final Duration timeout,
-                            final Repository repository) {
-        this.directoryPath = "";//directoryPath;
+    public SearchEngine(final Repository repository,
+                        final JPADirectoryFactory directory) {
         this.duration = new Duration(10, TimeUnit.SECONDS); // timeout;
         this.repository = repository;
+        this.indexDir = directory.newInstance("index");
+        this.indexFacetsDir = directory.newInstance("facets");
     }
 
     protected SearchEngine() {
-        this(null);
+        this(null, null);
     }
 
     public SearchPage search(final SearchRequest request) {
@@ -169,31 +166,27 @@ public class SearchEngine {
                         new ArrayList<>(), new ArrayList<>());
             }
 
-            final BooleanQuery query = new BooleanQuery();
-            for (final Query q : asList(
+            final BooleanQuery.Builder query = new BooleanQuery.Builder();
+            Stream.of(
                     createQuery(request.getQuery()),
                     drillDownFor("category", request.getCategories()),
                     drillDownFor("tag", request.getTags()),
                     drillDownFor("role", request.getRoles())
-            )) {
-                if (q != null) {
-                    query.add(q, BooleanClause.Occur.MUST);
-                }
-            }
+            ).filter(q -> q != null).forEach(q -> query.add(q, BooleanClause.Occur.MUST));
 
             if (request.getApps() != null && request.getApps().size() > 0) {
-                BooleanQuery appFilter = new BooleanQuery();
+                BooleanQuery.Builder appFilter = new BooleanQuery.Builder();
                 appFilter.setMinimumNumberShouldMatch(1);
                 for (String s : request.getApps()) {
                     appFilter.add(new TermQuery(new Term("context", s)), BooleanClause.Occur.SHOULD);
                     appFilter.add(new TermQuery(new Term("applicationName", s)), BooleanClause.Occur.SHOULD);
                 }
-                query.add(appFilter, BooleanClause.Occur.MUST);
+                query.add(appFilter.build(), BooleanClause.Occur.MUST);
             }
 
-            final TopScoreDocCollector topScoreDocCollector = TopScoreDocCollector.create((request.getPage() + 1) * pageSize, true);
+            final TopScoreDocCollector topScoreDocCollector = TopScoreDocCollector.create((request.getPage() + 1) * pageSize);
             final FacetsCollector facetsCollector = new FacetsCollector(true);
-            indexSearcher.search(query, MultiCollector.wrap(topScoreDocCollector, facetsCollector));
+            indexSearcher.search(query.build(), MultiCollector.wrap(topScoreDocCollector, facetsCollector));
             final TopDocs searchResult = topScoreDocCollector.topDocs(request.getPage() * pageSize, pageSize);
 
             final Facets facets = new FastTaxonomyFacetCounts(taxonomyReader, facetsConfig, facetsCollector);
@@ -244,12 +237,12 @@ public class SearchEngine {
         if (values == null || values.isEmpty()) {
             return null;
         }
-        final BooleanQuery query = new BooleanQuery(true);
+        final BooleanQuery.Builder query = new BooleanQuery.Builder().setDisableCoord(true);
         for (final String value : values) { // DrillDownQuery uses SHOULD here, we want MUST
             final String indexFieldName = facetsConfig.getDimConfig(key).indexFieldName;
             query.add(new TermQuery(term(indexFieldName, key, value)), BooleanClause.Occur.MUST);
         }
-        return query;
+        return query.build();
     }
 
     private Query createQuery(final String query) throws ParseException {
@@ -274,37 +267,8 @@ public class SearchEngine {
 
     @PostConstruct
     private void createIndex() {
-        if (directoryPath.isEmpty()) {
-            indexDir = new RAMDirectory();
-            indexFacetsDir = new RAMDirectory();
-            LOGGER.info("Using Lucene RAMDirectory, it is recommended to set registry.search.lucene.directory property to use a disk index");
-        } else {
-            File index = new File(directoryPath, "index");
-            File facet = new File(directoryPath, "facet");
-            if (!index.isAbsolute()) {
-                index = new File(System.getProperty("openejb.base"), directoryPath + "/index");
-            }
-            if (!facet.isAbsolute()) {
-                facet = new File(System.getProperty("openejb.base"), directoryPath + "/facet");
-            }
-            if (!index.exists()) {
-                Files.mkdirs(index);
-            }
-            if (!facet.exists()) {
-                Files.mkdirs(facet);
-            }
-
-            try {
-                indexDir = FSDirectory.open(index);
-                indexFacetsDir = FSDirectory.open(facet);
-            } catch (final IOException e) {
-                throw new IllegalArgumentException(e);
-            }
-        }
-
         final Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
         final KeywordAnalyzer keywordAnalyzer = new KeywordAnalyzer();
-        fieldAnalyzers.put(DEPLOYABLE_ID_FIELD, keywordAnalyzer);
         fieldAnalyzers.put(APPLICATION_ID_FIELD, keywordAnalyzer);
         fieldAnalyzers.put(ENDPOINT_ID_FIELD, keywordAnalyzer);
         fieldAnalyzers.put("category", keywordAnalyzer);
@@ -322,7 +286,7 @@ public class SearchEngine {
 
         analyzer = new PerFieldAnalyzerWrapper(new EnglishAnalyzer(), fieldAnalyzers);
         try {
-            final IndexWriterConfig writerConfig = new IndexWriterConfig(Version.LATEST, analyzer);
+            final IndexWriterConfig writerConfig = new IndexWriterConfig(analyzer);
             writer = new IndexWriter(indexDir, writerConfig);
             taxonomyWriter = new DirectoryTaxonomyWriter(indexFacetsDir);
         } catch (final IOException e) {
@@ -334,14 +298,6 @@ public class SearchEngine {
         facetsConfig.setMultiValued("role", true);
 
         closed = false;
-
-        final SearchEngine self = ctx.getBusinessObject(SearchEngine.class);
-        // do it asynchronously to not slow down the boot
-        pendingAdd.add(self.doIndex());
-
-        // on the fly indexation
-//        observer = new OnTheFlyIndexation(self, pendingAdd, pendingRemove);
-//        SystemInstance.get().addObserver(observer);
     }
 
     public Future<?> resetIndex() {
@@ -437,20 +393,60 @@ public class SearchEngine {
         // locking usage should be enough for us
         Collection<Endpoint> allEndpoints = repository.findAllEndpoints();
         LOGGER.info(() -> String.format("FOUND %s endpoints", allEndpoints.size()));
-        for (Endpoint endpoint: allEndpoints) {
-            LOGGER.info(() -> String.format("Index %s %s", endpoint.getVerb(), endpoint.getPath()));
-            final String webCtx = endpoint.getApplication().getSwagger().getBasePath();
-            try {
-                final Document eDoc = createDocument(endpoint, webCtx);
-                addFacets(endpoint, webCtx != null ? webCtx : "/", eDoc);
-                writer.addDocument(facetsConfig.build(taxonomyWriter, eDoc));
-                writer.commit(); // flush by app
-                writer.waitForMerges();
-            } catch (final Exception ioe) {
-                LOGGER.log(Level.WARNING, ioe, () -> String.format("Can't flush index for application %s", webCtx));
-            }
+        for (Endpoint endpoint : allEndpoints) {
+            indexEndpoint(endpoint, false); // sync here!
         }
         return new AsyncResult<Object>(true);
+    }
+
+    public void indexEndpoint(final Endpoint endpoint, final boolean update) {
+        LOGGER.info(() -> String.format("Indexing %s %s", endpoint.getVerb(), endpoint.getPath()));
+        final String webCtx = endpoint.getApplication().getSwagger().getBasePath();
+        try {
+            final Document eDoc = createDocument(endpoint, webCtx);
+            addFacets(endpoint, webCtx != null ? webCtx : "/", eDoc);
+            final Document document = facetsConfig.build(taxonomyWriter, eDoc);
+            if (update) {
+                writer.addDocument(document);
+            } else {
+                writer.updateDocument(/*todo: have a real id*/new Term(ENDPOINT_ID_FIELD, endpoint.getId()), document.getFields());
+            }
+            writer.commit(); // flush by app
+            waitWrite();
+        } catch (final Exception ioe) {
+            LOGGER.log(Level.WARNING, ioe, () -> String.format("Can't flush index for application %s", webCtx));
+        }
+    }
+
+    public void deleteEndpoint(final Endpoint endpoint) {
+        LOGGER.info(() -> String.format("Deleting Index %s %s", endpoint.getVerb(), endpoint.getPath()));
+        final String webCtx = endpoint.getApplication().getSwagger().getBasePath();
+        try {
+            writer.deleteDocuments(endpointQuery(endpoint));
+            writer.commit(); // flush by app
+            waitWrite();
+        } catch (final Exception ioe) {
+            LOGGER.log(Level.WARNING, ioe, () -> String.format("Can't flush index for application %s", webCtx));
+        }
+    }
+
+    private BooleanQuery endpointQuery(final Endpoint endpoint) {
+        return new BooleanQuery.Builder()
+                .add(new TermQuery(new Term(APPLICATION_ID_FIELD, endpoint.getApplication().getId())), BooleanClause.Occur.MUST)
+                .add(new TermQuery(new Term(ENDPOINT_ID_FIELD, endpoint.getId())), BooleanClause.Occur.MUST)
+                .build();
+    }
+
+    private void waitWrite() throws InterruptedException {
+        final long pauseDuration = 200;
+        long remaining = writeTimeout.getTime(MILLISECONDS);
+        while (writer.hasPendingMerges() && remaining > 0) {
+            sleep(pauseDuration);
+            remaining -= pauseDuration;
+        }
+        if (remaining <= 0) {
+            throw new IllegalStateException("Can't save the index properly, you should check what happens");
+        }
     }
 
     private void addFacets(final Endpoint endpoint, final String web, final Document doc) {
@@ -476,7 +472,6 @@ public class SearchEngine {
         final Document eDoc = new Document();
 
         // id
-        eDoc.add(field(DEPLOYABLE_ID_FIELD, application.getId(), true));
         eDoc.add(field(APPLICATION_ID_FIELD, application.getId(), true));
         eDoc.add(field(ENDPOINT_ID_FIELD, endpoint.getId(), true));
 
@@ -526,7 +521,7 @@ public class SearchEngine {
         // compute subwords for the URI only to make searching easier
         String[] split = endpoint.getPath().split("[-_:/]");
         final List<String> pathSplit = new ArrayList<>();
-        for (String s: split) {
+        for (String s : split) {
             if (s.length() == 0) continue;
             // add the word anyway
             pathSplit.add(s);
@@ -595,14 +590,12 @@ public class SearchEngine {
 
     @PreDestroy
     private void releaseIndex() {
+        if (closed) {
+            return;
+        }
         closed = true;
 
-//        if (observer != null) {
-//            SystemInstance.get().removeObserver(observer);
-//        }
-
         waitForWrites();
-        flushTasks(pendingRemove);
 
         if (reader != null) {
             IO.close(reader);
@@ -622,19 +615,15 @@ public class SearchEngine {
         }
 
         if (indexDir != null) {
-            final Directory tmp = indexDir;
-            indexDir = null;
             try {
-                tmp.close();
+                indexDir.close();
             } catch (final IOException e) {
                 LOGGER.log(Level.WARNING, e.getMessage(), e);
             }
         }
         if (indexFacetsDir != null) {
-            final Directory tmp = indexFacetsDir;
-            indexFacetsDir = null;
             try {
-                tmp.close();
+                indexFacetsDir.close();
             } catch (final IOException e) {
                 LOGGER.log(Level.WARNING, e.getMessage(), e);
             }
@@ -673,31 +662,4 @@ public class SearchEngine {
     private static IndexableField field(final String name, final String value) {
         return new StringField(name, value, Field.Store.NO);
     }
-/*
-    public static class OnTheFlyIndexation {
-        private final SearchEngine indexer;
-        private final Collection<Future<?>> addQueue;
-        private final Collection<Future<?>> removeQueue;
-
-        private OnTheFlyIndexation(final SearchEngine self, Collection<Future<?>> pendingAdd, final Collection<Future<?>> pendingRemove) {
-            this.indexer = self;
-            this.addQueue = pendingAdd;
-            this.removeQueue = pendingRemove;
-        }
-
-        public void install(@Observes final DeployableInfoCreated event) {
-            if (indexer.isClosed()) {
-                return;
-            }
-            addQueue.add(indexer.doIndex(singletonList(event.getDeployable())));
-        }
-
-        public void deinstall(@Observes final DeployableInfoDestroyed event) {
-            if (indexer.isClosed()) {
-                return;
-            }
-            removeQueue.add(indexer.removeIndex(event.getDeployable()));
-        }
-    }
-    */
 }

@@ -23,7 +23,6 @@ import io.swagger.models.Operation;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.repository.Repository;
-import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -48,18 +47,13 @@ public class EndpointResource {
 
     private final Repository repository;
 
-    private final SearchEngine searchEngine;
-
     @Inject
-    public EndpointResource(
-            Repository repository,
-            SearchEngine searchEngine) {
+    public EndpointResource(final Repository repository) {
         this.repository = repository;
-        this.searchEngine = searchEngine;
     }
 
     protected EndpointResource() {
-        this(null, null);
+        this(null);
     }
 
     @GET
@@ -118,7 +112,6 @@ public class EndpointResource {
         if (!repository.deleteEndpoint(applicationId, endpointId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         } else {
-            searchEngine.doReindex();
             return Response.status(Response.Status.OK).build();
         }
     }
@@ -143,8 +136,6 @@ public class EndpointResource {
         final Endpoint document = repository.insert(endpoint, applicationId);
 
         final Endpoint newDocument = repository.findEndpointById(document.getId());
-
-        searchEngine.doReindex();
 
         return Response.status(Response.Status.CREATED)
                 .entity(new EndpointWrapper(newDocument.getVerb().toLowerCase(), newDocument.getPath(), newDocument.getOperation()))
@@ -177,8 +168,6 @@ public class EndpointResource {
         final Endpoint updatedDocument = repository.findEndpointById(endpointId);
 
         final EndpointWrapper newEndpointWrapper = new EndpointWrapper(updatedDocument.getVerb(), updatedDocument.getPath(), updatedDocument.getOperation());
-
-        searchEngine.doReindex();
 
         return Response.status(Response.Status.OK)
                 .links(getLinks(uriInfo, applicationId, endpointId))
