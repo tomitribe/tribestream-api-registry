@@ -1,4 +1,4 @@
-div(tabindex=0)
+div(tabindex=0, x-ng-click="open()")
   .value
     span(ng-show="valueText && valueText.trim() !== ''") {{valueText}}
     span.empty(ng-show="!valueText || valueText.trim() === ''") {{emptyText}}
