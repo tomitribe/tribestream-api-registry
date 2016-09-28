@@ -25,12 +25,17 @@ import java.util.Set;
 public class SearchResult {
     private String applicationId;
     private String endpointId;
+    private String aggregatedId;
     private String application;
+    private String applicationVersion;
     private String httpMethod;
     private String path;
     private String description;
     private Set<String> consumes;
     private Set<String> produces;
+    private boolean secured;
+    private boolean rateLimited;
+    private float score;
     private String link;
 
     public SearchResult() {
@@ -42,48 +47,123 @@ public class SearchResult {
                         final String httpMethod, final String path,
                         final String description, final Set<String> consumes, final Set<String> produces,
                         final boolean secured, final boolean rateLimited, final float score) {
+        this.aggregatedId = aggregatedId;
         this.applicationId = applicationId;
         this.endpointId = endpointId;
         this.application = application;
+        this.applicationVersion = applicationVersion;
         this.httpMethod = httpMethod;
         this.path = PathTransformUtil.bracesToColon(path);
         this.description = description;
         this.consumes = consumes;
         this.produces = produces;
+        this.secured = secured;
+        this.score = score;
+        this.rateLimited = rateLimited;
+    }
+
+    public String getAggregatedId() {
+        return aggregatedId;
+    }
+
+    public void setAggregatedId(final String aggregatedId) {
+        this.aggregatedId = aggregatedId;
+    }
+
+    public float getScore() {
+        return score;
+    }
+
+    public void setScore(final float score) {
+        this.score = score;
     }
 
     public String getApplicationId() {
         return applicationId;
     }
 
+    public void setApplicationId(final String applicationId) {
+        this.applicationId = applicationId;
+    }
+
     public String getEndpointId() {
         return endpointId;
+    }
+
+    public void setEndpointId(final String endpointId) {
+        this.endpointId = endpointId;
     }
 
     public String getApplication() {
         return application;
     }
 
+    public void setApplication(final String application) {
+        this.application = application;
+    }
+
     public String getHttpMethod() {
         return httpMethod;
+    }
+
+    public void setHttpMethod(final String httpMethod) {
+        this.httpMethod = httpMethod;
     }
 
     public String getPath() {
         return path;
     }
 
+    public void setPath(final String path) {
+        this.path = path;
+    }
+
     public String getDescription() {
         return description;
     }
 
-    @SuppressWarnings("unused")
+    public void setDescription(final String description) {
+        this.description = description;
+    }
+
+    public boolean isSecured() {
+        return secured;
+    }
+
+    public void setSecured(boolean secured) {
+        this.secured = secured;
+    }
+
+    public void setRateLimited(boolean rateLimited) {
+        this.rateLimited = rateLimited;
+    }
+
+    public boolean isRateLimited() {
+        return rateLimited;
+    }
+
     public Set<String> getConsumes() {
         return consumes;
     }
 
-    @SuppressWarnings("unused")
+    public void setConsumes(Set<String> consumes) {
+        this.consumes = consumes;
+    }
+
     public Set<String> getProduces() {
         return produces;
+    }
+
+    public void setProduces(Set<String> produces) {
+        this.produces = produces;
+    }
+
+    public String getApplicationVersion() {
+        return applicationVersion;
+    }
+
+    public void setApplicationVersion(String applicationVersion) {
+        this.applicationVersion = applicationVersion;
     }
 
     public void setLink(String link) {
