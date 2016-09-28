@@ -62,6 +62,7 @@ angular.module('website-components-markdown', [
                 scope.$on('$destroy', () => {
                     content.remove();
                     el.remove();
+                    body.removeClass('noscroll');
                     $document.off('keyup', keyPress);
                 });
             }
