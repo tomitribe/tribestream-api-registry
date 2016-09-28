@@ -38,7 +38,9 @@
     "typescript": "1.8.10",
     "underscore.string": "3.3.4",
     "gulp-css-wrap": "0.1.2",
-    "merge-stream": "1.0.0"
+    "merge-stream": "1.0.0",
+    "jstransformer": "1.0.0",
+    "jstransformer-markdown-it": "1.0.0"
   },
   "engine": "node >= 5.5.0"
 }
