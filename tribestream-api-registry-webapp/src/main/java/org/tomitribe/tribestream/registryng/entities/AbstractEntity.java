@@ -57,44 +57,16 @@ public class AbstractEntity {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public int getEntityVersion() {
-        return entityVersion;
-    }
-
-    public void setEntityVersion(int entityVersion) {
-        this.entityVersion = entityVersion;
-    }
-
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
     }
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
     public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
-    }
-
-    public String getUpdatedBy() {
-        return updatedBy;
     }
 
     public void setUpdatedBy(String updatedBy) {

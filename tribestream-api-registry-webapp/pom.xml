@@ -37,11 +37,11 @@
       <version>7.0</version>
       <scope>provided</scope>
     </dependency>
+
     <dependency>
       <groupId>org.tomitribe</groupId>
       <artifactId>tomitribe-util</artifactId>
       <version>1.2.1</version>
-      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -69,23 +69,17 @@
       <scope>compile</scope>
     </dependency>
 
-    <dependency> <!-- security service -->
-      <groupId>org.apache.tomee</groupId>
-      <artifactId>openejb-core</artifactId>
-      <version>${version.tomee}</version>
-      <scope>provided</scope>
+    <dependency>
+      <groupId>org.apache.deltaspike.core</groupId>
+      <artifactId>deltaspike-core-api</artifactId>
+      <version>1.7.1</version>
     </dependency>
-    <dependency> <!-- tomcat security service -->
-      <groupId>org.apache.tomee</groupId>
-      <artifactId>tomee-catalina</artifactId>
-      <version>${version.tomee}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency> <!-- GenericPrincipal -->
-      <groupId>org.apache.tomcat</groupId>
-      <artifactId>tomcat-catalina</artifactId>
-      <version>${version.tomcat}</version>
-      <scope>provided</scope>
+
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>1.4.192</version>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -218,11 +212,6 @@
         </configuration>
         <dependencies>
           <dependency>
-            <groupId>org.tomitribe</groupId>
-            <artifactId>tomitribe-util</artifactId>
-            <version>${version.tomitribe-util}</version>
-          </dependency>
-          <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${version.commons-io}</version>
@@ -249,7 +238,6 @@
             <openapirepo.dir>${project.basedir}/target/test-classes</openapirepo.dir>
           </systemVariables>
           <libs>
-            <lib>org.tomitribe:tomitribe-util:${version.tomitribe-util}</lib>
             <lib>commons-io:commons-io:${version.commons-io}</lib>
           </libs>
         </configuration>

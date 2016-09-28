@@ -18,18 +18,20 @@
  */
 package org.tomitribe.tribestream.registryng.security;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import java.security.Principal;
 
-@RequestScoped
+import static java.util.Optional.ofNullable;
+
+@ApplicationScoped
 public class LoginContext {
-
-    private String username;
+    @Inject
+    private HttpServletRequest request;
 
     public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
+        return ofNullable(request.getUserPrincipal()).map(Principal::getName)
+                .orElseThrow(() -> new IllegalStateException("No user in current context"));
     }
 }

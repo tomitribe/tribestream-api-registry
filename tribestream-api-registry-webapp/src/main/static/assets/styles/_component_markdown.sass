@@ -1,5 +1,58 @@
 @import "variables"
 
+@mixin code-style
+  *
+    font-family: "open sans", "Montserrat", Helvetica, Arial, sans-serif
+  pre, code
+    font-family: Consolas, "Liberation Mono", Courier, monospace
+  h1, h2, h3, h4, h5, h6
+    margin-top: 10px
+    &:first-child
+      margin-top: 10px
+  p, th, td, pre, code
+    font-size: 12px
+  table
+    width: 100%
+    th, td
+      padding: 5px
+      text-align: left
+  pre
+    padding: 10px
+  code
+    border: 0
+    padding: 0
+    background-color: transparent
+  pre, code
+    max-width: 100%
+    background-color: #eeeeee
+  strong
+    font-weight: bold
+
+div[data-tribe-markdown-help]
+  > div
+    > div.markdown-help-content
+      display: none
+
+div.markdown-help-content
+  position: fixed
+  top: 0
+  bottom: 0
+  right: 0
+  left: 0
+  z-index: 3000
+  background-color: transparentize(black, .5)
+  > div
+    position: fixed
+    $distance: 40px
+    top: $distance
+    bottom: $distance
+    right: $distance
+    left: $distance
+    padding: 40px
+    overflow: auto
+    background-color: white
+    @include code-style
+
 div[data-tribe-markdown]
   display: inline-block
   div.CodeMirror, div.CodeMirror-scroll
@@ -40,29 +93,4 @@ div[data-tribe-markdown]
 
   div.preview > div[x-ng-bind-html], div.editor-preview
     max-width: 100%
-    *
-      font-family: "open sans", "Montserrat", Helvetica, Arial, sans-serif
-    pre, code
-      font-family: Consolas, "Liberation Mono", Courier, monospace
-    h1, h2, h3, h4, h5, h6
-      margin-top: 10px
-      &:first-child
-        margin-top: 10px
-    p, th, td, pre, code
-      font-size: 12px
-    table
-      width: 100%
-      th, td
-        padding: 5px
-        text-align: left
-    pre
-      padding: 10px
-    code
-      border: 0
-      padding: 0
-      background-color: transparent
-    pre, code
-      max-width: 100%
-      background-color: #eeeeee
-    strong
-      font-weight: bold
+    @include code-style

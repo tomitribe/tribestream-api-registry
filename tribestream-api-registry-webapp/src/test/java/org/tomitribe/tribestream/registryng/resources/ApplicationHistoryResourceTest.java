@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
+import static java.lang.Math.abs;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.client.Entity.entity;
 import static org.junit.Assert.assertEquals;
@@ -65,7 +66,7 @@ public class ApplicationHistoryResourceTest {
         final String applicationId = searchResults.stream()
                 .map(SearchResult::getApplicationId)
                 .collect(toList())
-                .get(random.nextInt(searchResults.size()));
+                .get(abs(random.nextInt(searchResults.size())));
 
         Response applicationResponse= loadApplicationResponse(applicationId);
 
@@ -94,11 +95,11 @@ public class ApplicationHistoryResourceTest {
     @Test
     public void shouldAddRevisionOnUpdate() {
         // Given: A random application with a history
-        Collection<SearchResult> searchResults = getSearchPage().getResults();
+        final Collection<SearchResult> searchResults = getSearchPage().getResults();
         final String applicationId = searchResults.stream()
                 .map(SearchResult::getApplicationId)
                 .collect(toList())
-                .get(random.nextInt(searchResults.size()));
+                .get(abs(random.nextInt(searchResults.size())));
 
         final Response applicationResponse = loadApplicationResponse(applicationId);
         final ApplicationWrapper applicationWrapper = applicationResponse.readEntity(ApplicationWrapper.class);
@@ -127,7 +128,7 @@ public class ApplicationHistoryResourceTest {
 
         assertEquals(historyItems.size() + 1, newHistoryItems.size());
 
-        newHistoryItems.stream().forEach(System.out::println);
+        newHistoryItems.forEach(System.out::println);
 
         // And: Username is set to the current user and revisiontype is MOD
         assertEquals("MOD", newHistoryItems.get(0).getRevisionType());

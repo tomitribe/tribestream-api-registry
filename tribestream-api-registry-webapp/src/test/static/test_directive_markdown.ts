@@ -137,4 +137,31 @@ second paragraph
         });
     });
 
+    let triggerKeyDown = function (element, keyCode) {
+        var e = $.Event("keyup");
+        e.keyCode = keyCode;
+        element.trigger(e);
+    };
+
+    it('should show help page', (done) => {
+        let scope = rootScope.$new();
+        scope.myvalue = "";
+        let element = angular.element('<div data-tribe-markdown data-value="myvalue"></div>');
+        compile(element)(scope);
+        // append to body so we can click on it.
+        element.appendTo(document.find('body'));
+        timeoutTryCatch(100, done, () => {
+            let toggleBtn = element.find('div.editor-toolbar > a.fa-question-circle');
+            toggleBtn.click();
+            timeoutTryCatch(100, done, () => {
+                expect(document.find('body div.markdown-help-content').length).to.equal(1);
+                triggerKeyDown(document, 27); // escape button
+                timeoutTryCatch(100, done, () => {
+                    expect(document.find('body div.markdown-help-content').length).to.equal(0);
+                    done();
+                });
+            });
+        });
+    });
+
 });

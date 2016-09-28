@@ -28,6 +28,45 @@ angular.module('website-components-markdown', [
     'website-components-markdown-service'
 ])
 
+    .directive('tribeMarkdownHelp', ['$document', '$timeout', ($document, $timeout) => {
+        return {
+            restrict: 'A',
+            scope: {
+                visible: '='
+            },
+            templateUrl: 'app/templates/component_markdown_help.html',
+            link: (scope, el) => {
+                let content = el.find('> div > div.markdown-help-content');
+                content.detach();
+                let body = $document.find('body');
+                let keyPress = (event) => {
+                    console.log('event.keyCode -> ' + event.keyCode);
+                    if (event.keyCode === 27 /* Escape */) {
+                        $timeout(() => scope.$apply(() => {
+                            scope.visible = false;
+                        }));
+                    }
+                };
+                scope.$watch('visible', () => {
+                    if (scope.visible) {
+                        body.addClass('noscroll');
+                        body.append(content);
+                        $document.on('keyup', keyPress);
+                    } else {
+                        content.detach();
+                        body.removeClass('noscroll');
+                        $document.off('keyup', keyPress);
+                    }
+                });
+                scope.$on('$destroy', () => {
+                    content.remove();
+                    el.remove();
+                    body.removeClass('noscroll');
+                    $document.off('keyup', keyPress);
+                });
+            }
+        };
+    }])
 
     .directive('tribeMarkdown', ['$window', '$timeout', '$log', 'tribeMarkdownService', ($window, $timeout, $log, mdService) => {
         return {
@@ -37,6 +76,7 @@ angular.module('website-components-markdown', [
             },
             templateUrl: 'app/templates/component_markdown.html',
             controller: ['$scope', ($scope) => $timeout(() => {
+                $scope.helpVisible = false;
                 $scope.simplemde = null;
                 $scope.version = 0;
                 $scope.fieldDirty = false;
@@ -164,7 +204,14 @@ angular.module('website-components-markdown', [
                         })),
                         className: "fa fa-eye no-disable",
                         title: "Toggle Preview"
-                    }, 'guide']
+                    }, {
+                        name: "guide",
+                        action: (editor) => $timeout(() => scope.$apply(() => {
+                            scope.helpVisible = true;
+                        })),
+                        className: "fa fa-question-circle",
+                        title: "Markdown Guide"
+                    }]
                 });
                 simplemde.codemirror.on('change', () => {
                     scope.onChange(simplemde.value());
