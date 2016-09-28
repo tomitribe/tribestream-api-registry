@@ -25,7 +25,6 @@ import org.apache.openejb.testing.RandomPort;
 import org.apache.openejb.testing.WebResource;
 import org.apache.tomee.loader.TomcatHelper;
 import org.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
-import org.tomitribe.util.Join;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
@@ -48,9 +47,12 @@ import static org.tomitribe.util.Join.join;
  * Contains the configuration for the tests
  */
 @ContainerProperties({
+        @ContainerProperties.Property(name = "openejb.datasource.plugin.activated", value = "false"),
         @ContainerProperties.Property(name = "hibernate.hbm2ddl.auto", value = "create-drop"),
         @ContainerProperties.Property(name = "registryDatasource", value = "new://Resource?type=DataSource"),
-        @ContainerProperties.Property(name = "registryDatasource.LogSql", value = "true")
+        @ContainerProperties.Property(name = "registryDatasource.JdbcDriver", value = "org.h2.Driver"),
+        @ContainerProperties.Property(name = "registryDatasource.JdbcUrl", value = "jdbc:h2:mem:registry;DB_CLOSE_ON_EXIT=FALSE"),
+        @ContainerProperties.Property(name = "registryDatasource.LogSql", value = "false")
 })
 @WebResource("src/main/webapp") // should work by default but bug in tomee 7.0.1, fixed in 7.0.2
 @org.apache.openejb.testing.Application

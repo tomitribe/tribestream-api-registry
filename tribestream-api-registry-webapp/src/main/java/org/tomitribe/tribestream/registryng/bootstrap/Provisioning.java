@@ -34,9 +34,11 @@ import javax.ejb.Startup;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * Seeds the database at startup with Swagger documents stored in META-INF/classes/seed-db.
@@ -59,9 +61,9 @@ public class Provisioning {
     private ObjectMapper mapper;
 
     @PostConstruct
-    private void init() {
+    public void init() {
         seedDatabase();
-        searchEngine.resetIndex();
+        searchEngine.waitForWrites();
     }
 
     private void seedDatabase() {
@@ -76,11 +78,7 @@ public class Provisioning {
         }
 
         final File f = new File(res.getFile());
-        final File[] swaggerFiles = f.listFiles((dir, name) -> name.endsWith(".json"));
-
-        for (File swaggerFile: swaggerFiles) {
-            seedFile(swaggerFile);
-        }
+        Stream.of(f.listFiles((dir, name) -> name.endsWith(".json"))).forEach(this::seedFile);
 
     }
 
@@ -89,8 +87,8 @@ public class Provisioning {
 
         try {
             final Swagger swagger = mapper.readValue(
-                swaggerFile,
-                Swagger.class
+                    swaggerFile,
+                    Swagger.class
             );
 
             if (repository.findApplicationByNameAndVersion(swagger.getInfo().getTitle(), swagger.getInfo().getVersion()) == null) {
@@ -104,6 +102,7 @@ public class Provisioning {
         } catch (final Exception e) {
             LOGGER.log(Level.WARNING, e, () -> String.format("Seeding %s failed!", swaggerFile.getName()));
         }
+        LOGGER.info("Memory = " + ManagementFactory.getMemoryMXBean().getHeapMemoryUsage());
     }
 
 }
