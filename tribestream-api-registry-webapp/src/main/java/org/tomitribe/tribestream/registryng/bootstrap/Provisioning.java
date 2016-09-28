@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.tomitribe.tribestream.registryng.resources.bootstrap;
+package org.tomitribe.tribestream.registryng.bootstrap;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;

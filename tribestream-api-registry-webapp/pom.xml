@@ -205,11 +205,6 @@
         </configuration>
         <dependencies>
           <dependency>
-            <groupId>org.tomitribe</groupId>
-            <artifactId>tomitribe-util</artifactId>
-            <version>${version.tomitribe-util}</version>
-          </dependency>
-          <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${version.commons-io}</version>
@@ -236,7 +231,6 @@
             <openapirepo.dir>${project.basedir}/target/test-classes</openapirepo.dir>
           </systemVariables>
           <libs>
-            <lib>org.tomitribe:tomitribe-util:${version.tomitribe-util}</lib>
             <lib>commons-io:commons-io:${version.commons-io}</lib>
           </libs>
         </configuration>

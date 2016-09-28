@@ -23,7 +23,7 @@ import org.tomitribe.tribestream.registryng.security.LoginContext;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Specializes;
 
-// in org.tomitribe.tribestream.registryng.resources.bootstrap.Provisioning we don't have a request so auditable user
+// in org.tomitribe.tribestream.registryng.bootstrap.Provisioning we don't have a request so auditable user
 @Specializes
 @ApplicationScoped
 public class EmbeddedLoginContext  extends LoginContext {
