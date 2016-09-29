@@ -5,12 +5,21 @@ angular.module('tribe-endpoints-details', [
     'website-services-endpoints'
 ])
 
+    .factory('appEndpointsDetailsHeaderService', [($location) => {
+        return {
+            getBaseUrl: (swagger) => {
+                let basePath = swagger.basePath === '/' ? '' : swagger.basePath;
+                return swagger.host + basePath;
+            }
+        };
+    }])
+
     .directive('appEndpointsDetailsHeader', ['$window', '$timeout', '$filter', function ($window, $timeout, $filter) {
         return {
             restrict: 'A',
             templateUrl: 'app/templates/app_endpoints_details_header.html',
             scope: true,
-            controller: ['$scope', '$timeout', function ($scope, $timeout) {
+            controller: ['$scope', '$timeout', 'appEndpointsDetailsHeaderService', function ($scope, $timeout, srv) {
                 $scope.toUppercase = (item) => {
                     if (!item) {
                         return null;
@@ -31,7 +40,7 @@ angular.module('tribe-endpoints-details', [
                                 } else if ($scope.application && $scope.application.swagger && $scope.application.swagger.schemes) {
                                     $scope.endpointProtocol = $scope.application.swagger.schemes.indexOf('https') >= 0 ? 'https' : 'http';
                                 }
-                                $scope.resourceUrl = $scope.application.swagger.host + $scope.application.swagger.basePath + $scope.endpoint.path.substring(1);
+                                $scope.resourceUrl = srv.getBaseUrl($scope.application.swagger, $scope.endpoint.path) + $scope.endpoint.path;
                             });
                         });
                     }
