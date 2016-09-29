@@ -311,10 +311,17 @@ angular.module('website-components', [
                         $document.off('click', detachOptions);
                     }
                 });
+                let escapeDetach = (event) => {
+                    if (event.keyCode === 27 /* Escape */) {
+                        detachOptions();
+                    }
+                };
+                $document.on('keyup', escapeDetach);
                 scope.$on('$destroy', function () {
                     el.remove();
                     optionsDiv.remove();
                     $document.off('click', detachOptions);
+                    $document.off('keyup', escapeDetach);
                 });
             })
         };

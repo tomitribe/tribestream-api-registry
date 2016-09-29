@@ -30,6 +30,12 @@ describe('it tests our custom options component', () => {
         }
     }, ms);
 
+    let triggerKeyDown = function (element, keyCode) {
+        var e = $.Event("keyup");
+        e.keyCode = keyCode;
+        element.trigger(e);
+    };
+
     it('should show options', (done) => {
         let scope = rootScope.$new();
         scope.options = ['Copy...', 'Release...', 'Export...', 'Share link...'];
@@ -48,7 +54,16 @@ describe('it tests our custom options component', () => {
                 document.find('body').click();
                 timeoutTryCatch(100, done, () => {
                     expect(document.find('body').html()).to.not.contain('Copy...');
-                    done();
+                    compScope.open();
+                    timeoutTryCatch(100, done, () => {
+                        expect(document.find('body').html()).to.contain('Copy...');
+                        triggerKeyDown(document, 27);
+                        timeoutTryCatch(100, done, () => {
+                            expect(document.find('body').html()).to.not.contain('Copy...');
+                            compScope.open();
+                            done();
+                        });
+                    });
                 });
             });
         });
