@@ -26,7 +26,7 @@ import java.util.Date;
  * This class is used to transport historic entities from Envers to the Repository.
  * Envers only returns an Object[] containing the historic entity, the revision and the revision type.
  * This class is easier to consume.
- * @param <T>
+ * @param <T> Entity type to be used for revision control
  */
 public class HistoryEntry<T> {
 
@@ -40,7 +40,7 @@ public class HistoryEntry<T> {
      * Creates a new HistoryEntry from the results returned by the AuditReader.
      * That means the given Object array must contain the historic entity, the associated revision entity and the
      * revision type (Create, Update, Delete)
-     * @param auditQueryResult
+     * @param auditQueryResult the list of elements to use for history
      */
     public HistoryEntry(final Object[] auditQueryResult) {
         historicObject = (T) auditQueryResult[0];
