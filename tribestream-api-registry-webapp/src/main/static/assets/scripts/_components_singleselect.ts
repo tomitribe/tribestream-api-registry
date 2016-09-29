@@ -187,6 +187,9 @@ angular.module('website-components-singleselect', [
                         }
                     }
                 }));
+                $scope.selectAvailableItem = (item) => $timeout(() => $scope.$apply(() => {
+                    $scope.selectedItem = item;
+                }));
                 $scope.selectNext = () => $timeout(() => $scope.$apply(() => {
                     let ordered = _.sortBy($scope.availableOptions, (item) => $scope.getOptionText(item).toLowerCase());
                     if ($scope.selectedItem) {
