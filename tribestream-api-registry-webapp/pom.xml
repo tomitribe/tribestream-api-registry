@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.tomitribe.tribestream</groupId>
     <artifactId>tribestream-api-registry-parent</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.03</version>
   </parent>
 
   <artifactId>tribestream-api-registry-webapp</artifactId>
