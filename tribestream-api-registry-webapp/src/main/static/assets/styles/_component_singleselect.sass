@@ -69,11 +69,12 @@ div.tribe-data-tribe-singleselect-available-body
     padding: 0
     > div
       padding: 5px 8px
-    .option.selected
-      background-color: #f5f5f5
+    .option
+      &.selected, &:hover
+        background-color: #f5f5f5
   .new-opt
     border-top: dashed $app-input-border-color 1px
-    &.selected
+    &.selected, &:hover
       background-color: #f5f5f5
     > span:first-of-type
       font-weight: 800
