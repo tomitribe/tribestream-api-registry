@@ -500,16 +500,18 @@ angular.module('tribe-endpoints-details', [
                         });
                     }).then(function () {
                         srv.getDetails($scope.applicationId, $scope.endpointId).then(function (detailsResponse) {
-                            let links = tribeLinkHeaderService.parseLinkHeader(detailsResponse.headers('link'));
-                            $scope.historyLink = links['history']
-                            $timeout(function () {
-                                $scope.$apply(function () {
-                                    let detailsData = detailsResponse.data;
-                                    $scope.endpoint.httpMethod = detailsData.httpMethod;
-                                    $scope.endpoint.path = $filter('pathencode')(detailsData.path);
-                                    $scope.endpoint.operation = detailsData.operation;
+                            if(detailsResponse.headers) {
+                                let links = tribeLinkHeaderService.parseLinkHeader(detailsResponse.headers('link'));
+                                $scope.historyLink = links['history'];
+                                $timeout(function () {
+                                    $scope.$apply(function () {
+                                        let detailsData = detailsResponse.data;
+                                        $scope.endpoint.httpMethod = detailsData.httpMethod;
+                                        $scope.endpoint.path = $filter('pathencode')(detailsData.path);
+                                        $scope.endpoint.operation = detailsData.operation;
+                                    });
                                 });
-                            });
+                            }
                             srv.getApplicationDetails($scope.applicationId).then(function (applicationDetails) {
                                 $timeout(function () {
                                     $scope.$apply(function () {
