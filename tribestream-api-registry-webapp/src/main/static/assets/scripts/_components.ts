@@ -245,75 +245,85 @@ angular.module('website-components', [
             },
             templateUrl: 'app/templates/component_editable_option.html',
             controller: ['$scope', '$timeout', function ($scope, $timeout) {
+                $scope.visible = false;
                 if (!$scope.emptyText) {
                     $scope.emptyText = 'empty';
                 }
-                $scope.selectOption = function (opt) {
-                    $timeout(function () {
-                        $scope.$apply(function () {
-                            $scope.value = opt;
-                        });
-                    });
-                };
-                $scope.$watch('value', function () {
+                $scope.selectOption = (opt) => $timeout(() => $scope.$apply(() => {
+                    $scope.value = opt;
+                    $scope.visible = false;
+                }));
+                $scope.$watch('value', () => {
                     if (!$scope.value) {
-                        $timeout(function () {
-                            $scope.$apply(function () {
-                                $scope.valueText = '';
-                            });
-                        });
+                        $timeout(() => $scope.$apply(() => $scope.valueText = ''));
                     } else {
-                        $timeout(function () {
-                            $scope.$apply(function () {
-                                for (let opt of $scope.options) {
-                                    if (opt === $scope.value || opt.value === $scope.value) {
-                                        $scope.valueText = opt.text ? opt.text : opt;
-                                        return;
-                                    }
+                        $timeout(() => $scope.$apply(() => {
+                            for (let opt of $scope.options) {
+                                if (opt === $scope.value || opt.value === $scope.value) {
+                                    $scope.valueText = opt.text ? opt.text : opt;
+                                    return;
                                 }
-                                $scope.valueText = '';
-                            });
-                        });
+                            }
+                            $scope.valueText = '';
+                        }));
                     }
                 });
+                $scope.open = () => $timeout(() => $scope.$apply(() => {
+                    $scope.visible = true;
+                }));
             }],
-            link: function (scope, el, attrs, controller) {
-                $timeout(function () {
-                    var optionsDiv = el.find('.options');
+            link: (scope, el) => $timeout(() => {
+                var optionsDiv = el.find('.options');
+                optionsDiv.detach();
+                let body = $document.find('body');
+                var detachPromise = null;
+                let detachOptions = () => {
                     optionsDiv.detach();
-                    var body = $document.find('body');
-                    var clear = function () {
-                        el.removeClass('visible');
-                        optionsDiv.detach();
-                    };
-                    var elWin = $($document.find('div[data-app-endpoints-details] > div'));
-                    el.on('click', function () {
-                        if (el.hasClass('visible')) {
-                            optionsDiv.detach();
-                            el.removeClass('visible');
-                            elWin.off('scroll', clear);
-                        } else {
-                            var pos = el.find('> div').offset();
-                            optionsDiv.css({
-                                top: `${pos.top + el.find('> div').height()}px`,
-                                left: `${pos.left}px`
-                            });
-                            body.append(optionsDiv);
-                            el.addClass('visible');
-                            elWin.on('scroll', clear);
-                        }
-                    });
-                    optionsDiv.on('click', function () {
-                        optionsDiv.detach();
-                        el.removeClass('visible');
-                        elWin.off('scroll', clear);
-                    });
-                    scope.$on('$destroy', function () {
-                        optionsDiv.remove();
-                        elWin.off('scroll', clear);
-                    });
+                    el.removeClass('visible');
+                    $timeout(() => scope.$apply(() => {
+                        scope.visible = false;
+                    }));
+                };
+                el.on('mouseover', () => {
+                    $document.off('click', detachOptions);
                 });
-            }
+                optionsDiv.on('mouseover', () => {
+                    $document.off('click', detachOptions);
+                });
+                el.on('mouseout', () => {
+                    $document.on('click', detachOptions);
+                });
+                optionsDiv.on('mouseout', () => {
+                    $document.on('click', detachOptions);
+                });
+                scope.$watch('visible', () => {
+                    if (scope.visible) {
+                        el.addClass('visible');
+                        var pos = el.find('> div').offset();
+                        optionsDiv.css({
+                            top: `${pos.top + el.find('> div').height()}px`,
+                            left: `${pos.left}px`
+                        });
+                        body.append(optionsDiv);
+                        $document.on('click', detachOptions);
+                    } else {
+                        detachOptions();
+                        $document.off('click', detachOptions);
+                    }
+                });
+                let escapeDetach = (event) => {
+                    if (event.keyCode === 27 /* Escape */) {
+                        detachOptions();
+                    }
+                };
+                $document.on('keyup', escapeDetach);
+                scope.$on('$destroy', function () {
+                    el.remove();
+                    optionsDiv.remove();
+                    $document.off('click', detachOptions);
+                    $document.off('keyup', escapeDetach);
+                });
+            })
         };
     }])
 
