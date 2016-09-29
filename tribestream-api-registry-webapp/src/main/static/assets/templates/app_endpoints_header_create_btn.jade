@@ -7,4 +7,4 @@ div
   .button-applications.floating-menu
     ul
       li(x-ng-repeat="app in applications | orderBy:'text'")
-        a(x-ng-href="endpoint/{{app.name}}") {{app.name}}
+        a(x-ng-href="application/{{app.applicationId}}/endpoint/") {{app.name}}

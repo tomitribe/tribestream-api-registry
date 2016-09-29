@@ -163,7 +163,7 @@ module services {
                     saveEndpoint(applicationId, endpointId, endpoint) {
                         return {
                             then: function (successCallback, errorCallback) {
-                                $http.put('api/application/' + applicationId + '/endpoint/' + endpointId, endpoint)
+                                $http.put(`api/application/${applicationId}/endpoint/${endpointId ? endpointId : ''}`, endpoint)
                                     .then(
                                         function (data) {
                                             if (data && data.data && data.data.operation) {

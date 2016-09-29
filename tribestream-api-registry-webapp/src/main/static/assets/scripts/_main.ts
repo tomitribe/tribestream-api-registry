@@ -54,7 +54,7 @@ angular.module('tribe-main', [
                         $scope.app = $routeParams.app;
                     }]
                 })
-                .when('/application/:app/endpoint/:endpointId', {
+                .when('/application/:app/endpoint/:endpointId?', {
                     templateUrl: 'app/templates/page_endpoints_details.html',
                     controller: ['$scope', '$routeParams', function ($scope, $routeParams) {
                         $scope.applicationId = $routeParams.app;
