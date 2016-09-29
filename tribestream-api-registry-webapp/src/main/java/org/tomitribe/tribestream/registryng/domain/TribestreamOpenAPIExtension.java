@@ -23,7 +23,7 @@ package org.tomitribe.tribestream.registryng.domain;
  * in the OpenAPI documents processed by the Tribestream API Registry.
  * <p>A OpenAPI extension with the Tribestream API Registry vendor extension could look like this and this interface
  * contains constants for all proprietary names used.</p>
- * <code><pre>
+ * <code>
  * {
  *   "swagger": "2.0",
  *   "info": {},
@@ -42,7 +42,7 @@ package org.tomitribe.tribestream.registryng.domain;
  *     }
  *   }
  * }
- * </pre></code>
+ * </code>
  */
 public interface TribestreamOpenAPIExtension {
 

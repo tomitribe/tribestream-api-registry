@@ -138,8 +138,9 @@ public class Repository {
 
     /**
      * Returns the number of revisions available for the entity with the given id.
-     * @param id
-     * @return
+     * @param entityClass the Entity class type to use to find revisions
+     * @param id the ID of the entity
+     * @return the number of revisions
      */
     public <T> int getNumberOfRevisions(final Class<T> entityClass, final String id) {
         final AuditQuery query = AuditReaderFactory.get(em).createQuery().forRevisionsOfEntity(entityClass, true, true);
