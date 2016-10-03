@@ -72,7 +72,7 @@ angular.module('tribe-endpoints', [
                                                 summary: ops[opname].summary,
                                                 description: ops[opname].description,
                                                 id: endpointId,
-                                                humanReadablePath: ops[opname]['vendorExtensions']['x-tribestream-api-registry']['human-readable-path']
+                                                humanReadablePath: ops[opname]['x-tribestream-api-registry']['human-readable-path']
                                             };
                                             endpoints.push(operationObject);
                                         }

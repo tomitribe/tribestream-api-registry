@@ -34,6 +34,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import static java.util.Optional.ofNullable;
+
 @ApplicationScoped
 public class ApplicationProcessor {
     public ApplicationWrapper toWrapper(final OpenApiDocument application) {
@@ -55,6 +57,8 @@ public class ApplicationProcessor {
                     shrunkOperation.setDescription(httpMethodOperationEntry.getValue().getDescription());
                     shrunkOperation.setSummary(httpMethodOperationEntry.getValue().getSummary());
                     shrunkPath.set(httpMethodOperationEntry.getKey().name().toLowerCase(Locale.ENGLISH), shrunkOperation);
+                    ofNullable(httpMethodOperationEntry.getValue())
+                            .ifPresent(o -> o.getVendorExtensions().forEach(shrunkOperation::setVendorExtension));
                 }
             }
 
@@ -74,16 +78,21 @@ public class ApplicationProcessor {
                     newPaths.put(endpoint.getPath(), newPath);
                 }
 
-                if (endpoint.getOperation().getVendorExtensions() == null) {
-                    endpoint.getOperation().setVendorExtension(TribestreamOpenAPIExtension.VENDOR_EXTENSION_KEY, new HashMap<>());
-                }
-                final Map<String, Object> appExt = Map.class.cast(endpoint.getOperation().getVendorExtensions());
-                appExt.put(TribestreamOpenAPIExtension.HUMAN_READABLE_PATH, endpoint.getHumanReadablePath()); // for navigation
+                addHumanReadablePathIfMissing(endpoint);
 
                 newPath.set(endpoint.getVerb().toLowerCase(Locale.ENGLISH), endpoint.getOperation());
             }
         }
         result.setPaths(newPaths);
         return result;
+    }
+
+    private void addHumanReadablePathIfMissing(final Endpoint endpoint) { // for navigation
+        final Operation operation = endpoint.getOperation();
+        if (operation.getVendorExtensions().get(TribestreamOpenAPIExtension.VENDOR_EXTENSION_KEY) == null) {
+            operation.setVendorExtension(TribestreamOpenAPIExtension.VENDOR_EXTENSION_KEY, new HashMap<>());
+        }
+        Map.class.cast(operation.getVendorExtensions().get(TribestreamOpenAPIExtension.VENDOR_EXTENSION_KEY))
+                .put(TribestreamOpenAPIExtension.HUMAN_READABLE_PATH, endpoint.getHumanReadablePath());
     }
 }

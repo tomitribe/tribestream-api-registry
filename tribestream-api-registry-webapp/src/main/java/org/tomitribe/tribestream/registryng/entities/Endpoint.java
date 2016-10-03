@@ -19,6 +19,8 @@
 package org.tomitribe.tribestream.registryng.entities;
 
 import io.swagger.models.Operation;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.envers.Audited;
 import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 
@@ -41,37 +43,39 @@ import static org.tomitribe.tribestream.registryng.entities.Normalizer.normalize
 
 @Entity
 @Table(
-    uniqueConstraints = {
-        @UniqueConstraint(name = "UQ_VERB_PATH", columnNames = {"verb", "path"})
-    }
+        uniqueConstraints = {
+                @UniqueConstraint(name = "UQ_VERB_PATH", columnNames = {"verb", "path"})
+        }
 )
 @NamedQueries({
-    @NamedQuery(
-        name = Endpoint.Queries.FIND_ALL,
-        query = "SELECT ep FROM Endpoint ep ORDER BY ep.application.name ASC, ep.application.version DESC, ep.path ASC, ep.verb ASC"),
-    @NamedQuery(
-        name = Endpoint.Queries.FIND_ALL_WITH_APPLICATION,
-        query = "SELECT ep FROM Endpoint ep JOIN FETCH ep.application " +
-            " ORDER BY ep.application.name ASC, ep.application.version DESC, ep.path ASC, ep.verb ASC"),
-    @NamedQuery(
-        name = Endpoint.Queries.FIND_BY_APPLICATIONID_VERB_AND_PATH,
-        query = "SELECT ep FROM Endpoint ep JOIN FETCH ep.application " +
-            " WHERE (concat(ep.application.name, '-', ep.application.version) = :applicationId OR ep.application.id = :applicationId) " +
-            "       AND lower(ep.verb) = lower(:verb) AND ep.path = :path"),
-    @NamedQuery(
-        name = Endpoint.Queries.FIND_BY_HUMAN_REDABLE_PATH,
-        query = "SELECT ep FROM Endpoint ep JOIN FETCH ep.application " +
-            "WHERE ep.humanReadablePath = :endpointPath AND ep.application.humanReadableName = :applicationName AND " +
-                "lower(ep.verb) = lower(:verb) AND ep.application.version = :applicationVersion"),
-    @NamedQuery(
-        name = Endpoint.Queries.FIND_BY_HUMAN_REDABLE_PATH_NO_VERSION,
-        query = "SELECT ep FROM Endpoint ep JOIN FETCH ep.application " +
-            "WHERE ep.humanReadablePath = :endpointPath AND ep.application.humanReadableName = :applicationName AND " +
-                "lower(ep.verb) = lower(:verb) " +
-            "ORDER BY ep.application.version")
+        @NamedQuery(
+                name = Endpoint.Queries.FIND_ALL,
+                query = "SELECT ep FROM Endpoint ep ORDER BY ep.application.name ASC, ep.application.version DESC, ep.path ASC, ep.verb ASC"),
+        @NamedQuery(
+                name = Endpoint.Queries.FIND_ALL_WITH_APPLICATION,
+                query = "SELECT ep FROM Endpoint ep JOIN FETCH ep.application " +
+                        " ORDER BY ep.application.name ASC, ep.application.version DESC, ep.path ASC, ep.verb ASC"),
+        @NamedQuery(
+                name = Endpoint.Queries.FIND_BY_APPLICATIONID_VERB_AND_PATH,
+                query = "SELECT ep FROM Endpoint ep JOIN FETCH ep.application " +
+                        " WHERE (concat(ep.application.name, '-', ep.application.version) = :applicationId OR ep.application.id = :applicationId) " +
+                        "       AND lower(ep.verb) = lower(:verb) AND ep.path = :path"),
+        @NamedQuery(
+                name = Endpoint.Queries.FIND_BY_HUMAN_REDABLE_PATH,
+                query = "SELECT ep FROM Endpoint ep JOIN FETCH ep.application " +
+                        "WHERE ep.humanReadablePath = :endpointPath AND ep.application.humanReadableName = :applicationName AND " +
+                        "lower(ep.verb) = lower(:verb) AND ep.application.version = :applicationVersion"),
+        @NamedQuery(
+                name = Endpoint.Queries.FIND_BY_HUMAN_REDABLE_PATH_NO_VERSION,
+                query = "SELECT ep FROM Endpoint ep JOIN FETCH ep.application " +
+                        "WHERE ep.humanReadablePath = :endpointPath AND ep.application.humanReadableName = :applicationName AND " +
+                        "lower(ep.verb) = lower(:verb) " +
+                        "ORDER BY ep.application.version")
 })
 @EntityListeners(OpenAPIDocumentSerializer.class)
 @Audited
+@Getter
+@Setter
 public class Endpoint extends AbstractEntity {
     public interface Queries {
         String FIND_ALL = "Endpoint.findAll";
@@ -96,7 +100,7 @@ public class Endpoint extends AbstractEntity {
     private String document;
 
     @Column(name = "HUMAN_READABLE_PATH", nullable = false)
-    private String humanReadablePath;
+    private String humanReadablePath; // stored in case we make it editable
 
     private transient Operation operation;
 
@@ -109,55 +113,11 @@ public class Endpoint extends AbstractEntity {
         }
     }
 
-    public OpenApiDocument getApplication() {
-        return application;
-    }
-
-    public void setApplication(OpenApiDocument application) {
-        this.application = application;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public String getVerb() {
-        return verb;
-    }
-
-    public void setVerb(String verb) {
-        this.verb = verb;
-    }
-
-    public String getDocument() {
-        return document;
-    }
-
-    public void setDocument(String document) {
-        this.document = document;
-    }
-
     public Operation getOperation() {
         try {
             return operation == null ? (operation = SwaggerJsonMapperProducer.lookup().readValue(document, Operation.class)) : operation;
         } catch (final IOException e) {
             throw new IllegalStateException(e);
         }
-    }
-
-    public void setOperation(Operation operation) {
-        this.operation = operation;
-    }
-
-    public String getHumanReadablePath() {
-        return humanReadablePath;
-    }
-
-    public void setHumanReadablePath(String humanReadablePath) {
-        this.humanReadablePath = humanReadablePath;
     }
 }

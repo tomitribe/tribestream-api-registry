@@ -19,7 +19,10 @@
 package org.tomitribe.tribestream.registryng.entities;
 
 import io.swagger.models.Swagger;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.envers.Audited;
+import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -33,6 +36,7 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -72,6 +76,8 @@ import static org.tomitribe.tribestream.registryng.entities.Normalizer.normalize
 })
 @EntityListeners(OpenAPIDocumentSerializer.class)
 @Audited
+@Getter
+@Setter
 public class OpenApiDocument extends AbstractEntity {
     public interface Queries {
         String FIND_BY_NAME_AND_VERSION = "OpenApiDocument.findByNameAndVersion";
@@ -91,7 +97,7 @@ public class OpenApiDocument extends AbstractEntity {
     private String name;
 
     @Column(name = "HUMAN_READABLE_NAME", nullable = false, unique = true)
-    private String humanReadableName;
+    private String humanReadableName; // stored to be made editable if needed
 
     /**
      * This version refers to the info.version of the Swagger element.
@@ -121,51 +127,11 @@ public class OpenApiDocument extends AbstractEntity {
         }
     }
 
-    public String getHumanReadableName() {
-        return humanReadableName;
-    }
-
-    public void setHumanReadableName(final String humanReadableName) {
-        this.humanReadableName = humanReadableName;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public String getDocument() {
-        return document;
-    }
-
-    public void setDocument(String document) {
-        this.document = document;
-    }
-
-    public void setSwagger(Swagger swagger) {
-        this.swagger = swagger;
-    }
-
     public Swagger getSwagger() {
-        return swagger;
-    }
-
-    public Collection<Endpoint> getEndpoints() {
-        return endpoints;
-    }
-
-    public void setEndpoints(Collection<Endpoint> endpoints) {
-        this.endpoints = endpoints;
+        try {
+            return swagger == null ? (swagger = SwaggerJsonMapperProducer.lookup().readValue(document, Swagger.class)) : swagger;
+        } catch (final IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }

@@ -18,14 +18,17 @@
  */
 package org.tomitribe.tribestream.registryng.resources;
 
+import io.swagger.models.Operation;
 import org.apache.openejb.testing.Application;
 import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
+import org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension;
 
 import javax.ws.rs.NotFoundException;
+import java.util.Map;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static org.junit.Assert.assertEquals;
@@ -107,6 +110,14 @@ public class HumanReadableResourceTest {
     private void assertPet(final ApplicationWrapper wrapper) {
         assertEquals("Swagger Petstore", wrapper.getSwagger().getInfo().getTitle());
         assertNotNull(wrapper.getSwagger());
+
+        // ensure GUI will be able to navigate with the slugs we decided to use
+        final Operation get = wrapper.getSwagger().getPath("/pets/{id}").getGet();
+        assertNotNull(get.getVendorExtensions());
+        assertNotNull(get.getVendorExtensions().get(TribestreamOpenAPIExtension.VENDOR_EXTENSION_KEY));
+        assertEquals("pets/:id", Map.class.cast(get.getVendorExtensions()
+                .get(TribestreamOpenAPIExtension.VENDOR_EXTENSION_KEY))
+                .get(TribestreamOpenAPIExtension.HUMAN_READABLE_PATH));
     }
 
     private void assertPet(final EndpointWrapper wrapper) {
