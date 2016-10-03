@@ -21,6 +21,7 @@ package org.tomitribe.tribestream.registryng.entities;
 import io.swagger.models.Operation;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.envers.Audited;
 import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 
@@ -76,6 +77,7 @@ import static org.tomitribe.tribestream.registryng.entities.Normalizer.normalize
 @Audited
 @Getter
 @Setter
+@ToString(of = {"verb", "path"})
 public class Endpoint extends AbstractEntity {
     public interface Queries {
         String FIND_ALL = "Endpoint.findAll";

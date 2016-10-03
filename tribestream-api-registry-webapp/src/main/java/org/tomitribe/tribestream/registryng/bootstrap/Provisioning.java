@@ -35,6 +35,7 @@ import javax.inject.Inject;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -123,10 +124,8 @@ public class Provisioning {
         if (location == null) {
             return;
         }
-        repository.findAllApplicationsWithEndpoints().forEach(d -> {
-            d.getEndpoints().forEach(e -> repository.deleteEndpoint(e.getApplication().getId(), e.getId()));
-            repository.deleteApplication(d.getId());
-        });
+        final List<OpenApiDocument> apps = repository.findAllApplicationsWithEndpoints();
+        apps.forEach(d -> repository.deleteApplication(d.getId()));
         seedDatabase();
         searchEngine.waitForWrites();
     }

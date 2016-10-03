@@ -21,6 +21,7 @@ package org.tomitribe.tribestream.registryng.entities;
 import io.swagger.models.Swagger;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.envers.Audited;
 import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 
@@ -78,6 +79,7 @@ import static org.tomitribe.tribestream.registryng.entities.Normalizer.normalize
 @Audited
 @Getter
 @Setter
+@ToString(of = "name")
 public class OpenApiDocument extends AbstractEntity {
     public interface Queries {
         String FIND_BY_NAME_AND_VERSION = "OpenApiDocument.findByNameAndVersion";
