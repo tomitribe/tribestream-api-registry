@@ -23,6 +23,7 @@ import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 import org.apache.openejb.testing.Application;
 import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
@@ -56,6 +57,11 @@ public class EndpointResourceTest {
 
     @Inject
     private SearchEngine engine;
+
+    @After
+    public void reset() {
+        registry.restoreData();
+    }
 
     @Test
     public void shouldDeleteEndpoint() throws Exception {

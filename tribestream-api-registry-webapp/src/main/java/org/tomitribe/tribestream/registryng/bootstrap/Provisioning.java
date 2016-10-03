@@ -67,11 +67,7 @@ public class Provisioning {
 
     @PostConstruct
     public void init() {
-        if (location == null) {
-            return;
-        }
-        seedDatabase();
-        searchEngine.waitForWrites();
+        restore();
     }
 
     private void seedDatabase() {
@@ -123,4 +119,15 @@ public class Provisioning {
         LOGGER.info("Memory = " + ManagementFactory.getMemoryMXBean().getHeapMemoryUsage());
     }
 
+    public void restore() {
+        if (location == null) {
+            return;
+        }
+        repository.findAllApplicationsWithEndpoints().forEach(d -> {
+            d.getEndpoints().forEach(e -> repository.deleteEndpoint(e.getApplication().getId(), e.getId()));
+            repository.deleteApplication(d.getId());
+        });
+        seedDatabase();
+        searchEngine.waitForWrites();
+    }
 }

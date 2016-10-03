@@ -25,6 +25,7 @@ import io.swagger.models.Swagger;
 import io.swagger.models.Tag;
 import org.apache.openejb.testing.Application;
 import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.tomitribe.tribestream.registryng.cdi.Tribe;
@@ -66,6 +67,11 @@ public class ApplicationResourceTest {
 
     @Inject
     private SearchEngine engine;
+
+    @After
+    public void reset() {
+        registry.restoreData();
+    }
 
     @Test(expected = NotAuthorizedException.class)
     public void applicationEndpointsAreSecured() throws Exception {
