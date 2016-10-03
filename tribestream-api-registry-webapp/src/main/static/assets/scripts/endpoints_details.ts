@@ -308,8 +308,11 @@ angular.module('tribe-endpoints-details', [
                 initList("endpoint.operation['x-tribestream-api-registry']", 'categories');
                 initList("endpoint.operation", 'tags');
                 initList("endpoint.operation['x-tribestream-api-registry']", 'api-versions');
-            }]
-        };
+            }],
+            link: (scope, el) => {
+                scope.$on('$destroy', () => el.remove());
+            }
+         };
     }])
 
     .directive('appEndpointsDetailsResponseRequest', [function () {

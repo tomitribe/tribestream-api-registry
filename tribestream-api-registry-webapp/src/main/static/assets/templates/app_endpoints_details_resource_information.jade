@@ -11,6 +11,10 @@ div
             data-selected-option="endpoint.operation['x-tribestream-api-registry'].status",
             data-available-options="statusOptions")
     div
+      div
+        span Environment
+        div(data-tribe-text, data-value="endpoint.operation['x-tribestream-api-registry'].environment")
+    div
       div(data-submenu="true", app-endpoints-details-toc-anchor="Request formats")
         span Request formats
         div(data-tribe-multiselect, data-available-options="requestFormatsOptions", data-selected-options="endpoint.operation.consumes")
