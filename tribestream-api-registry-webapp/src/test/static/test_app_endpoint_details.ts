@@ -93,4 +93,23 @@ describe('it tests the endpoint details page', () => {
         });
     });
 
+    it('should load "resource information" section', (done) => {
+        let scope = rootScope.$new();
+        scope.endpoint = {
+            operation: {
+                'x-tribestream-api-registry': {
+                    'environment': 'production master'
+                }
+            }
+        };
+        let element = angular.element('<div data-app-endpoints-details-resource-information></div>');
+        compile(element)(scope);
+        // append to body so we can click on it.
+        element.appendTo(document.find('body'));
+        timeoutTryCatch(200, done, () => {
+            expect(element.html()).to.contain('production master');
+            done();
+        });
+    });
+
 });
