@@ -11,6 +11,7 @@
       margin-top: 10px
   p, th, td, pre, code
     font-size: 12px
+    margin-bottom: 10px
   table
     width: 100%
     th, td
@@ -112,7 +113,16 @@ div[data-tribe-markdown]
       border-color: $app-input-border-color
       > div:last-of-type
         border-left: solid $app-input-border-color 1px
-
   div.preview > div[x-ng-bind-html], div.editor-preview
     max-width: 100%
     @include code-style
+  > div.fullscreen
+    background-color: #ffffff
+    position: fixed
+    z-index: 4000
+    top: 0
+    bottom: 0
+    left: 0
+    right: 0
+    div.main
+      min-height: 100vh

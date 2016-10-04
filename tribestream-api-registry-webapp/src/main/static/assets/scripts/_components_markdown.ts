@@ -68,7 +68,7 @@ angular.module('website-components-markdown', [
         };
     }])
 
-    .directive('tribeMarkdown', ['$window', '$timeout', '$log', 'tribeMarkdownService', ($window, $timeout, $log, mdService) => {
+    .directive('tribeMarkdown', ['$window', '$timeout', '$log', 'tribeMarkdownService', '$document', ($window, $timeout, $log, mdService, $document) => {
         return {
             restrict: 'A',
             scope: {
@@ -110,6 +110,7 @@ angular.module('website-components-markdown', [
                 }));
             })],
             link: (scope, el) => $timeout(() => {
+                let body = $document.find('body');
                 var simplemde = null;
                 var deactivatePromise = null;
                 let cancelDeactivate = () => {
@@ -122,10 +123,14 @@ angular.module('website-components-markdown', [
                     cancelDeactivate();
                     deactivatePromise = $timeout(() => {
                         scope.onCommit();
-                        scope.$apply(() => scope.sidebyside = false);
+                        scope.$apply(() => {
+                            scope.sidebyside = false;
+                            scope.fullscreen = false;
+                        });
                         el.removeClass('active');
                         if(simplemde) {
                             angular.element(simplemde.toolbarElements["side-by-side"]).removeClass('active');
+                            angular.element(simplemde.toolbarElements["fullscreen"]).removeClass('active');
                             if (simplemde.isPreviewActive()) {
                                 SimpleMDE.togglePreview(simplemde);
                             }
@@ -229,6 +234,22 @@ angular.module('website-components-markdown', [
                         className: "fa fa-eye no-disable",
                         title: "Toggle Preview"
                     }, {
+                        name: "fullscreen",
+                        action: (editor) => $timeout(() => scope.$apply(() => {
+                            cancelDeactivate();
+                            scope.fullscreen = !scope.fullscreen;
+                            let btn = angular.element(editor.toolbarElements["fullscreen"]);
+                            if(scope.fullscreen) {
+                                btn.addClass('active');
+                                body.addClass('noscroll')
+                            } else {
+                                btn.removeClass('active');
+                                body.removeClass('noscroll');
+                            }
+                        })),
+                        className: "fa fa-arrows-alt no-disable no-mobile",
+                        title: "Toggle Fullscreen"
+                    }, {
                         name: "guide",
                         action: (editor) => $timeout(() => scope.$apply(() => {
                             scope.helpVisible = true;
@@ -245,6 +266,13 @@ angular.module('website-components-markdown', [
                     deactivate();
                 }));
                 let disablePreview = () => {
+                    $timeout(() => scope.$apply(() => {
+                        scope.sidebyside = false;
+                        scope.fullscreen = false;
+                    }));
+                    el.removeClass('active');
+                    angular.element(simplemde.toolbarElements["side-by-side"]).removeClass('active');
+                    angular.element(simplemde.toolbarElements["fullscreen"]).removeClass('active');
                     if (simplemde.isPreviewActive()) {
                         simplemde.togglePreview();
                     }
@@ -258,6 +286,7 @@ angular.module('website-components-markdown', [
                 }));
                 scope.$on('$destroy', () => {
                     el.remove();
+                    body.removeClass('noscroll');
                 });
                 el.find('> div').on('focus', () => {
                     el.addClass('active');
