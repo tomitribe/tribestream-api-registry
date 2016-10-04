@@ -424,7 +424,7 @@ angular.module('tribe-endpoints-details', [
                             }
                             $scope.endpoint.operation['x-tribestream-api-registry']['expected-values'] = _.without(
                                 $scope.endpoint.operation['x-tribestream-api-registry']['expected-values'],
-                                code
+                                value
                             );
                         });
                     });
