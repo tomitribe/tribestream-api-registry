@@ -3,7 +3,7 @@ div
     h2 Expected values
       div(x-ng-click="addExpectedValue();")
         i.fa.fa-plus
-    table(x-ng-if="endpoint.expectedValues && endpoint.expectedValues.length")
+    table(x-ng-if="endpoint.operation['x-tribestream-api-registry'] && endpoint.operation['x-tribestream-api-registry']['expected-values'] && endpoint.operation['x-tribestream-api-registry']['expected-values'].length")
       thead
         tr
           th Attribute
@@ -12,7 +12,7 @@ div
           th Description
           th
       tbody
-        tr(x-ng-repeat="val in endpoint.expectedValues")
+        tr(x-ng-repeat="val in endpoint.operation['x-tribestream-api-registry']['expected-values']")
           td
             div(data-tribe-text, data-value="val.name")
           td
