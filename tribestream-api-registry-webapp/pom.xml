@@ -189,7 +189,7 @@
       <plugin>
         <groupId>org.apache.tomee.maven</groupId>
         <artifactId>tomee-embedded-maven-plugin</artifactId>
-        <version>7.0.1</version>
+        <version>${version.tomee}</version>
         <configuration>
           <context>/registry</context>
           <classpathAsWar>true</classpathAsWar>
