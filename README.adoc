@@ -341,7 +341,11 @@ Properties that are not defined as part of the {url-openapi-spec}[OpenAPI specif
           "categories": ["mammals"],
           "roles": ["roleA", "roleB"],
           "auth-methods": ["HTTP Signatures", "Bearer"],
-          "api-versions": ["0.1"]
+          "api-versions": "0.1",
+          "request-parameters": "```GET /pets\nhost: host.com\nAccept: application/xml```",
+          "response-parameters": "```HTTP/1.1 200 OK\nContent-Type: application/xml```",
+          "example-response": "```xml<elem>...</elem>```",
+          "example-error-response": "```xml<elem>...</elem>```"
         }
       }
     }

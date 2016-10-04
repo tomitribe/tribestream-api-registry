@@ -322,36 +322,6 @@ angular.module('tribe-endpoints-details', [
             scope: true,
             controller: ['$scope', '$timeout', function ($scope, $timeout) {
                 $scope.$watch('endpoint.operation', function () {
-                    if ($scope.endpoint && $scope.endpoint.operation && $scope.endpoint.operation.responses) {
-                        let positiveResponses = Object.keys($scope.endpoint.operation.responses)
-                            .filter((httpStatus) => {
-                                return httpStatus.match('2..') ? true : false;
-                            });
-
-                        if (positiveResponses && positiveResponses.length > 0) {
-                            $scope.positiveResponse = $scope.endpoint.operation.responses[positiveResponses[0]];
-                            let examples = $scope.positiveResponse.examples;
-                            if (examples && examples['application/xml']) {
-                                $timeout(function () {
-                                    $scope.$apply(function () {
-                                        // TODO: Handle other formats as well (also in UI)
-                                        $scope.exampleResponseXml = examples['application/xml'];
-                                    });
-                                });
-                            }
-                        }
-
-                        let errorResponse = $scope.endpoint.operation.responses.default;
-                        if (errorResponse && errorResponse.examples) {
-                            $timeout(function () {
-                                $scope.$apply(function () {
-                                    $scope.errorResponseXml = errorResponse.examples['application/xml'];
-                                });
-                            });
-                        }
-
-                    }
-
                     $timeout(function () {
                         $scope.$apply(function () {
                             // TODO: This MUST go somewhere else, both properties
