@@ -25,26 +25,22 @@ import io.swagger.models.Swagger;
 import io.swagger.models.Tag;
 import org.apache.openejb.testing.Application;
 import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.tomitribe.tribestream.registryng.cdi.Tribe;
 import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
 import org.tomitribe.tribestream.registryng.domain.SearchResult;
 import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
-import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,13 +52,12 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 @RunWith(TomEEEmbeddedSingleRunner.class)
 public class ApplicationResourceTest {
     @Inject
-    @Named(SwaggerJsonMapperProducer.SWAGGER_OBJECT_MAPPER_NAME)
+    @Tribe
     private ObjectMapper objectMapper;
 
     @Application

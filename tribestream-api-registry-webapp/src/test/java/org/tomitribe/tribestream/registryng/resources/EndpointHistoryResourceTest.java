@@ -24,14 +24,13 @@ import org.apache.openejb.testing.Application;
 import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.tomitribe.tribestream.registryng.cdi.Tribe;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.HistoryItem;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
 import org.tomitribe.tribestream.registryng.domain.SearchResult;
-import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -50,7 +49,7 @@ import static org.tomitribe.tribestream.registryng.resources.Registry.TESTUSER;
 @RunWith(TomEEEmbeddedSingleRunner.class)
 public class EndpointHistoryResourceTest {
     @Inject
-    @Named(SwaggerJsonMapperProducer.SWAGGER_OBJECT_MAPPER_NAME)
+    @Tribe
     private ObjectMapper objectMapper;
 
     @Application

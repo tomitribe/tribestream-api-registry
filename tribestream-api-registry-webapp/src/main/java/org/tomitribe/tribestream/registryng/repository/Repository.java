@@ -27,18 +27,17 @@ import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
 import org.hibernate.envers.query.AuditQuery;
+import org.tomitribe.tribestream.registryng.cdi.Tribe;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.entities.HistoryEntry;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 import org.tomitribe.tribestream.registryng.security.LoginContext;
 import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
-import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 
 import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.Singleton;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
@@ -67,7 +66,7 @@ public class Repository {
     private EntityManager em;
 
     @Inject
-    @Named(SwaggerJsonMapperProducer.SWAGGER_OBJECT_MAPPER_NAME)
+    @Tribe
     private ObjectMapper mapper;
 
     @Inject
