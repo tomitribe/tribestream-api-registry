@@ -421,18 +421,21 @@ angular.module('tribe-endpoints-details', [
                 this.addLink = function () {
                     $timeout(function () {
                         $scope.$apply(function () {
-                            $scope.endpoint.metadata = $scope.endpoint.metadata || {};
-                            $scope.endpoint.metadata.sees = $scope.endpoint.metadata.sees || [];
-                            $scope.endpoint.metadata.sees.push({});
+                            $scope.endpoint.operation['x-tribestream-api-registry'] = $scope.endpoint.operation['x-tribestream-api-registry'] || {};
+                            $scope.endpoint.operation['x-tribestream-api-registry'].sees = $scope.endpoint.operation['x-tribestream-api-registry'].sees || [];
+                            $scope.endpoint.operation['x-tribestream-api-registry'].sees.push({});
                         });
                     });
                 };
                 $scope.removeLink = function (link) {
                     $timeout(function () {
                         $scope.$apply(function () {
-                            if ($scope.endpoint.metadata && $scope.endpoint.metadata.sees) {
-                                $scope.endpoint.metadata.sees = _.without($scope.endpoint.metadata.sees, link);
+                            if (!$scope.endpoint.operation
+                                || !$scope.endpoint.operation['x-tribestream-api-registry']
+                                || !$scope.endpoint.operation['x-tribestream-api-registry'].sees) {
+                                return;
                             }
+                            $scope.endpoint.operation['x-tribestream-api-registry'].sees = _.without($scope.endpoint.operation['x-tribestream-api-registry'].sees, link);
                         });
                     });
                 };

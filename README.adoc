@@ -353,6 +353,10 @@ Properties that are not defined as part of the {url-openapi-spec}[OpenAPI specif
               "rateUnit":"MINUTES",
               "description":"Two requests in seven minutes."
             }
+          ],
+          "sees":[
+            {"href":"http://swagger.io"},
+            {"href":"http://tomitribe.com"}
           ]
         }
       }
