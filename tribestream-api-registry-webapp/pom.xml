@@ -30,6 +30,10 @@
   <name>Tribestream API Registry Webapp</name>
   <packaging>war</packaging>
 
+  <properties>
+    <h2.version>1.4.192</h2.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.tomee</groupId>
@@ -78,7 +82,7 @@
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
-      <version>1.4.192</version>
+      <version>${h2.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -202,6 +206,9 @@
             <!-- openejb integration is in higher classloader so either add hibernate in "container" loader or workaround it like that -->
             <hibernate.transaction.jta.platform>org.hibernate.engine.transaction.jta.platform.internal.ResinJtaPlatform</hibernate.transaction.jta.platform>
             <java.naming.factory.initial>org.apache.openejb.core.LocalInitialContextFactory</java.naming.factory.initial>
+            <db>new://Resource?type=DataSource</db>
+            <db.JdbcUrl>jdbc:h2:mem:registry</db.JdbcUrl>
+            <db.JdbcDriver>org.h2.Driver</db.JdbcDriver>
           </containerProperties>
           <users>
             <admin>admin</admin>
@@ -212,9 +219,9 @@
         </configuration>
         <dependencies>
           <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>${version.commons-io}</version>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
           </dependency>
         </dependencies>
       </plugin>
@@ -231,15 +238,18 @@
           <tomeeHttpPort>8080</tomeeHttpPort>
           <tomeeAjpPort>9009</tomeeAjpPort>
           <tomeeShutdownPort>9005</tomeeShutdownPort>
+          <libs>
+            <lib>com.h2database:h2:${h2.version}</lib>
+          </libs>
           <systemVariables>
             <org.apache.openejb.cxf.bus.features>org.apache.cxf.feature.LoggingFeature</org.apache.openejb.cxf.bus.features>
             <openejb.deploymentId.format>{appId}/{ejbJarId}/{ejbName}</openejb.deploymentId.format>
             <!--<tribe.registry.guest.enabled>false</tribe.registry.guest.enabled>-->
             <openapirepo.dir>${project.basedir}/target/test-classes</openapirepo.dir>
+            <db>new://Resource?type=DataSource</db>
+            <db.JdbcUrl>jdbc:h2:mem:registry</db.JdbcUrl>
+            <db.JdbcDriver>org.h2.Driver</db.JdbcDriver>
           </systemVariables>
-          <libs>
-            <lib>commons-io:commons-io:${version.commons-io}</lib>
-          </libs>
         </configuration>
       </plugin>
 
