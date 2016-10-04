@@ -274,20 +274,32 @@ angular.module('tribe-endpoints-details', [
                     $scope.addRate = function () {
                         $timeout(function () {
                             $scope.$apply(function () {
-                                if (!$scope.endpoint.rates) {
-                                    $scope.endpoint.rates = [];
+                                if (!$scope.endpoint.operation) {
+                                    return;
                                 }
-                                $scope.endpoint.rates.push({});
+                                if (!$scope.endpoint.operation['x-tribestream-api-registry']) {
+                                    $scope.endpoint.operation['x-tribestream-api-registry'] = {};
+                                }
+                                if (!$scope.endpoint.operation['x-tribestream-api-registry']['rates']) {
+                                    $scope.endpoint.operation['x-tribestream-api-registry']['rates'] = [];
+                                }
+                                $scope.endpoint.operation['x-tribestream-api-registry']['rates'].push({});
                             });
                         });
                     };
                     $scope.removeRate = function (rate) {
                         $timeout(function () {
                             $scope.$apply(function () {
-                                if (!$scope.endpoint.rates) {
+                                if (!$scope.endpoint.operation) {
                                     return;
                                 }
-                                $scope.endpoint.rates = _.without($scope.endpoint.rates, rate);
+                                if (!$scope.endpoint.operation['x-tribestream-api-registry']) {
+                                    return;
+                                }
+                                if (!$scope.endpoint.operation['x-tribestream-api-registry']['rates']) {
+                                    return;
+                                }
+                                $scope.endpoint.operation['x-tribestream-api-registry']['rates'] = _.without($scope.endpoint.operation['x-tribestream-api-registry']['rates'], rate);
                             });
                         });
                     };

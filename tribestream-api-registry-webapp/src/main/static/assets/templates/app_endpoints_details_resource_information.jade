@@ -42,7 +42,7 @@ div
       span Rate Limit
       div(x-ng-click="addRate()", tabindex=0)
         i.fa.fa-plus
-    .rates(x-ng-repeat="rl in endpoint.rates")
+    .rates(x-ng-repeat="rl in endpoint.operation['x-tribestream-api-registry'].rates")
       i(data-tribe-editable-number, data-adjust="false", data-value="rl.rateLimit")
       span requests /
       i(data-tribe-editable-number, data-adjust="false", data-value="rl.rateWindow")
