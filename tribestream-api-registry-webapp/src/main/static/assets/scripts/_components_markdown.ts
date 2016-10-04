@@ -81,6 +81,7 @@ angular.module('website-components-markdown', [
                 $scope.version = 0;
                 $scope.fieldDirty = false;
                 $scope.cmFocused = false;
+                $scope.sidebyside = false;
                 $scope.$watch('originalValue', () => $timeout(() => $scope.$apply(() => {
                     $scope.value = $scope.originalValue ? _.clone($scope.originalValue) : '';
                 })));
@@ -121,9 +122,13 @@ angular.module('website-components-markdown', [
                     cancelDeactivate();
                     deactivatePromise = $timeout(() => {
                         scope.onCommit();
+                        scope.$apply(() => scope.sidebyside = false);
                         el.removeClass('active');
-                        if (simplemde && simplemde.isPreviewActive()) {
-                            SimpleMDE.togglePreview(simplemde);
+                        if(simplemde) {
+                            angular.element(simplemde.toolbarElements["side-by-side"]).removeClass('active');
+                            if (simplemde.isPreviewActive()) {
+                                SimpleMDE.togglePreview(simplemde);
+                            }
                         }
                     }, 500);
                 };
@@ -152,7 +157,6 @@ angular.module('website-components-markdown', [
                     status: false,
                     spellChecker: false,
                     previewRender: mdService.compileMd,
-                    toolbar: ["bold", "italic", "heading", "quote"],
                     toolbar: [{
                         name: "bold",
                         action: (editor) => actionClick(editor, SimpleMDE.toggleBold),
@@ -194,9 +198,29 @@ angular.module('website-components-markdown', [
                         className: "fa fa-eraser fa-clean-block",
                         title: "Clean block"
                     }, '|', {
+                        name: "side-by-side",
+                        action: (editor) => $timeout(() => scope.$apply(() => {
+                            cancelDeactivate();
+                            scope.sidebyside = !scope.sidebyside;
+                            let btn = angular.element(editor.toolbarElements["side-by-side"]);
+                            if(scope.sidebyside) {
+                                btn.addClass('active');
+                            } else {
+                                btn.removeClass('active');
+                            }
+                            if(editor.isPreviewActive()) {
+                                SimpleMDE.togglePreview(editor);
+                            }
+                            editor.codemirror.focus();
+                        })),
+                        className: "fa fa-columns no-disable no-mobile",
+                        title: "Toggle Side by Side"
+                    }, {
                         name: "preview",
                         action: (editor) => $timeout(() => scope.$apply(() => {
                             cancelDeactivate();
+                            scope.sidebyside = false;
+                            angular.element(editor.toolbarElements["side-by-side"]).removeClass('active');
                             SimpleMDE.togglePreview(editor);
                             if (!editor.isPreviewActive()) {
                                 editor.codemirror.focus();
