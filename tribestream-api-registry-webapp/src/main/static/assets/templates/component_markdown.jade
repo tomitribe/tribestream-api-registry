@@ -1,10 +1,11 @@
-div(tabindex=0)
-    .value
-        textarea(ng-model="value")
-    .preview
-        div(x-ng-bind-html="preview | tribeHtml")
-        .edit-icon
-            i.fa.fa-pencil
+div(tabindex=0, ng-class="{'fullscreen': fullscreen}")
+    .main(ng-class="{'sidebyside': sidebyside}")
+        .value
+            textarea(ng-model="value")
+        .preview
+            div(x-ng-bind-html="preview | tribeHtml")
+            .edit-icon
+                i.fa.fa-pencil
     div(data-tribe-field-actions,
     data-version="version",
     data-active="fieldDirty",

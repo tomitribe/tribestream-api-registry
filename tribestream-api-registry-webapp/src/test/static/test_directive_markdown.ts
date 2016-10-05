@@ -164,4 +164,37 @@ second paragraph
         });
     });
 
+    it('should show markdown side-by-side and fullscreen', (done) => {
+        let scope = rootScope.$new();
+        scope.myvalue = `
+# title
+
+*body* content here
+`;
+        let element = angular.element('<div data-tribe-markdown data-value="myvalue"></div>');
+        compile(element)(scope);
+        // append to body so we can click on it.
+        element.appendTo(document.find('body'));
+        timeoutTryCatch(100, done, () => {
+            expect(element.find('div.preview').css('display')).to.equal('flex');
+            element.find('> div').focus();
+            timeoutTryCatch(100, done, () => {
+                expect(element.find('div.preview').css('display')).to.equal('none');
+                element.find('div.editor-toolbar > a.fa-columns').click();
+                timeoutTryCatch(100, done, () => {
+                    expect(element.find('div.preview').css('display')).to.equal('block');
+                    expect(element.find('> div').css('position')).to.equal('static');
+                    expect(element.find('div.preview').html()).to.contain('<em>body</em>');
+                    element.find('div.editor-toolbar > a.fa-arrows-alt').click();
+                    timeoutTryCatch(100, done, () => {
+                        expect(element.find('div.preview').css('display')).to.equal('block');
+                        expect(element.find('> div').css('position')).to.equal('fixed');
+                        expect(element.find('div.preview').html()).to.contain('<em>body</em>');
+                        done();
+                    });
+                });
+            });
+        });
+    });
+
 });

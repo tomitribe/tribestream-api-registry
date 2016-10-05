@@ -68,7 +68,7 @@ angular.module('website-components-markdown', [
         };
     }])
 
-    .directive('tribeMarkdown', ['$window', '$timeout', '$log', 'tribeMarkdownService', ($window, $timeout, $log, mdService) => {
+    .directive('tribeMarkdown', ['$window', '$timeout', '$log', 'tribeMarkdownService', '$document', ($window, $timeout, $log, mdService, $document) => {
         return {
             restrict: 'A',
             scope: {
@@ -81,6 +81,7 @@ angular.module('website-components-markdown', [
                 $scope.version = 0;
                 $scope.fieldDirty = false;
                 $scope.cmFocused = false;
+                $scope.sidebyside = false;
                 $scope.$watch('originalValue', () => $timeout(() => $scope.$apply(() => {
                     $scope.value = $scope.originalValue ? _.clone($scope.originalValue) : '';
                 })));
@@ -109,6 +110,7 @@ angular.module('website-components-markdown', [
                 }));
             })],
             link: (scope, el) => $timeout(() => {
+                let body = $document.find('body');
                 var simplemde = null;
                 var deactivatePromise = null;
                 let cancelDeactivate = () => {
@@ -121,9 +123,17 @@ angular.module('website-components-markdown', [
                     cancelDeactivate();
                     deactivatePromise = $timeout(() => {
                         scope.onCommit();
+                        scope.$apply(() => {
+                            scope.sidebyside = false;
+                            scope.fullscreen = false;
+                        });
                         el.removeClass('active');
-                        if (simplemde && simplemde.isPreviewActive()) {
-                            SimpleMDE.togglePreview(simplemde);
+                        if(simplemde) {
+                            angular.element(simplemde.toolbarElements["side-by-side"]).removeClass('active');
+                            angular.element(simplemde.toolbarElements["fullscreen"]).removeClass('active');
+                            if (simplemde.isPreviewActive()) {
+                                SimpleMDE.togglePreview(simplemde);
+                            }
                         }
                     }, 500);
                 };
@@ -152,7 +162,6 @@ angular.module('website-components-markdown', [
                     status: false,
                     spellChecker: false,
                     previewRender: mdService.compileMd,
-                    toolbar: ["bold", "italic", "heading", "quote"],
                     toolbar: [{
                         name: "bold",
                         action: (editor) => actionClick(editor, SimpleMDE.toggleBold),
@@ -194,9 +203,29 @@ angular.module('website-components-markdown', [
                         className: "fa fa-eraser fa-clean-block",
                         title: "Clean block"
                     }, '|', {
+                        name: "side-by-side",
+                        action: (editor) => $timeout(() => scope.$apply(() => {
+                            cancelDeactivate();
+                            scope.sidebyside = !scope.sidebyside;
+                            let btn = angular.element(editor.toolbarElements["side-by-side"]);
+                            if(scope.sidebyside) {
+                                btn.addClass('active');
+                            } else {
+                                btn.removeClass('active');
+                            }
+                            if(editor.isPreviewActive()) {
+                                SimpleMDE.togglePreview(editor);
+                            }
+                            editor.codemirror.focus();
+                        })),
+                        className: "fa fa-columns no-disable no-mobile",
+                        title: "Toggle Side by Side"
+                    }, {
                         name: "preview",
                         action: (editor) => $timeout(() => scope.$apply(() => {
                             cancelDeactivate();
+                            scope.sidebyside = false;
+                            angular.element(editor.toolbarElements["side-by-side"]).removeClass('active');
                             SimpleMDE.togglePreview(editor);
                             if (!editor.isPreviewActive()) {
                                 editor.codemirror.focus();
@@ -204,6 +233,22 @@ angular.module('website-components-markdown', [
                         })),
                         className: "fa fa-eye no-disable",
                         title: "Toggle Preview"
+                    }, {
+                        name: "fullscreen",
+                        action: (editor) => $timeout(() => scope.$apply(() => {
+                            cancelDeactivate();
+                            scope.fullscreen = !scope.fullscreen;
+                            let btn = angular.element(editor.toolbarElements["fullscreen"]);
+                            if(scope.fullscreen) {
+                                btn.addClass('active');
+                                body.addClass('noscroll')
+                            } else {
+                                btn.removeClass('active');
+                                body.removeClass('noscroll');
+                            }
+                        })),
+                        className: "fa fa-arrows-alt no-disable no-mobile",
+                        title: "Toggle Fullscreen"
                     }, {
                         name: "guide",
                         action: (editor) => $timeout(() => scope.$apply(() => {
@@ -221,6 +266,13 @@ angular.module('website-components-markdown', [
                     deactivate();
                 }));
                 let disablePreview = () => {
+                    $timeout(() => scope.$apply(() => {
+                        scope.sidebyside = false;
+                        scope.fullscreen = false;
+                    }));
+                    el.removeClass('active');
+                    angular.element(simplemde.toolbarElements["side-by-side"]).removeClass('active');
+                    angular.element(simplemde.toolbarElements["fullscreen"]).removeClass('active');
                     if (simplemde.isPreviewActive()) {
                         simplemde.togglePreview();
                     }
@@ -234,6 +286,7 @@ angular.module('website-components-markdown', [
                 }));
                 scope.$on('$destroy', () => {
                     el.remove();
+                    body.removeClass('noscroll');
                 });
                 el.find('> div').on('focus', () => {
                     el.addClass('active');
