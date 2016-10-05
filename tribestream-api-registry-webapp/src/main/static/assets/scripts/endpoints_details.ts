@@ -274,20 +274,32 @@ angular.module('tribe-endpoints-details', [
                     $scope.addRate = function () {
                         $timeout(function () {
                             $scope.$apply(function () {
-                                if (!$scope.endpoint.rates) {
-                                    $scope.endpoint.rates = [];
+                                if (!$scope.endpoint.operation) {
+                                    return;
                                 }
-                                $scope.endpoint.rates.push({});
+                                if (!$scope.endpoint.operation['x-tribestream-api-registry']) {
+                                    $scope.endpoint.operation['x-tribestream-api-registry'] = {};
+                                }
+                                if (!$scope.endpoint.operation['x-tribestream-api-registry']['rates']) {
+                                    $scope.endpoint.operation['x-tribestream-api-registry']['rates'] = [];
+                                }
+                                $scope.endpoint.operation['x-tribestream-api-registry']['rates'].push({});
                             });
                         });
                     };
                     $scope.removeRate = function (rate) {
                         $timeout(function () {
                             $scope.$apply(function () {
-                                if (!$scope.endpoint.rates) {
+                                if (!$scope.endpoint.operation) {
                                     return;
                                 }
-                                $scope.endpoint.rates = _.without($scope.endpoint.rates, rate);
+                                if (!$scope.endpoint.operation['x-tribestream-api-registry']) {
+                                    return;
+                                }
+                                if (!$scope.endpoint.operation['x-tribestream-api-registry']['rates']) {
+                                    return;
+                                }
+                                $scope.endpoint.operation['x-tribestream-api-registry']['rates'] = _.without($scope.endpoint.operation['x-tribestream-api-registry']['rates'], rate);
                             });
                         });
                     };
@@ -322,36 +334,6 @@ angular.module('tribe-endpoints-details', [
             scope: true,
             controller: ['$scope', '$timeout', function ($scope, $timeout) {
                 $scope.$watch('endpoint.operation', function () {
-                    if ($scope.endpoint && $scope.endpoint.operation && $scope.endpoint.operation.responses) {
-                        let positiveResponses = Object.keys($scope.endpoint.operation.responses)
-                            .filter((httpStatus) => {
-                                return httpStatus.match('2..') ? true : false;
-                            });
-
-                        if (positiveResponses && positiveResponses.length > 0) {
-                            $scope.positiveResponse = $scope.endpoint.operation.responses[positiveResponses[0]];
-                            let examples = $scope.positiveResponse.examples;
-                            if (examples && examples['application/xml']) {
-                                $timeout(function () {
-                                    $scope.$apply(function () {
-                                        // TODO: Handle other formats as well (also in UI)
-                                        $scope.exampleResponseXml = examples['application/xml'];
-                                    });
-                                });
-                            }
-                        }
-
-                        let errorResponse = $scope.endpoint.operation.responses.default;
-                        if (errorResponse && errorResponse.examples) {
-                            $timeout(function () {
-                                $scope.$apply(function () {
-                                    $scope.errorResponseXml = errorResponse.examples['application/xml'];
-                                });
-                            });
-                        }
-
-                    }
-
                     $timeout(function () {
                         $scope.$apply(function () {
                             // TODO: This MUST go somewhere else, both properties
@@ -439,18 +421,21 @@ angular.module('tribe-endpoints-details', [
                 this.addLink = function () {
                     $timeout(function () {
                         $scope.$apply(function () {
-                            $scope.endpoint.metadata = $scope.endpoint.metadata || {};
-                            $scope.endpoint.metadata.sees = $scope.endpoint.metadata.sees || [];
-                            $scope.endpoint.metadata.sees.push({});
+                            $scope.endpoint.operation['x-tribestream-api-registry'] = $scope.endpoint.operation['x-tribestream-api-registry'] || {};
+                            $scope.endpoint.operation['x-tribestream-api-registry'].sees = $scope.endpoint.operation['x-tribestream-api-registry'].sees || [];
+                            $scope.endpoint.operation['x-tribestream-api-registry'].sees.push({});
                         });
                     });
                 };
                 $scope.removeLink = function (link) {
                     $timeout(function () {
                         $scope.$apply(function () {
-                            if ($scope.endpoint.metadata && $scope.endpoint.metadata.sees) {
-                                $scope.endpoint.metadata.sees = _.without($scope.endpoint.metadata.sees, link);
+                            if (!$scope.endpoint.operation
+                                || !$scope.endpoint.operation['x-tribestream-api-registry']
+                                || !$scope.endpoint.operation['x-tribestream-api-registry'].sees) {
+                                return;
                             }
+                            $scope.endpoint.operation['x-tribestream-api-registry'].sees = _.without($scope.endpoint.operation['x-tribestream-api-registry'].sees, link);
                         });
                     });
                 };
