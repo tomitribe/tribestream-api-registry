@@ -18,33 +18,15 @@
  */
 package org.tomitribe.tribestream.registryng.domain;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 // designed for jqcloud
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class CloudItem {
     private String text;
     private int weight;
-
-    public CloudItem() {
-        // no-op
-    }
-
-    public CloudItem(final String text, final int weight) {
-        this.text = text;
-        this.weight = weight;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(final String text) {
-        this.text = text;
-    }
-
-    public int getWeight() {
-        return weight;
-    }
-
-    public void setWeight(final int weight) {
-        this.weight = weight;
-    }
 }

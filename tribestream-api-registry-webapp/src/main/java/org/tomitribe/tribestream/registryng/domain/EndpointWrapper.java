@@ -20,67 +20,35 @@ package org.tomitribe.tribestream.registryng.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.models.Operation;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.net.URI;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
+import static java.util.Optional.ofNullable;
+
+@Data
+@NoArgsConstructor
 public class EndpointWrapper {
-
+    private String applicationId;
+    private String endpointId;
     private String httpMethod;
-
     private String path;
-
     private Operation operation;
+    private String humanReadablePath;
 
     @JsonProperty("_links")
     private Map<String, String> links = new HashMap<>();
 
-
-    public EndpointWrapper() {
-    }
-
-    public EndpointWrapper(final String httpMethod, final String path, final Operation operation) {
-        this.httpMethod = httpMethod;
+    public EndpointWrapper(final String appId, final String endpointId, final String pathId,
+                           final String httpMethod, final String path, final Operation operation) {
+        this.applicationId = appId;
+        this.endpointId = endpointId;
+        this.humanReadablePath = pathId;
+        this.httpMethod = ofNullable(httpMethod).map(s -> s.toLowerCase(Locale.ENGLISH)).orElse("-" /*can be null theorically*/);
         this.path = path;
         this.operation = operation;
     }
-
-    public void setHttpMethod(String httpMethod) {
-        this.httpMethod = httpMethod;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public void setOperation(Operation operation) {
-        this.operation = operation;
-    }
-
-    public void setLinks(Map<String, String> links) {
-        this.links = links;
-    }
-
-    public Map<String, String> getLinks() {
-        return links;
-    }
-
-
-    public String getHttpMethod() {
-        return httpMethod;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public Operation getOperation() {
-        return operation;
-    }
-
-    public void addLink(final String name, final URI uri) {
-        links.put(name, uri.toASCIIString());
-    }
-
 }

@@ -4,7 +4,7 @@ div
       a(href=".")
         i.fa.fa-home
       i.fa.fa-chevron-right
-      a(x-ng-href="application/{{app}}") {{swagger.info.title}} {{swagger.info.version}}
+      a(x-ng-href="application/{{applicationName}}?version={{swagger.info.version}}") {{swagger.info.title}} {{swagger.info.version}}
     article
       div
         h1
@@ -22,7 +22,7 @@ div
           h3 Endpoints
           ul.endpoint-info
             li(x-ng-repeat="endpoint in endpoints")
-              a(x-ng-href="application/{{app}}/endpoint/{{endpoint.id}}")
+              a(x-ng-href="endpoint/{{applicationName}}/{{endpoint.operation}}/{{endpoint.humanReadablePath}}?version={{swagger.info.version}}")
                 span {{endpoint.operation | pathencode}}
                 span {{endpoint.path | pathencode}}
                 span {{endpoint.summary}}

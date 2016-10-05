@@ -18,13 +18,19 @@
  */
 package org.tomitribe.tribestream.registryng.domain;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.tomitribe.tribestream.registryng.service.PathTransformUtil;
 
 import java.util.Set;
 
+@Data
+@NoArgsConstructor
 public class SearchResult {
     private String applicationId;
     private String endpointId;
+    private String applicationName;
+    private String endpointName;
     private String aggregatedId;
     private String application;
     private String applicationVersion;
@@ -38,11 +44,8 @@ public class SearchResult {
     private float score;
     private String link;
 
-    public SearchResult() {
-        // no-op
-    }
-
     public SearchResult(final String aggregatedId, final String applicationId, final String endpointId,
+                        final String humanAppName, final String humanEndpointName,
                         final String application, final String applicationVersion,
                         final String httpMethod, final String path,
                         final String description, final Set<String> consumes, final Set<String> produces,
@@ -51,6 +54,8 @@ public class SearchResult {
         this.applicationId = applicationId;
         this.endpointId = endpointId;
         this.application = application;
+        this.applicationName = humanAppName;
+        this.endpointName = humanEndpointName;
         this.applicationVersion = applicationVersion;
         this.httpMethod = httpMethod;
         this.path = PathTransformUtil.bracesToColon(path);
@@ -60,117 +65,5 @@ public class SearchResult {
         this.secured = secured;
         this.score = score;
         this.rateLimited = rateLimited;
-    }
-
-    public String getAggregatedId() {
-        return aggregatedId;
-    }
-
-    public void setAggregatedId(final String aggregatedId) {
-        this.aggregatedId = aggregatedId;
-    }
-
-    public float getScore() {
-        return score;
-    }
-
-    public void setScore(final float score) {
-        this.score = score;
-    }
-
-    public String getApplicationId() {
-        return applicationId;
-    }
-
-    public void setApplicationId(final String applicationId) {
-        this.applicationId = applicationId;
-    }
-
-    public String getEndpointId() {
-        return endpointId;
-    }
-
-    public void setEndpointId(final String endpointId) {
-        this.endpointId = endpointId;
-    }
-
-    public String getApplication() {
-        return application;
-    }
-
-    public void setApplication(final String application) {
-        this.application = application;
-    }
-
-    public String getHttpMethod() {
-        return httpMethod;
-    }
-
-    public void setHttpMethod(final String httpMethod) {
-        this.httpMethod = httpMethod;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(final String path) {
-        this.path = path;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(final String description) {
-        this.description = description;
-    }
-
-    public boolean isSecured() {
-        return secured;
-    }
-
-    public void setSecured(boolean secured) {
-        this.secured = secured;
-    }
-
-    public void setRateLimited(boolean rateLimited) {
-        this.rateLimited = rateLimited;
-    }
-
-    public boolean isRateLimited() {
-        return rateLimited;
-    }
-
-    public Set<String> getConsumes() {
-        return consumes;
-    }
-
-    public void setConsumes(Set<String> consumes) {
-        this.consumes = consumes;
-    }
-
-    public Set<String> getProduces() {
-        return produces;
-    }
-
-    public void setProduces(Set<String> produces) {
-        this.produces = produces;
-    }
-
-    public String getApplicationVersion() {
-        return applicationVersion;
-    }
-
-    public void setApplicationVersion(String applicationVersion) {
-        this.applicationVersion = applicationVersion;
-    }
-
-    public void setLink(String link) {
-        this.link = link;
-    }
-
-    public String getLink() {
-        return link;
     }
 }

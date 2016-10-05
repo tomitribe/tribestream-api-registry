@@ -26,14 +26,11 @@ import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.NoLockFactory;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.ConcurrencyManagement;
-import javax.ejb.SessionContext;
-import javax.ejb.Singleton;
-import javax.ejb.TransactionAttribute;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
@@ -42,33 +39,18 @@ import java.util.function.Supplier;
 import java.util.zip.CRC32;
 
 import static java.util.Optional.ofNullable;
-import static javax.ejb.ConcurrencyManagementType.BEAN;
-import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 
 // note that operation are not in memory for now (they don't use close() as flush), if perf are an issue let's do it
-@Singleton
-@ConcurrencyManagement(BEAN)
+@ApplicationScoped
 public class JPADirectoryFactory {
     @PersistenceContext
     private EntityManager em;
 
-    @Resource
-    private SessionContext ctx;
-
-    private JPADirectoryFactory self;
-
-    @PostConstruct
-    private void captureFacade() {
-        self = ctx.getBusinessObject(JPADirectoryFactory.class);
-    }
+    @Inject
+    private Tx tx;
 
     public Directory newInstance(final String marker) {
-        return new JPADirectory(task -> self.execute(task), em, marker);
-    }
-
-    @TransactionAttribute(REQUIRES_NEW)
-    public <T> T execute(final Supplier<T> task) {
-        return task.get();
+        return new JPADirectory(task -> tx.execute(task), em, marker);
     }
 
     public static class JPADirectory extends Directory {
@@ -223,6 +205,14 @@ public class JPADirectoryFactory {
 
         String getMarker() {
             return marker;
+        }
+    }
+
+    @ApplicationScoped
+    public static class Tx {
+        @Transactional(Transactional.TxType.REQUIRES_NEW)
+        public <T> T execute(final Supplier<T> task) {
+            return task.get();
         }
     }
 }

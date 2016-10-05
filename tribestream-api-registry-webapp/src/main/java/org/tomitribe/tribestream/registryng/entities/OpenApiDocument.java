@@ -19,7 +19,11 @@
 package org.tomitribe.tribestream.registryng.entities;
 
 import io.swagger.models.Swagger;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.envers.Audited;
+import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -29,58 +33,73 @@ import javax.persistence.Lob;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import static org.tomitribe.tribestream.registryng.entities.Normalizer.normalize;
+
 @Entity
 @Table(
-    uniqueConstraints = {
-        @UniqueConstraint(name = "UQ_NAME_VERSION", columnNames = {"name", "version"})
-    }
+        uniqueConstraints = {
+                @UniqueConstraint(name = "UQ_NAME_VERSION", columnNames = {"name", "version"})
+        }
 )
 @NamedQueries({
-    @NamedQuery(
-        name = OpenApiDocument.QRY_FIND_BY_NAME_AND_VERSION,
-        query = "SELECT d FROM OpenApiDocument d WHERE d.name = :name AND d.version = :version"),
-    @NamedQuery(
-        name = OpenApiDocument.QRY_FIND_BY_APPLICATIONID,
-        query = "SELECT d FROM OpenApiDocument d WHERE d.id = :applicationId"),
-    @NamedQuery(
-        name = OpenApiDocument.QRY_FIND_BY_APPLICATIONID_WITH_ENDPOINTS,
-        query = "SELECT DISTINCT d FROM OpenApiDocument d LEFT JOIN FETCH d.endpoints WHERE d.id = :applicationId"),
-    @NamedQuery(
-        name = OpenApiDocument.QRY_FIND_BY_NAME,
-        query = "SELECT d FROM OpenApiDocument d WHERE d.name = :name ORDER BY d.version DESC"),
-    @NamedQuery(
-        name = OpenApiDocument.QRY_FIND_ALL,
-        query = "SELECT d FROM OpenApiDocument d ORDER BY d.name ASC, d.version DESC"),
-    @NamedQuery(
-        name = OpenApiDocument.QRY_FIND_ALL_WITH_ENDPOINTS,
-        query = "SELECT DISTINCT d FROM OpenApiDocument d JOIN FETCH d.endpoints ORDER BY d.name ASC, d.version DESC")
+        @NamedQuery(
+                name = OpenApiDocument.Queries.FIND_BY_NAME_AND_VERSION,
+                query = "SELECT d FROM OpenApiDocument d WHERE d.name = :name AND d.version = :version"),
+        @NamedQuery(
+                name = OpenApiDocument.Queries.FIND_BY_APPLICATIONID,
+                query = "SELECT d FROM OpenApiDocument d WHERE d.id = :applicationId"),
+        @NamedQuery(
+                name = OpenApiDocument.Queries.FIND_BY_APPLICATIONID_WITH_ENDPOINTS,
+                query = "SELECT DISTINCT d FROM OpenApiDocument d LEFT JOIN FETCH d.endpoints WHERE d.id = :applicationId"),
+        @NamedQuery(
+                name = OpenApiDocument.Queries.FIND_BY_NAME,
+                query = "SELECT d FROM OpenApiDocument d WHERE d.name = :name ORDER BY d.version DESC"),
+        @NamedQuery(
+                name = OpenApiDocument.Queries.FIND_ALL,
+                query = "SELECT d FROM OpenApiDocument d ORDER BY d.name ASC, d.version DESC"),
+        @NamedQuery(
+                name = OpenApiDocument.Queries.FIND_ALL_WITH_ENDPOINTS,
+                query = "SELECT DISTINCT d FROM OpenApiDocument d JOIN FETCH d.endpoints ORDER BY d.name ASC, d.version DESC"),
+        @NamedQuery(
+                name = OpenApiDocument.Queries.FIND_BY_HUMAN_REDABLE_NAME,
+                query = "SELECT d FROM OpenApiDocument d where d.humanReadableName = :applicationName AND d.version = :applicationVersion"),
+        @NamedQuery(
+                name = OpenApiDocument.Queries.FIND_BY_HUMAN_REDABLE_NAME_NO_VERSION,
+                query = "SELECT d FROM OpenApiDocument d where d.humanReadableName = :applicationName")
 })
 @EntityListeners(OpenAPIDocumentSerializer.class)
 @Audited
+@Getter
+@Setter
+@ToString(of = "name")
 public class OpenApiDocument extends AbstractEntity {
-
-    public static final String QRY_FIND_BY_NAME_AND_VERSION = "OpenApiDocument.findByNameAndVersion";
-
-    public static final String QRY_FIND_BY_NAME = "OpenApiDocument.findByName";
-
-    public static final String QRY_FIND_ALL = "OpenApiDocument.findAll";
-
-    public static final String QRY_FIND_ALL_WITH_ENDPOINTS = "OpenApiDocument.findAllWithEndpoints";
-
-    public static final String QRY_FIND_BY_APPLICATIONID = "OpenApiDocument.findByApplicationId";
-
-    public static final String QRY_FIND_BY_APPLICATIONID_WITH_ENDPOINTS = "OpenApiDocument.findByApplicationIdWithEndpoints";
+    public interface Queries {
+        String FIND_BY_NAME_AND_VERSION = "OpenApiDocument.findByNameAndVersion";
+        String FIND_BY_NAME = "OpenApiDocument.findByName";
+        String FIND_ALL = "OpenApiDocument.findAll";
+        String FIND_ALL_WITH_ENDPOINTS = "OpenApiDocument.findAllWithEndpoints";
+        String FIND_BY_APPLICATIONID = "OpenApiDocument.findByApplicationId";
+        String FIND_BY_APPLICATIONID_WITH_ENDPOINTS = "OpenApiDocument.findByApplicationIdWithEndpoints";
+        String FIND_BY_HUMAN_REDABLE_NAME = "OpenApiDocument.findByHumanReadableName";
+        String FIND_BY_HUMAN_REDABLE_NAME_NO_VERSION = "OpenApiDocument.findByHumanReadableNameWithoutVersion";
+    }
 
     /**
      * The title of the service, corresponds to info.title of the Swagger document.
      */
     @Column(nullable = false)
     private String name;
+
+    @Column(name = "HUMAN_READABLE_NAME", nullable = false, unique = true)
+    private String humanReadableName; // stored to be made editable if needed
 
     /**
      * This version refers to the info.version of the Swagger element.
@@ -101,43 +120,20 @@ public class OpenApiDocument extends AbstractEntity {
     public OpenApiDocument() {
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public String getDocument() {
-        return document;
-    }
-
-    public void setDocument(String document) {
-        this.document = document;
-    }
-
-    public void setSwagger(Swagger swagger) {
-        this.swagger = swagger;
+    @PrePersist
+    @PreUpdate
+    public void updateHumanReadbleName() {
+        humanReadableName = normalize(name);
+        if (humanReadableName.startsWith("/")) {
+            humanReadableName = humanReadableName.substring(1);
+        }
     }
 
     public Swagger getSwagger() {
-        return swagger;
-    }
-
-    public Collection<Endpoint> getEndpoints() {
-        return endpoints;
-    }
-
-    public void setEndpoints(Collection<Endpoint> endpoints) {
-        this.endpoints = endpoints;
+        try {
+            return swagger == null ? (swagger = SwaggerJsonMapperProducer.lookup().readValue(document, Swagger.class)) : swagger;
+        } catch (final IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }

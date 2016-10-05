@@ -22,6 +22,7 @@ package org.tomitribe.tribestream.registryng.resources;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.openejb.testing.Application;
 import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.tomitribe.tribestream.registryng.cdi.Tribe;
@@ -56,6 +57,11 @@ public class EndpointHistoryResourceTest {
     private Registry registry;
 
     private Random random = new Random(System.currentTimeMillis());
+
+    @After
+    public void reset() {
+        registry.restoreData();
+    }
 
     @Test
     public void shouldLoadEndpointHistory() {

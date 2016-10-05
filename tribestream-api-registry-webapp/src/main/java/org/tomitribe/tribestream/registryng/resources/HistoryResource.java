@@ -18,8 +18,8 @@
  */
 package org.tomitribe.tribestream.registryng.resources;
 
-import io.swagger.models.Swagger;
-import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.HistoryItem;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
@@ -27,6 +27,7 @@ import org.tomitribe.tribestream.registryng.entities.HistoryEntry;
 import org.tomitribe.tribestream.registryng.entities.OpenAPIDocumentSerializer;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 import org.tomitribe.tribestream.registryng.repository.Repository;
+import org.tomitribe.tribestream.registryng.resources.processor.ApplicationProcessor;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -46,29 +47,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
-import static org.tomitribe.tribestream.registryng.resources.util.ApplicationWrapperUtil.mergeSwagger;
-import static org.tomitribe.tribestream.registryng.resources.util.ApplicationWrapperUtil.shrinkSwagger;
 
 @Path("/history/application")
 @ApplicationScoped
 @Produces(MediaType.APPLICATION_JSON)
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
+@NoArgsConstructor(force = true)
 public class HistoryResource {
-
     private final Repository repository;
-
     private final OpenAPIDocumentSerializer documentSerializer;
-
-    @Inject
-    public HistoryResource(Repository repository, OpenAPIDocumentSerializer documentSerializer) {
-        this.repository = repository;
-        // Envers does not care about EntityListeners, so have to @PostLoad myself
-        this.documentSerializer = documentSerializer;
-    }
-
-    // Only to satisfy CDI
-    protected HistoryResource() {
-        this(null, null);
-    }
+    private final ApplicationProcessor processor;
 
     @GET
     @Path("/{applicationId}")
@@ -200,13 +188,10 @@ public class HistoryResource {
 
         documentSerializer.postLoad(application);
 
-        final Swagger reducedSwagger = shrinkSwagger(mergeSwagger(application.getSwagger(), application.getEndpoints()));
 
-        ApplicationWrapper applicationWrapper = new ApplicationWrapper(reducedSwagger);
-
-        return Response.ok(applicationWrapper)
+        return Response.ok(processor.toWrapper(application))
                 .links(buildCurrentApplicationLink(uriInfo, applicationId))
-                //.links(buildLinks(uriInfo, application)) TODO: What links for historic instances?
+                //.links(buildEndpointLinks(uriInfo, application)) TODO: What links for historic instances?
                 .build();
     }
 
@@ -226,11 +211,13 @@ public class HistoryResource {
 
         documentSerializer.postLoad(endpoint);
 
-        EndpointWrapper endpointWrapper = new EndpointWrapper(endpoint.getVerb(), endpoint.getPath(), endpoint.getOperation());
+        EndpointWrapper endpointWrapper = new EndpointWrapper(
+                applicationId, endpointId, endpoint.getHumanReadablePath(),
+                endpoint.getVerb(), endpoint.getPath(), endpoint.getOperation());
 
         return Response.ok(endpointWrapper)
                 .links(buildCurrentEndpointLink(uriInfo, applicationId, endpointId))
-                //.links(buildLinks(uriInfo, application)) TODO: What links for historic instances?
+                //.links(buildEndpointLinks(uriInfo, application)) TODO: What links for historic instances?
                 .build();
     }
 

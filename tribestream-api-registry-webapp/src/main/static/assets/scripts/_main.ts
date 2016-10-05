@@ -48,17 +48,30 @@ angular.module('tribe-main', [
                         $scope.aggregatedId = $routeParams.aggregatedId;
                     }]
                 })
-                .when('/application/:app', {
+                .when('/application/:applicationName*', {
                     templateUrl: 'app/templates/page_application_details.html',
                     controller: ['$scope', '$routeParams', function ($scope, $routeParams) {
-                        $scope.app = $routeParams.app;
+                        $scope.app = $routeParams.applicationName;
                     }]
                 })
-                .when('/application/:app/endpoint/:endpointId?', {
+                .when('/endpoint/:application/:verb/:endpoint*', {
                     templateUrl: 'app/templates/page_endpoints_details.html',
                     controller: ['$scope', '$routeParams', function ($scope, $routeParams) {
-                        $scope.applicationId = $routeParams.app;
-                        $scope.endpointId = $routeParams.endpointId;
+                        $scope.requestMetadata = {
+                          applicationName: $routeParams.application,
+                          verb: $routeParams.verb,
+                          endpointPath: $routeParams.endpoint,
+                          version: $routeParams.version
+                        };
+                    }]
+                })
+                .when('/endpoint/:application', {
+                    templateUrl: 'app/templates/page_endpoints_details.html',
+                    controller: ['$scope', '$routeParams', function ($scope, $routeParams) {
+                        $scope.requestMetadata = {
+                          applicationName: $routeParams.application,
+                          version: $routeParams.version
+                        };
                     }]
                 })
                 .when('/login', {

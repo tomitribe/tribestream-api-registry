@@ -18,18 +18,24 @@
  */
 package org.tomitribe.tribestream.registryng.resources;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.util.DeserializationModule;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.catalina.realm.RealmBase;
 import org.apache.openejb.testing.ContainerProperties;
 import org.apache.openejb.testing.RandomPort;
 import org.apache.openejb.testing.WebResource;
 import org.apache.tomee.loader.TomcatHelper;
+import org.tomitribe.tribestream.registryng.bootstrap.Provisioning;
 import org.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.context.Initialized;
 import javax.enterprise.event.Observes;
+import javax.inject.Inject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.ClientRequestContext;
@@ -59,8 +65,12 @@ import static org.tomitribe.util.Join.join;
 public class Registry {
     public static final String TESTUSER = "utest";
     public static final String TESTPASSWORD = "ptest";
+
     @RandomPort("http")
     private int port;
+
+    @Inject
+    private Provisioning provisioning;
 
     public WebTarget target() {
         return target(true);
@@ -77,7 +87,12 @@ public class Registry {
     public Client client(final boolean secured) { // TODO: close them somehow, not a big deal for tests
         final Client client = ClientBuilder.newBuilder()
                 .property("skip.default.json.provider.registration", true)
-                .register(new CustomJacksonJaxbJsonProvider())
+                .register(new CustomJacksonJaxbJsonProvider(new ObjectMapper() {{
+                    registerModule(new DeserializationModule(true, true));
+                    setSerializationInclusion(JsonInclude.Include.NON_NULL);
+                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
+                }}) {
+                })
                 .build();
         if (!secured) {
             return client;
@@ -88,6 +103,10 @@ public class Registry {
                 requestContext.getHeaders().put("Authorization", singletonList("Basic " + printBase64Binary(join(":", TESTUSER, TESTPASSWORD).getBytes("UTF-8"))));
             }
         });
+    }
+
+    public void restoreData() {
+        provisioning.restore();
     }
 
     @Dependent

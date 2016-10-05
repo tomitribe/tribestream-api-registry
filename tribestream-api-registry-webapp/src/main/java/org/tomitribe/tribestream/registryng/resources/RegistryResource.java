@@ -18,9 +18,9 @@
  */
 package org.tomitribe.tribestream.registryng.resources;
 
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
-import org.tomitribe.tribestream.registryng.domain.SearchResult;
-import org.tomitribe.tribestream.registryng.repository.Repository;
 import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 import org.tomitribe.tribestream.registryng.service.search.SearchRequest;
 
@@ -40,21 +40,10 @@ import java.util.List;
 @Path("registry")
 @ApplicationScoped
 @Produces(MediaType.APPLICATION_JSON)
+@NoArgsConstructor(force = true)
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class RegistryResource {
-
-    @Inject
-    private Repository repository;
-
     private final SearchEngine searchEngine;
-
-    protected RegistryResource() {
-        this.searchEngine = null;
-    }
-
-    @Inject
-    public RegistryResource(final SearchEngine searchEngine) {
-        this.searchEngine = searchEngine;
-    }
 
     @GET
     public SearchPage getSearchPage(@Context final UriInfo uriInfo, @Context final HttpHeaders headers,
@@ -65,22 +54,12 @@ public class RegistryResource {
                                     @QueryParam("app") final List<String> apps,
                                     @QueryParam("page") @DefaultValue("0") final int page,
                                     @QueryParam("count") @DefaultValue("1000") final int count) {
-        final SearchRequest searchRequest = new SearchRequest(
-            query,
-            tags,
-            categories,
-            roles,
-            apps,
-            page,
-            count
-        );
-        SearchPage searchPage = searchEngine.search(searchRequest);
-        for (SearchResult searchResult: searchPage.getResults()) {
-            searchResult.setLink(uriInfo.getBaseUriBuilder()
-                    .path("/application/{applicationId}/endpoint/{endpointId}")
-                    .resolveTemplate("applicationId", searchResult.getApplicationId())
-                    .resolveTemplate("endpointId", searchResult.getEndpointId()).build().toASCIIString());
-        }
+        final SearchPage searchPage = searchEngine.search(new SearchRequest(query, tags, categories, roles, apps, page, count));
+        searchPage.getResults().forEach(searchResult -> searchResult.setLink(
+                uriInfo.getBaseUriBuilder()
+                        .path("/application/{applicationId}/endpoint/{endpointId}")
+                        .resolveTemplate("applicationId", searchResult.getApplicationId())
+                        .resolveTemplate("endpointId", searchResult.getEndpointId()).build().toASCIIString()));
         return searchPage;
     }
 
