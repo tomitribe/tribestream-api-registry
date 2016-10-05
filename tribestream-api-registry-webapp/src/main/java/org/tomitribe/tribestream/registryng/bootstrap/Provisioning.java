@@ -21,10 +21,10 @@ package org.tomitribe.tribestream.registryng.bootstrap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.models.Swagger;
+import org.tomitribe.tribestream.registryng.cdi.Tribe;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 import org.tomitribe.tribestream.registryng.repository.Repository;
 import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
-import org.tomitribe.tribestream.registryng.service.serialization.SwaggerJsonMapperProducer;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.DependsOn;
@@ -32,7 +32,6 @@ import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.inject.Inject;
-import javax.inject.Named;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
@@ -57,7 +56,7 @@ public class Provisioning {
     private SearchEngine searchEngine;
 
     @Inject
-    @Named(SwaggerJsonMapperProducer.SWAGGER_OBJECT_MAPPER_NAME)
+    @Tribe
     private ObjectMapper mapper;
 
     @PostConstruct
