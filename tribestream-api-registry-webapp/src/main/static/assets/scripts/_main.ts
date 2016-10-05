@@ -74,16 +74,27 @@ angular.module('tribe-main', [
     ])
 
     // should never be used cause we force the user to being logged to use the console
-    .factory('httpInterceptor', ['$q', '$window', '$location', function ($q, $window, $location) {
-        return {
-            'responseError': function (response) {
-                if (response.status === 401) {
-                    $location.url('/login');
+    .factory('httpInterceptor', ['$q', '$window', '$location', '$sessionStorage', 'currentAuthProvider',
+        function ($q, $window, $location, $sessionStorage, currentAuthProvider) {
+            return {
+                'request': function(config) {
+                    if (config.url != 'api/security/oauth2' && currentAuthProvider.isActive()) {
+                        return currentAuthProvider.get().getAuthorizationHeader().then(function(token) {
+                            config.headers['Authorization'] = token;
+                            return config;
+                        });
+                    }
+                    return config;
+                },
+                'responseError': function (response) {
+                    if (response.status === 401) {
+                        $location.url('/login');
+                    }
+                    return $q.reject(response);
                 }
-                return $q.reject(response);
-            }
-        };
-    }])
+            };
+        }
+    ])
 
     .run(['$rootScope', function ($rootScope) {
         $rootScope.baseFullPath = angular.element('head base').first().attr('href');

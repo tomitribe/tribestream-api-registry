@@ -49,6 +49,13 @@
     </dependency>
 
     <dependency>
+      <groupId>org.apache.johnzon</groupId>
+      <artifactId>johnzon-mapper</artifactId>
+      <version>0.9.3-incubating</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
       <version>${version.jackson}</version>
@@ -76,7 +83,13 @@
     <dependency>
       <groupId>org.apache.deltaspike.core</groupId>
       <artifactId>deltaspike-core-api</artifactId>
-      <version>1.7.1</version>
+      <version>${version.deltaspike}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.deltaspike.core</groupId>
+      <artifactId>deltaspike-core-impl</artifactId>
+      <version>${version.deltaspike}</version>
     </dependency>
 
     <dependency>
@@ -209,6 +222,7 @@
             <db>new://Resource?type=DataSource</db>
             <db.JdbcUrl>jdbc:h2:mem:registry</db.JdbcUrl>
             <db.JdbcDriver>org.h2.Driver</db.JdbcDriver>
+            <registry.oauthGatewayUrl>https://tribe.tomitribe.com/user/oauth/token</registry.oauthGatewayUrl>
           </containerProperties>
           <users>
             <admin>admin</admin>
@@ -249,6 +263,7 @@
             <db>new://Resource?type=DataSource</db>
             <db.JdbcUrl>jdbc:h2:mem:registry</db.JdbcUrl>
             <db.JdbcDriver>org.h2.Driver</db.JdbcDriver>
+            <registry.oauthGatewayUrl>https://tribe.tomitribe.com/user/oauth/token</registry.oauthGatewayUrl>
           </systemVariables>
         </configuration>
       </plugin>
