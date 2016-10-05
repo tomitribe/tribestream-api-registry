@@ -337,11 +337,17 @@ angular.module('tribe-endpoints-details', [
                     $timeout(function () {
                         $scope.$apply(function () {
                             // TODO: This MUST go somewhere else, both properties
-                            if (!$scope.endpoint.errors) {
-                                $scope.endpoint.errors = [];
+                            if (!$scope.endpoint.operation) {
+                                $scope.endpoint.operation = {};
                             }
-                            if (!$scope.endpoint.expectedValues) {
-                                $scope.endpoint.expectedValues = [];
+                            if (!$scope.endpoint.operation['x-tribestream-api-registry']) {
+                                $scope.endpoint.operation['x-tribestream-api-registry'] = {};
+                            }
+                            if (!$scope.endpoint.operation['x-tribestream-api-registry']['response-codes']) {
+                                $scope.endpoint.operation['x-tribestream-api-registry']['response-codes'] = [];
+                            }
+                            if (!$scope.endpoint.operation['x-tribestream-api-registry']['expected-values']) {
+                                $scope.endpoint.operation['x-tribestream-api-registry']['expected-values'] = [];
                             }
                         });
                     });
@@ -389,14 +395,35 @@ angular.module('tribe-endpoints-details', [
                 $scope.removeExpectedValue = function (value) {
                     $timeout(function () {
                         $scope.$apply(function () {
-                            $scope.endpoint.expectedValues = _.without($scope.endpoint.expectedValues, value);
+                            if (!$scope.endpoint.operation) {
+                                return;
+                            }
+                            if (!$scope.endpoint.operation['x-tribestream-api-registry']) {
+                                return;
+                            }
+                            if (!$scope.endpoint.operation['x-tribestream-api-registry']['expected-values']) {
+                                return;
+                            }
+                            $scope.endpoint.operation['x-tribestream-api-registry']['expected-values'] = _.without(
+                                $scope.endpoint.operation['x-tribestream-api-registry']['expected-values'],
+                                value
+                            );
                         });
                     });
                 };
                 $scope.addExpectedValue = function () {
                     $timeout(function () {
                         $scope.$apply(function () {
-                            $scope.endpoint.expectedValues.push({
+                            if (!$scope.endpoint.operation) {
+                                $scope.endpoint.operation = {};
+                            }
+                            if (!$scope.endpoint.operation['x-tribestream-api-registry']) {
+                                $scope.endpoint.operation['x-tribestream-api-registry'] = {};
+                            }
+                            if (!$scope.endpoint.operation['x-tribestream-api-registry']['expected-values']) {
+                                $scope.endpoint.operation['x-tribestream-api-registry']['expected-values'] = [];
+                            }
+                            $scope.endpoint.operation['x-tribestream-api-registry']['expected-values'].push({
                                 name: '',
                                 values: ''
                             });
