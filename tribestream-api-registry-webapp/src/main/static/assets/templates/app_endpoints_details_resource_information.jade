@@ -40,7 +40,7 @@ div
   .app-rates(data-submenu="true", app-endpoints-details-toc-anchor="Rates")
     div
       span Rate Limit
-      div(x-ng-click="addRate()", tabindex=0)
+      div(x-ng-click="addRate()", tabindex=0).tribe-add-btn
         i.fa.fa-plus
     .rates(x-ng-repeat="rl in endpoint.operation['x-tribestream-api-registry'].rates")
       i(data-tribe-editable-number, data-adjust="false", data-value="rl.rateLimit")

@@ -1,7 +1,7 @@
 div
   .expected
     h2 Expected values
-      div(x-ng-click="addExpectedValue();")
+      div(x-ng-click="addExpectedValue();").tribe-add-btn
         i.fa.fa-plus
     table(x-ng-if="endpoint.operation['x-tribestream-api-registry']['expected-values'].length")
       thead
@@ -26,7 +26,7 @@ div
               i.fa.fa-trash-o
   .values
     h2 Response codes
-      div(x-ng-click="addErrorCode();", app-endpoints-details-toc-anchor="Response codes")
+      div(x-ng-click="addErrorCode();", app-endpoints-details-toc-anchor="Response codes").tribe-add-btn
         i.fa.fa-plus
     table(x-ng-if="endpoint.operation['x-tribestream-api-registry'] && endpoint.operation['x-tribestream-api-registry']['response-codes'] && endpoint.operation['x-tribestream-api-registry']['response-codes'].length")
       thead

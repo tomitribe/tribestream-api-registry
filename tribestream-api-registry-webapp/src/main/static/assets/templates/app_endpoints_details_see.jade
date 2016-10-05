@@ -1,7 +1,7 @@
 div
   div
     span See also
-    div.add-link
+    div.add-link.tribe-add-btn
       i.fa.fa-plus
   ul
     li(x-ng-repeat="see in endpoint.operation['x-tribestream-api-registry'].sees | orderBy:['seeOrder', 'title']")
