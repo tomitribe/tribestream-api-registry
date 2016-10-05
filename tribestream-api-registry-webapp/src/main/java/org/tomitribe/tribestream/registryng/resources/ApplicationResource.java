@@ -19,10 +19,12 @@
 package org.tomitribe.tribestream.registryng.resources;
 
 import io.swagger.models.Swagger;
+import lombok.NoArgsConstructor;
 import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
-import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 import org.tomitribe.tribestream.registryng.repository.Repository;
+import org.tomitribe.tribestream.registryng.resources.enricher.Linker;
+import org.tomitribe.tribestream.registryng.resources.processor.ApplicationProcessor;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -35,112 +37,63 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
-import static org.tomitribe.tribestream.registryng.resources.util.ApplicationWrapperUtil.mergeSwagger;
-import static org.tomitribe.tribestream.registryng.resources.util.ApplicationWrapperUtil.shrinkSwagger;
+import static java.util.stream.Collectors.toList;
 
 @Path("/application")
 @ApplicationScoped
 @Produces(MediaType.APPLICATION_JSON)
+@NoArgsConstructor(force = true)
 public class ApplicationResource {
 
     private final Repository repository;
+    private final Linker linker;
+    private final ApplicationProcessor processor;
 
     @Inject
-    public ApplicationResource(final Repository repository) {
+    public ApplicationResource(final Repository repository, final Linker linker, final ApplicationProcessor processor) {
         this.repository = repository;
-    }
-
-    public ApplicationResource() {
-        this(null);
+        this.linker = linker;
+        this.processor = processor;
     }
 
     @GET
     @Path("/")
     public Response getAllApplications(@Context UriInfo uriInfo) {
-        final List<OpenApiDocument> applications = repository.findAllApplicationsWithEndpoints();
-
-        final Set<String> ids = new HashSet<>();
-        final List<ApplicationWrapper> uniqueResults = new ArrayList<>();
-
-        for (OpenApiDocument application : applications) {
-            final Swagger swagger = shrinkSwagger(mergeSwagger(application.getSwagger(), application.getEndpoints()));
-            ApplicationWrapper applicationWrapper = new ApplicationWrapper(swagger);
-            uniqueResults.add(applicationWrapper);
-        }
-
-        return Response.status(Response.Status.OK).entity(uniqueResults).build();
-    }
-
-    private Link[] buildLinks(UriInfo uriInfo, OpenApiDocument application) {
-        List<Link> result = new ArrayList<>();
-
-        result.add(
-                Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path("application/{applicationId}").resolveTemplate("applicationId", application.getId()))
-                        .rel("self")
-                        .build());
-        result.add(
-                Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path("history/application/{applicationId}").resolveTemplate("applicationId", application.getId()))
-                        .rel("history")
-                        .build());
-        for (Endpoint endpoint : application.getEndpoints()) {
-            result.add(
-                    Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path("application/{applicationId}/endpoint/{endpointId}")
-                            .resolveTemplate("applicationId", application.getId())
-                            .resolveTemplate("endpointId", endpoint.getId()))
-                            .rel(endpoint.getVerb().toUpperCase() + " " + endpoint.getPath())
-                            .build());
-        }
-
-        return result.toArray(new Link[result.size()]);
+        return Response.status(Response.Status.OK)
+                .entity(repository.findAllApplicationsWithEndpoints().stream().map(processor::toWrapper).collect(toList()))
+                .build();
     }
 
     @GET
     @Path("/{applicationId}")
     public Response getApplication(
-        @Context UriInfo uriInfo,
-        @PathParam("applicationId") final String applicationId) {
+            @Context UriInfo uriInfo,
+            @PathParam("applicationId") final String applicationId) {
 
         final OpenApiDocument application = repository.findByApplicationIdWithEndpoints(applicationId);
         if (application == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-
-        final Swagger reducedSwagger = shrinkSwagger(mergeSwagger(application.getSwagger(), application.getEndpoints()));
-
-        ApplicationWrapper applicationWrapper = new ApplicationWrapper(reducedSwagger);
-
-        return Response.ok(applicationWrapper).links(buildLinks(uriInfo, application)).build();
+        return Response.ok(processor.toWrapper(application)).links(linker.buildApplicationLinks(uriInfo, application)).build();
     }
 
 
     @POST
     @Path("/")
     public Response createService(
-        @Context UriInfo uriInfo,
-        ApplicationWrapper application) {
-
+            @Context UriInfo uriInfo,
+            ApplicationWrapper application) {
         final Swagger swagger = application.getSwagger();
-
         validate(swagger);
-
         final OpenApiDocument document = repository.insert(swagger);
-
         final OpenApiDocument newDocument = repository.findByApplicationIdWithEndpoints(document.getId());
-
-        final ApplicationWrapper applicationWrapper = new ApplicationWrapper(shrinkSwagger(mergeSwagger(newDocument.getSwagger(), newDocument.getEndpoints())));
-
         return Response.status(Response.Status.CREATED)
-                .entity(applicationWrapper)
-                .links(buildLinks(uriInfo, newDocument))
+                .entity(processor.toWrapper(newDocument))
+                .links(linker.buildApplicationLinks(uriInfo, newDocument))
                 .build();
     }
 
@@ -187,10 +140,10 @@ public class ApplicationResource {
 
         // TODO: dont update/find
         final OpenApiDocument updatedDocument = repository.findByApplicationIdWithEndpoints(applicationId);
-
-        final ApplicationWrapper applicationWrapper = new ApplicationWrapper(shrinkSwagger(updatedDocument.getSwagger()));
-
-        return Response.status(Response.Status.OK).links(buildLinks(uriInfo, updatedDocument)).entity(applicationWrapper).build();
+        return Response.status(Response.Status.OK)
+                .links(linker.buildApplicationLinks(uriInfo, updatedDocument))
+                .entity(processor.toWrapper(updatedDocument))
+                .build();
     }
 
 

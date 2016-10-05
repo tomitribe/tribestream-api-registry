@@ -28,7 +28,7 @@ public final class PathTransformUtil {
 
     }
 
-    public static String bracesToColon(String openApiTemplate) {
+    public static String bracesToColon(String openApiTemplate) { // TODO: what's wrong with openApiTemplate.replaceAll("\\{(\\w+)\\}", ":$1")
         // The root path is the most simple case
         if (openApiTemplate.equals("/")) {
             return openApiTemplate;
@@ -41,25 +41,4 @@ public final class PathTransformUtil {
                             : part)
                 .collect(joining("/"));
     }
-
-    public static String colonToBraces(String input) {
-        // The root path is the most simple case
-        if (input.equals("/")) {
-            return input;
-        }
-
-        final String[] parts = input.split("/");
-
-        // First part must always be empty
-        String result = Stream.of(parts)
-                .map(part ->
-                        part.startsWith(":")
-                                ? "{" + part.substring(1) + "}"
-                                : part
-                )
-                .collect(joining("/"));
-
-        return "/" + result;
-    }
-
 }

@@ -110,6 +110,35 @@ module services {
                             }
                         };
                     },
+                    getApplicationDetailsFromName: function (applicationName) {
+                        return {
+                            then: function (successCallback, errorCallback) {
+                                $http.get('api/ui/application/' + applicationName)
+                                    .then(function (data) {
+                                        if (data && data.data && data.data.swagger) {
+                                            // we will have at most one result. only one application queried.
+                                            successCallback(data);
+                                        }
+                                    }, tribeErrorHandlerService.ensureErrorHandler(errorCallback));
+                            }
+                        };
+                    },
+                    getDetailsFromMetadata: function (request) {
+                        return {
+                            then: function (successCallback, errorCallback) {
+                                if (request && request.endpointPath) {
+                                    const params = request.version ? {version: request.version} : {};
+                                    $http.get(`api/ui/endpoint/${request.applicationName}/${request.verb || '-'}/${request.endpointPath}`, {params : params})
+                                        .then(function (data) {
+                                            successCallback(data);
+                                        }, tribeErrorHandlerService.ensureErrorHandler(errorCallback));
+                                } else {
+                                    var newEntry = {};
+                                    successCallback(newEntry);
+                                }
+                            }
+                        };
+                    },
                     getDetails: function (app, endpointId) {
                         return {
                             then: function (successCallback, errorCallback) {

@@ -133,7 +133,9 @@ public class EndpointResourceTest {
         final String newSummary = UUID.randomUUID().toString();
         final Operation newOperation = new Operation();
         newOperation.setSummary(newSummary);
-        final EndpointWrapper endpointWrapper = new EndpointWrapper(newVerb, newPath, newOperation);
+        final EndpointWrapper endpointWrapper = new EndpointWrapper(
+                originalEndpoint.getApplicationId(), originalEndpoint.getEndpointId(), originalEndpoint.getHumanReadablePath(),
+                newVerb, newPath, newOperation);
 
         Response response = registry.client().target(endpointUrl)
                 .request(MediaType.APPLICATION_JSON_TYPE)

@@ -19,6 +19,7 @@
 package org.tomitribe.tribestream.registryng.service.serialization;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
 import javax.ws.rs.Consumes;
@@ -43,9 +44,13 @@ public class CustomJacksonJaxbJsonProvider extends JacksonJaxbJsonProvider {
 
     private static final Logger LOGGER = Logger.getLogger(CustomJacksonJaxbJsonProvider.class.getName());
 
-    public CustomJacksonJaxbJsonProvider() {
+    protected CustomJacksonJaxbJsonProvider(final ObjectMapper mapper) {
         super(SwaggerJsonMapperProducer.lookup(), JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
         configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
+    }
+
+    public CustomJacksonJaxbJsonProvider() {
+        this(SwaggerJsonMapperProducer.lookup());
     }
 
     @Override

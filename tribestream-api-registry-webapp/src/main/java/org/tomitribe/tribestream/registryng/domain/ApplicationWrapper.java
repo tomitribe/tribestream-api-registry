@@ -19,26 +19,14 @@
 package org.tomitribe.tribestream.registryng.domain;
 
 import io.swagger.models.Swagger;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ApplicationWrapper {
-
     private Swagger swagger;
-
-    public ApplicationWrapper() {
-    }
-
-
-    public ApplicationWrapper(Swagger swagger) {
-        this.swagger = swagger;
-    }
-
-
-    public Swagger getSwagger() {
-        return swagger;
-    }
-
-    public void setSwagger(Swagger swagger) {
-        this.swagger = swagger;
-    }
-
+    private String humanReadableName;
 }

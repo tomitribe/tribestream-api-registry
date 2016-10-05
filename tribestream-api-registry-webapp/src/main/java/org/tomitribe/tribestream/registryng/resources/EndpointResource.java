@@ -20,9 +20,12 @@ package org.tomitribe.tribestream.registryng.resources;
 
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.repository.Repository;
+import org.tomitribe.tribestream.registryng.resources.enricher.Linker;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -35,7 +38,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -43,18 +45,11 @@ import javax.ws.rs.core.UriInfo;
 @Path("/application/{applicationId}/endpoint")
 @ApplicationScoped
 @Produces(MediaType.APPLICATION_JSON)
+@NoArgsConstructor(force = true)
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class EndpointResource {
-
     private final Repository repository;
-
-    @Inject
-    public EndpointResource(final Repository repository) {
-        this.repository = repository;
-    }
-
-    protected EndpointResource() {
-        this(null);
-    }
+    private final Linker linker;
 
     @GET
     @Path("/{endpointId}")
@@ -72,29 +67,13 @@ public class EndpointResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        final EndpointWrapper endpointWrapper = new EndpointWrapper(endpoint.getVerb().toLowerCase(), endpoint.getPath(), endpoint.getOperation());
+        final EndpointWrapper endpointWrapper = new EndpointWrapper(
+                applicationId, endpointId, endpoint.getHumanReadablePath(),
+                endpoint.getVerb(), endpoint.getPath(), endpoint.getOperation());
 
         return Response.ok()
-                .links(getLinks(uriInfo, applicationId, endpoint.getId()))
+                .links(linker.buildEndpointLinks(uriInfo, applicationId, endpoint.getId()))
                 .entity(endpointWrapper).build();
-    }
-
-    private Link[] getLinks(UriInfo uriInfo, String applicationId, String endpointId) {
-        return new Link[] {
-                Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path("application/{applicationId}/endpoint/{endpointId}")
-                        .resolveTemplate("applicationId", applicationId)
-                        .resolveTemplate("endpointId", endpointId))
-                        .rel("self")
-                        .build(),
-                Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path("history/application/{applicationId}/endpoint/{endpointId}")
-                        .resolveTemplate("applicationId", applicationId)
-                        .resolveTemplate("endpointId", endpointId))
-                        .rel("history")
-                        .build(),
-                Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path("application/{applicationId}").resolveTemplate("applicationId", applicationId))
-                        .rel("application")
-                        .build()
-        };
     }
 
     @DELETE
@@ -138,8 +117,10 @@ public class EndpointResource {
         final Endpoint newDocument = repository.findEndpointById(document.getId());
 
         return Response.status(Response.Status.CREATED)
-                .entity(new EndpointWrapper(newDocument.getVerb().toLowerCase(), newDocument.getPath(), newDocument.getOperation()))
-                .links(getLinks(uriInfo, applicationId, newDocument.getId()))
+                .entity(new EndpointWrapper(
+                        newDocument.getApplication().getId(), newDocument.getId(), newDocument.getHumanReadablePath(),
+                        newDocument.getVerb(), newDocument.getPath(), newDocument.getOperation()))
+                .links(linker.buildEndpointLinks(uriInfo, applicationId, newDocument.getId()))
                 .build();
 
     }
@@ -167,10 +148,12 @@ public class EndpointResource {
 
         final Endpoint updatedDocument = repository.findEndpointById(endpointId);
 
-        final EndpointWrapper newEndpointWrapper = new EndpointWrapper(updatedDocument.getVerb(), updatedDocument.getPath(), updatedDocument.getOperation());
+        final EndpointWrapper newEndpointWrapper = new EndpointWrapper(
+                applicationId, endpointId, updatedDocument.getHumanReadablePath(),
+                updatedDocument.getVerb(), updatedDocument.getPath(), updatedDocument.getOperation());
 
-        return Response.status(Response.Status.OK)
-                .links(getLinks(uriInfo, applicationId, endpointId))
+        return Response.ok()
+                .links(linker.buildEndpointLinks(uriInfo, applicationId, endpointId))
                 .entity(newEndpointWrapper)
                 .build();
 

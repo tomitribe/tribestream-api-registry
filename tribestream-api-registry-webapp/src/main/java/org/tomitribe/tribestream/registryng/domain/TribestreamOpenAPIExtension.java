@@ -75,4 +75,5 @@ public interface TribestreamOpenAPIExtension {
 
     public static final String PROP_API_VERSIONS    = "api-versions";
 
+    public static final String HUMAN_READABLE_PATH           = "human-readable-path";
 }

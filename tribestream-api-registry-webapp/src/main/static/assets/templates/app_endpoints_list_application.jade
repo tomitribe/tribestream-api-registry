@@ -1,10 +1,10 @@
 div
   h2
-    a(x-ng-href="application/{{application.applicationId}}") {{application.name}} {{application.version}}
+    a(x-ng-href="application/{{application.applicationName}}") {{application.name}} {{application.version}}
     span ({{application.endpoints.length}})
   div(x-ng-repeat="endpoint in endpoints")
     i.fa(x-ng-class="{'fa-lock': endpoint.secured, 'fa-unlock': !endpoint.secured}")
-    a(x-ng-href="application/{{endpoint.applicationId}}/endpoint/{{endpoint.endpointId}}") {{endpoint.httpMethod | uppercase}} {{endpoint.path| pathencode}}
+    a(x-ng-href="endpoint/{{application.applicationName}}/{{endpoint.httpMethod}}/{{endpoint.endpointName}}?version={{endpoint.applicationVersion}}") {{endpoint.httpMethod | uppercase}} {{endpoint.path| pathencode}}
     span {{endpoint.description | tribeHtmlText}}
   div(x-ng-if="showAll")
     span(x-ng-click="showAllEndpoints();") Show more {{application.endpoints.length - pageSize}} endpoints

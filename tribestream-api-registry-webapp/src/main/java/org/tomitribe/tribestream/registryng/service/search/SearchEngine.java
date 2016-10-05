@@ -18,6 +18,7 @@
  */
 package org.tomitribe.tribestream.registryng.service.search;
 
+import lombok.NoArgsConstructor;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
@@ -108,16 +109,26 @@ import static org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExte
 @Singleton
 @Lock(LockType.READ)
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+@NoArgsConstructor(force = true)
 public class SearchEngine {
     private static final Logger LOGGER = Logger.getLogger(SearchEngine.class.getName());
 
     private static final String APPLICATION_ID_FIELD = "applicationId";
+    private static final String APPLICATION_HUMAN_READABLE_NAME = "applicationHumanReadableName";
+    private static final String APPLICATION_NAME = "applicationName";
+    private static final String APPLICATION_VERSION = "applicationVersion";
     private static final String ENDPOINT_ID_FIELD = "endpointId";
+    private static final String ENDPOINT_HUMAN_READABLE_NAME = "endpointHumanReadableName";
     private static final String VERB = "verb";
     private static final String HTTP_METHOD = "httpMethod";
     private static final String PATH = "path";
     private static final String DOC = "doc";
     private static final String SUMMARY = "summary";
+
+    private static final SearchPage NO_RESULT = new SearchPage(
+            new ArrayList<>(), 0, 0,
+            new ArrayList<>(), new ArrayList<>(),
+            new ArrayList<>(), new ArrayList<>());
 
     private final Duration duration;
     private final Repository repository;
@@ -151,19 +162,12 @@ public class SearchEngine {
         this.indexFacetsDir = directory.newInstance("facets");
     }
 
-    protected SearchEngine() {
-        this(null, null);
-    }
-
     public SearchPage search(final SearchRequest request) {
         final int pageSize = request.getCount();
         try {
             final IndexSearcher indexSearcher = searcher();
             if (indexSearcher == null) { // no index
-                return new SearchPage(
-                        new ArrayList<>(), 0, 0,
-                        new ArrayList<>(), new ArrayList<>(),
-                        new ArrayList<>(), new ArrayList<>());
+                return NO_RESULT;
             }
 
             final BooleanQuery.Builder query = new BooleanQuery.Builder();
@@ -200,12 +204,15 @@ public class SearchEngine {
                 final Document doc = searcher.doc(sd.doc);
 //                final Endpoint endpoint = findEndpoint(doc);
 //                final String applicationId = Repository.getApplicationId(endpoint.getApplication().getSwagger());
+                final String endpointId = doc.get(ENDPOINT_ID_FIELD);
                 results.add(new SearchResult(
-                        doc.get(ENDPOINT_ID_FIELD),
+                        endpointId,
                         doc.get(APPLICATION_ID_FIELD),
-                        doc.get(ENDPOINT_ID_FIELD),
-                        doc.get("applicationName"),
-                        doc.get("applicationVersion"),
+                        endpointId,
+                        doc.get(APPLICATION_HUMAN_READABLE_NAME),
+                        doc.get(ENDPOINT_HUMAN_READABLE_NAME),
+                        doc.get(APPLICATION_NAME),
+                        doc.get(APPLICATION_VERSION),
                         doc.get(VERB),
                         doc.get(PATH),
                         doc.get(SUMMARY),
@@ -278,8 +285,8 @@ public class SearchEngine {
         fieldAnalyzers.put("path", keywordAnalyzer);
         fieldAnalyzers.put("httpMethod", keywordAnalyzer);
         fieldAnalyzers.put("application", keywordAnalyzer);
-        fieldAnalyzers.put("applicationName", keywordAnalyzer);
-        fieldAnalyzers.put("applicationVersion", keywordAnalyzer);
+        fieldAnalyzers.put(APPLICATION_NAME, keywordAnalyzer);
+        fieldAnalyzers.put(APPLICATION_VERSION, keywordAnalyzer);
         // host, doc, search
         fieldAnalyzers.put(DOC, keywordAnalyzer);
         fieldAnalyzers.put(SUMMARY, keywordAnalyzer);
@@ -475,8 +482,9 @@ public class SearchEngine {
         eDoc.add(field(APPLICATION_ID_FIELD, application.getId(), true));
         eDoc.add(field(ENDPOINT_ID_FIELD, endpoint.getId(), true));
 
-        eDoc.add(field("applicationName", endpoint.getApplication().getSwagger().getInfo().getTitle(), true));
-        eDoc.add(field("applicationVersion", endpoint.getApplication().getSwagger().getInfo().getVersion(), true));
+        eDoc.add(field(APPLICATION_NAME, endpoint.getApplication().getSwagger().getInfo().getTitle(), true));
+        eDoc.add(field(APPLICATION_HUMAN_READABLE_NAME, endpoint.getApplication().getHumanReadableName(), true));
+        eDoc.add(field(APPLICATION_VERSION, endpoint.getApplication().getSwagger().getInfo().getVersion(), true));
 
         // deployable
         if (webCtx != null && !webCtx.isEmpty()) {
@@ -492,6 +500,7 @@ public class SearchEngine {
         }
 
         // endpoint
+        eDoc.add(field(ENDPOINT_HUMAN_READABLE_NAME, endpoint.getHumanReadablePath(), true));
         eDoc.add(field(PATH, endpoint.getPath(), true)); // shorter
         eDoc.add(field(HTTP_METHOD, endpoint.getVerb()));
         eDoc.add(field(VERB, endpoint.getVerb(), true));
@@ -540,8 +549,8 @@ public class SearchEngine {
         final String search = endpoint.getVerb() + " "
                 + endpoint.getPath() + " "
                 + Join.join(",", pathSplit) + " "
-                + Join.join(",", (List<String>) getExtensionProperty(endpoint, PROP_CATEGORIES, Collections::<String>emptyList)) + " "
-                + Join.join(",", (List<String>) getExtensionProperty(endpoint, PROP_ROLES, Collections::<String>emptyList)) + " "
+                + Join.join(",", getExtensionProperty(endpoint, PROP_CATEGORIES, Collections::<String>emptyList)) + " "
+                + Join.join(",", getExtensionProperty(endpoint, PROP_ROLES, Collections::<String>emptyList)) + " "
                 + tags + " "
                 + (doc == null ? "" : doc) + " "
                 + webCtx;
@@ -550,10 +559,10 @@ public class SearchEngine {
         return eDoc;
     }
 
-    private <T> T getExtensionProperty(final Endpoint endpoint, final String extensionPropertyName, final Supplier<T> defaultSupplier) {
-        return (T) Optional.ofNullable(endpoint.getOperation().getVendorExtensions())
-                .map((Map<String, Object> vendorExtensions) -> (Map<String, Object>) vendorExtensions.get(VENDOR_EXTENSION_KEY))
-                .map((Map<String, Object> tapirExtension) -> tapirExtension.get(extensionPropertyName))
+    private <T> List<T> getExtensionProperty(final Endpoint endpoint, final String extensionPropertyName, final Supplier<List<T>> defaultSupplier) {
+        return (List<T>) Optional.ofNullable(endpoint.getOperation().getVendorExtensions())
+                .map(vendorExtensions -> (Map<String, Object>) vendorExtensions.get(VENDOR_EXTENSION_KEY))
+                .map(tapirExtension -> tapirExtension.get(extensionPropertyName))
                 .orElseGet(defaultSupplier);
     }
 

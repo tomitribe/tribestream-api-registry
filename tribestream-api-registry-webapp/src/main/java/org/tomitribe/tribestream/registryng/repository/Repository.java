@@ -34,13 +34,12 @@ import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 import org.tomitribe.tribestream.registryng.security.LoginContext;
 import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 
-import javax.ejb.ConcurrencyManagement;
-import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.Singleton;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
 import java.io.StringWriter;
 import java.util.Collection;
 import java.util.Date;
@@ -56,10 +55,9 @@ import static java.util.stream.Collectors.toList;
  * Central access to all OpenAPI documents.
  * Currently simply reads documents from the directory defined by the system property "openapirepo.dir".
  */
-@Singleton
-@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
+@Transactional
+@ApplicationScoped
 public class Repository {
-
     private static final Logger LOGGER = Logger.getLogger(Repository.class.getName());
 
     @PersistenceContext
@@ -75,26 +73,67 @@ public class Repository {
     @Inject
     private SearchEngine searchEngine;
 
-    public static String getApplicationId(Swagger swagger) {
-        return swagger.getInfo().getTitle() + "-" + swagger.getInfo().getVersion();
-    }
-
-    public Collection<OpenApiDocument> getAllOpenApiDocuments() {
-        return em.createNamedQuery(OpenApiDocument.QRY_FIND_ALL, OpenApiDocument.class).getResultList();
-    }
-
-    public Collection<Endpoint> getAllEndpoints() {
-        List<Endpoint> result = em.createNamedQuery(Endpoint.QRY_FIND_ALL, Endpoint.class).getResultList();
-        for (Endpoint endpoint : result) {
-            // Eagerly resolve here
-            endpoint.getApplication();
+    public Endpoint findEndpointFromHumanReadableMeta(final String humanReadableApplicationName,
+                                                      final String verb,
+                                                      final String humanReadableEndpointPath,
+                                                      final String version) {
+        try {
+            final List<Endpoint> endpoints =
+                    ofNullable(version)
+                            .filter(v -> !v.trim().isEmpty())
+                            .map(v -> em.createNamedQuery(Endpoint.Queries.FIND_BY_HUMAN_REDABLE_PATH, Endpoint.class)
+                                    .setParameter("applicationVersion", version))
+                            .orElseGet(() -> em.createNamedQuery(Endpoint.Queries.FIND_BY_HUMAN_REDABLE_PATH_NO_VERSION, Endpoint.class))
+                            .setParameter("applicationName", humanReadableApplicationName)
+                            .setParameter("verb", verb)
+                            .setParameter("endpointPath", humanReadableEndpointPath)
+                            .setMaxResults(2)
+                            .getResultList();
+            if (endpoints.size() > 1) {
+                throw new IllegalArgumentException("Conflicting endpoints: " + endpoints);
+            }
+            if (endpoints.isEmpty()) {
+                return null;
+            }
+            return endpoints.get(0);
+        } catch (final NoResultException e) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Could not find endpoint by {0}/{1}/{2}", new Object[]{humanReadableApplicationName, verb, humanReadableEndpointPath});
+            }
+            return null;
         }
-        return result;
+    }
+
+    public OpenApiDocument findApplicationFromHumanReadableMetadata(final String humanReadableApplicationName,
+                                                                    final String version) {
+        try {
+            final List<OpenApiDocument> openApiDocuments =
+                    ofNullable(version)
+                            .filter(v -> !v.trim().isEmpty())
+                            .map(v -> em.createNamedQuery(OpenApiDocument.Queries.FIND_BY_HUMAN_REDABLE_NAME, OpenApiDocument.class)
+                                    .setParameter("applicationVersion", version))
+                            .orElseGet(() -> em.createNamedQuery(OpenApiDocument.Queries.FIND_BY_HUMAN_REDABLE_NAME_NO_VERSION, OpenApiDocument.class))
+                            .setParameter("applicationName", humanReadableApplicationName)
+                            .setMaxResults(2)
+                            .getResultList();
+            if (openApiDocuments.size() > 1) {
+                throw new IllegalArgumentException("Conflicting documents: " + openApiDocuments);
+            }
+            if (openApiDocuments.isEmpty()) {
+                return null;
+            }
+            return openApiDocuments.get(0);
+        } catch (final NoResultException e) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Could not find endpoint by {0}", humanReadableApplicationName);
+            }
+            return null;
+        }
     }
 
     public OpenApiDocument findByApplicationId(final String applicationId) throws NoResultException {
         try {
-            return em.createNamedQuery(OpenApiDocument.QRY_FIND_BY_APPLICATIONID, OpenApiDocument.class)
+            return em.createNamedQuery(OpenApiDocument.Queries.FIND_BY_APPLICATIONID, OpenApiDocument.class)
                     .setParameter("applicationId", applicationId)
                     .getSingleResult();
         } catch (NoResultException e) {
@@ -109,7 +148,7 @@ public class Repository {
 
         // Resolve the references here, because the Resource implementation will not be able to do that because
         // it is running another transaction
-        for (Endpoint endpoint: openApiDocument.getEndpoints()) {
+        for (Endpoint endpoint : openApiDocument.getEndpoints()) {
             endpoint.getDocument();
         }
 
@@ -117,7 +156,7 @@ public class Repository {
     }
 
     public <T> List<HistoryEntry<T>> getRevisions(
-            final Class<T>  entityClass,
+            final Class<T> entityClass,
             final String id,
             final int first,
             final int pageSize) throws NoResultException {
@@ -137,8 +176,9 @@ public class Repository {
 
     /**
      * Returns the number of revisions available for the entity with the given id.
+     *
      * @param entityClass the Entity class type to use to find revisions
-     * @param id the ID of the entity
+     * @param id          the ID of the entity
      * @return the number of revisions
      */
     public <T> int getNumberOfRevisions(final Class<T> entityClass, final String id) {
@@ -154,7 +194,7 @@ public class Repository {
 
     public OpenApiDocument findByApplicationIdWithEndpoints(final String applicationId) {
         try {
-            return em.createNamedQuery(OpenApiDocument.QRY_FIND_BY_APPLICATIONID_WITH_ENDPOINTS, OpenApiDocument.class)
+            return em.createNamedQuery(OpenApiDocument.Queries.FIND_BY_APPLICATIONID_WITH_ENDPOINTS, OpenApiDocument.class)
                     .setParameter("applicationId", applicationId)
                     .getSingleResult();
         } catch (NoResultException e) {
@@ -176,7 +216,7 @@ public class Repository {
 
     public OpenApiDocument findApplicationByNameAndVersion(final String name, final String version) {
         try {
-            return em.createNamedQuery(OpenApiDocument.QRY_FIND_BY_NAME_AND_VERSION, OpenApiDocument.class)
+            return em.createNamedQuery(OpenApiDocument.Queries.FIND_BY_NAME_AND_VERSION, OpenApiDocument.class)
                     .setParameter("name", name)
                     .setParameter("version", version)
                     .getSingleResult();
@@ -186,13 +226,8 @@ public class Repository {
         }
     }
 
-    public List<OpenApiDocument> findAllApplications() {
-        return em.createNamedQuery(OpenApiDocument.QRY_FIND_ALL, OpenApiDocument.class)
-                .getResultList();
-    }
-
     public List<OpenApiDocument> findAllApplicationsWithEndpoints() {
-        return em.createNamedQuery(OpenApiDocument.QRY_FIND_ALL_WITH_ENDPOINTS, OpenApiDocument.class)
+        return em.createNamedQuery(OpenApiDocument.Queries.FIND_ALL_WITH_ENDPOINTS, OpenApiDocument.class)
                 .getResultList();
     }
 
@@ -208,21 +243,8 @@ public class Repository {
         }
     }
 
-    public Endpoint findEndpoint(final String applicationId, final String verb, final String path) {
-        try {
-            return em.createNamedQuery(Endpoint.QRY_FIND_BY_APPLICATIONID_VERB_AND_PATH, Endpoint.class)
-                    .setParameter("applicationId", applicationId)
-                    .setParameter("verb", verb)
-                    .setParameter("path", path.startsWith("/") ? path : "/" + path)
-                    .getSingleResult();
-        } catch (NoResultException e) {
-            LOGGER.log(Level.FINE, "Could not find endpoint by application id '{0}', verb '{1}' and path '{2}'", new Object[]{applicationId, verb, path});
-            return null;
-        }
-    }
-
     public Collection<Endpoint> findAllEndpoints() {
-        return em.createNamedQuery(Endpoint.QRY_FIND_ALL_WITH_APPLICATION, Endpoint.class)
+        return em.createNamedQuery(Endpoint.Queries.FIND_ALL_WITH_APPLICATION, Endpoint.class)
                 .getResultList();
     }
 

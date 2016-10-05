@@ -21,6 +21,7 @@ package org.tomitribe.tribestream.registryng.bootstrap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.models.Swagger;
+import org.apache.deltaspike.core.api.config.ConfigProperty;
 import org.tomitribe.tribestream.registryng.cdi.Tribe;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 import org.tomitribe.tribestream.registryng.repository.Repository;
@@ -28,7 +29,6 @@ import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.DependsOn;
-import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.inject.Inject;
@@ -38,6 +38,8 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+
+import static java.util.Optional.ofNullable;
 
 /**
  * Seeds the database at startup with Swagger documents stored in META-INF/classes/seed-db.
@@ -49,24 +51,39 @@ public class Provisioning {
 
     private static final Logger LOGGER = Logger.getLogger(Provisioning.class.getName());
 
-    @EJB
+    @Inject
     private Repository repository;
 
-    @EJB
+    @Inject
     private SearchEngine searchEngine;
 
     @Inject
     @Tribe
     private ObjectMapper mapper;
 
+    @Inject // allow to switch it off or to use an external source for testing
+    @ConfigProperty(name = "tribe.registry.seeding.location", defaultValue = "seed-db")
+    private String location;
+
     @PostConstruct
     public void init() {
+        if (location == null) {
+            return;
+        }
         seedDatabase();
         searchEngine.waitForWrites();
     }
 
     private void seedDatabase() {
-        final URL res = Thread.currentThread().getContextClassLoader().getResource("seed-db");
+        final File dir = new File(location);
+        if (dir.isDirectory()) {
+            doSeeding(dir);
+            return;
+        }
+
+        // else try classpath
+
+        final URL res = Thread.currentThread().getContextClassLoader().getResource(location);
         if (res == null) {
             LOGGER.log(Level.WARNING, "Cannot find seed-db resource in the classpath.");
             return;
@@ -75,10 +92,12 @@ public class Provisioning {
             LOGGER.log(Level.WARNING, "Cannot load initial OpenAPI documents because seed-db is at {0}!", res);
             return;
         }
+        doSeeding(new File(res.getFile()));
 
-        final File f = new File(res.getFile());
-        Stream.of(f.listFiles((dir, name) -> name.endsWith(".json"))).forEach(this::seedFile);
+    }
 
+    private void doSeeding(final File f) {
+        Stream.of(ofNullable(f.listFiles((dir, name) -> name.endsWith(".json"))).orElseGet(() -> new File[0])).forEach(this::seedFile);
     }
 
     private void seedFile(final File swaggerFile) {

@@ -24,18 +24,27 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.util.DeserializationModule;
 import org.tomitribe.tribestream.registryng.cdi.Tribe;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
 
+@ApplicationScoped
 public class SwaggerJsonMapperProducer {
-    @Produces
-    @Tribe
-    public ObjectMapper createSwaggerObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
+    private ObjectMapper mapper;
+
+    @PostConstruct
+    private void init() { // simulate app scoped even if not proxyable, makes json caching efficient
+        mapper = new ObjectMapper();
         mapper.registerModule(new DeserializationModule(true, true));
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
+    }
+
+    @Produces
+    @Tribe
+    public ObjectMapper createSwaggerObjectMapper() {
         return mapper;
     }
 

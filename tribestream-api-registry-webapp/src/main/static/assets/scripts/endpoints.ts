@@ -50,7 +50,7 @@ angular.module('tribe-endpoints', [
                             });
                         });
                     };
-                    srv.getApplicationDetails($scope.app).then(function (response) {
+                    srv.getApplicationDetailsFromName($scope.app).then(function (response) {
                         $timeout(function () {
                             $scope.$apply(function () {
                                 let data = response.data;
@@ -71,7 +71,8 @@ angular.module('tribe-endpoints', [
                                                 operation: opname,
                                                 summary: ops[opname].summary,
                                                 description: ops[opname].description,
-                                                id: endpointId
+                                                id: endpointId,
+                                                humanReadablePath: ops[opname]['vendorExtensions']['x-tribestream-api-registry']['human-readable-path']
                                             };
                                             endpoints.push(operationObject);
                                         }
@@ -81,6 +82,7 @@ angular.module('tribe-endpoints', [
                                 $scope.categories = data.categories;
                                 $scope.tags = data.tags;
                                 $scope.roles = data.roles;
+                                $scope.applicationName = data.humanReadableName;
                             });
                         });
                     });
@@ -152,6 +154,7 @@ angular.module('tribe-endpoints', [
                             _.each(applicationsMap, function (endpoints, applicationId) {
                                 applications.push({
                                     applicationId: applicationId,
+                                    applicationName: endpoints[0]['applicationName'],
                                     name: endpoints[0].application,
                                     endpoints: endpoints
                                 });
@@ -248,6 +251,7 @@ angular.module('tribe-endpoints', [
                                 _.each(applicationsMap, function (endpoints, applicationId) {
                                     applications.push({
                                         applicationId: applicationId,
+                                        applicationName: endpoints[0]['applicationName'],
                                         name: endpoints[0].application,
                                         version: endpoints[0].applicationVersion,
                                         endpoints: endpoints
