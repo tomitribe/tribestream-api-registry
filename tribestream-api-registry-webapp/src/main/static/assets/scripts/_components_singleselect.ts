@@ -10,7 +10,8 @@ angular.module('website-components-singleselect', [
                 originalAvailableOptions: '=availableOptions',
                 originalSelectedOption: '=selectedOption',
                 originalGetOptionText: '=getOptionText',
-                newLabel: '@?'
+                newLabel: '@?',
+                placeholder: '@?'
             },
             templateUrl: 'app/templates/component_singleselect.html',
             controller: ['$scope', '$timeout', ($scope, $timeout) => $timeout(() => {
@@ -294,7 +295,8 @@ angular.module('website-components-singleselect', [
                 onCommit: '&',
                 onSelectTopDownOption: '&',
                 onSelectBottomUpOption: '&',
-                inputText: '='
+                inputText: '=',
+                placeholder: '='
             },
             templateUrl: 'app/templates/component_singleselect_selected.html',
             controller: ['$scope', '$timeout', ($scope, $timeout) => {
