@@ -493,115 +493,129 @@ angular.module('tribe-endpoints-details', [
         };
     }])
 
-    .directive('appEndpointsDetails', [function () {
-        return {
-            restrict: 'A',
-            templateUrl: 'app/templates/app_endpoints_details.html',
-            scope: {
-                'applicationId': '=',
-                'endpointId': '='
-            },
-            controller: [
-                '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', 'systemMessagesService', 'tribeLinkHeaderService',
-                function ($scope, srv, tribeFilterService, $timeout, $filter, $log, systemMessagesService, tribeLinkHeaderService) {
-                    $timeout(function () {
-                        $scope.$apply(function () {
-                            $scope.history = null;
-                            $scope.endpoint = {
-                                httpMethod: "",
-                                path: "",
-                                operation: {}
-                            };
-                        });
-                    }).then(function () {
-                        srv.getDetails($scope.applicationId, $scope.endpointId).then(function (detailsResponse) {
-                            if(detailsResponse.headers) {
-                                let links = tribeLinkHeaderService.parseLinkHeader(detailsResponse.headers('link'));
-                                $scope.historyLink = links['history'];
-                                $timeout(function () {
-                                    $scope.$apply(function () {
-                                        let detailsData = detailsResponse.data;
-                                        $scope.endpoint.httpMethod = detailsData.httpMethod;
-                                        $scope.endpoint.path = $filter('pathencode')(detailsData.path);
-                                        $scope.endpoint.operation = detailsData.operation;
-                                    });
-                                });
-                            }
-                            srv.getApplicationDetails($scope.applicationId).then(function (applicationDetails) {
-                                $timeout(function () {
-                                    $scope.$apply(function () {
-                                        if (!applicationDetails.data || !applicationDetails.data.swagger) {
-                                            $log.error("Got no application details!");
-                                        }
-                                        $scope.application = applicationDetails.data;
-                                    });
-                                });
-                            });
-                        });
-                    });
-                    $scope.save = function () {
-                        srv.saveEndpoint($scope.applicationId, $scope.endpointId, {
-                            // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
-                            httpMethod: $scope.endpoint.httpMethod,
-                            path: $scope.endpoint.path,
-                            operation: $scope.endpoint.operation
-                        })
-                            .then(
-                            function (saveResponse) {
-                                systemMessagesService.info("Saved endpoint details! " + saveResponse.status);
-                            }
-                        );
-                    };
-                    // Triggered by the Show History button on the endpoint details page to show the revision log for that entity
-                    // TODO: Pagination!
-                    $scope.showHistory = function() {
-                        srv.getEndpointHistory($scope.historyLink).then(function(response) {
+.directive('appEndpointsDetails', [function () {
+  return {
+    restrict: 'A',
+    templateUrl: 'app/templates/app_endpoints_details.html',
+    scope: {
+      'requestMetadata': '='
+    },
+    controller: [
+      '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', 'systemMessagesService', 'tribeLinkHeaderService',
+      function ($scope, srv, tribeFilterService, $timeout, $filter, $log, systemMessagesService, tribeLinkHeaderService) {
+        $timeout(function () {
+          $scope.$apply(function () {
+            $scope.history = null;
+            $scope.endpoint = {
+              httpMethod: "",
+              path: "",
+              operation: {}
+            };
+          });
+        }).then(function () {
+          if ($scope.requestMetadata.endpointPath) {
+            srv.getDetailsFromMetadata($scope.requestMetadata)
+            .then(function (detailsResponse) {
+              $scope.applicationId = detailsResponse.data.applicationId;
+              $scope.endpointId = detailsResponse.data.endpointId;
 
-                            let links = tribeLinkHeaderService.parseLinkHeader(response.headers('link'));
-                            for (let entry of response.data) {
-                                entry.link = links["revision " + entry.revisionId];
-                            }
+              if(detailsResponse.headers) {
+                let links = tribeLinkHeaderService.parseLinkHeader(detailsResponse.headers('link'));
+                $scope.historyLink = links['history'];
+                $timeout(function () {
+                  $scope.$apply(function () {
+                    let detailsData = detailsResponse.data;
+                    $scope.endpoint.httpMethod = detailsData.httpMethod;
+                    $scope.endpoint.path = $filter('pathencode')(detailsData.path);
+                    $scope.endpoint.operation = detailsData.operation;
+                  });
+                });
+              }
+              srv.getApplicationDetails($scope.applicationId).then(function (applicationDetails) {
+                $timeout(function () {
+                  $scope.$apply(function () {
+                    if (!applicationDetails.data || !applicationDetails.data.swagger) {
+                      $log.error("Got no application details!");
+                    }
+                    $scope.application = applicationDetails.data;
+                  });
+                });
+              });
+            });
+          } else {
+            srv.getApplicationFromName($scope.requestMetadata.applicationName).then(function (applicationDetails) {
+              $timeout(function () {
+                $scope.$apply(function () {
+                  if (!applicationDetails.data || !applicationDetails.data.swagger) {
+                    $log.error("Got no application details!");
+                  }
+                  $scope.application = applicationDetails.data;
+                });
+              });
+            });
+          }
+          $scope.save = function () {
+            srv.saveEndpoint($scope.applicationId, $scope.endpointId, {
+              // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
+              httpMethod: $scope.endpoint.httpMethod,
+              path: $scope.endpoint.path,
+              operation: $scope.endpoint.operation
+            }).then(
+              function (saveResponse) {
+                systemMessagesService.info("Saved endpoint details! " + saveResponse.status);
+              }
+            );
+          };
+          // Triggered by the Show History button on the endpoint details page to show the revision log for that entity
+          // TODO: Pagination!
+          $scope.showHistory = function() {
+            srv.getEndpointHistory($scope.historyLink).then(function(response) {
 
-                            $timeout(function () {
-                                $scope.$apply(function () {
-                                    $scope.history = response.data;
-                                });
-                            });
-                        });
-                    };
-                    // Triggered by the "Close History" button to close the Revision Log in whatever form it will be
-                    // presented
-                    $scope.closeHistory = function() {
-                        $timeout(function () {
-                            $scope.$apply(function () {
-                                $scope.history = null;
-                            });
-                        });
-                    };
-                    // Triggered by selecting one revision, will load it and show it
-                    $scope.showHistoricEndpoint = function(historyItem) {
-                        $timeout(function () {
-                            $scope.$apply(function () {
-                                $scope.history = null;
-                            });
-                        });
-                        srv.getHistoricEndpoint(historyItem).then(function(response) {
-                            $timeout(function () {
-                                $scope.$apply(function () {
-                                    let detailsData = response.data;
-                                    $scope.historyItem = historyItem;
-                                    $scope.endpoint.httpMethod = detailsData.httpMethod;
-                                    $scope.endpoint.path = $filter('pathencode')(detailsData.path);
-                                    $scope.endpoint.operation = detailsData.operation;
-                                });
-                            });
-                        });
-                    };
-                }
-            ]
-        };
-    }])
+              let links = tribeLinkHeaderService.parseLinkHeader(response.headers('link'));
+              for (let entry of response.data) {
+                entry.link = links["revision " + entry.revisionId];
+              }
 
-    .run(function () {
-        // placeholder
-    });
+              $timeout(function () {
+                $scope.$apply(function () {
+                  $scope.history = response.data;
+                });
+              });
+            });
+          };
+          // Triggered by the "Close History" button to close the Revision Log in whatever form it will be
+          // presented
+          $scope.closeHistory = function() {
+            $timeout(function () {
+              $scope.$apply(function () {
+                $scope.history = null;
+              });
+            });
+          };
+          // Triggered by selecting one revision, will load it and show it
+          $scope.showHistoricEndpoint = function(historyItem) {
+            $timeout(function () {
+              $scope.$apply(function () {
+                $scope.history = null;
+              });
+            });
+            srv.getHistoricEndpoint(historyItem).then(function(response) {
+              $timeout(function () {
+                $scope.$apply(function () {
+                  let detailsData = response.data;
+                  $scope.historyItem = historyItem;
+                  $scope.endpoint.httpMethod = detailsData.httpMethod;
+                  $scope.endpoint.path = $filter('pathencode')(detailsData.path);
+                  $scope.endpoint.operation = detailsData.operation;
+                });
+              });
+            });
+          };
+        });
+      }]
+    };
+  }])
+
+  .run(function () {
+    // placeholder
+  });

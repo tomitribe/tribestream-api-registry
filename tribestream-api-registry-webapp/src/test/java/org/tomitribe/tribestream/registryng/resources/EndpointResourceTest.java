@@ -23,6 +23,7 @@ import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 import org.apache.openejb.testing.Application;
 import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
@@ -56,6 +57,11 @@ public class EndpointResourceTest {
 
     @Inject
     private SearchEngine engine;
+
+    @After
+    public void reset() {
+        registry.restoreData();
+    }
 
     @Test
     public void shouldDeleteEndpoint() throws Exception {
@@ -133,7 +139,9 @@ public class EndpointResourceTest {
         final String newSummary = UUID.randomUUID().toString();
         final Operation newOperation = new Operation();
         newOperation.setSummary(newSummary);
-        final EndpointWrapper endpointWrapper = new EndpointWrapper(newVerb, newPath, newOperation);
+        final EndpointWrapper endpointWrapper = new EndpointWrapper(
+                originalEndpoint.getApplicationId(), originalEndpoint.getEndpointId(), originalEndpoint.getHumanReadablePath(),
+                newVerb, newPath, newOperation);
 
         Response response = registry.client().target(endpointUrl)
                 .request(MediaType.APPLICATION_JSON_TYPE)

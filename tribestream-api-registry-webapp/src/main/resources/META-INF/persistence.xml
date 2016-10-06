@@ -45,6 +45,9 @@
             <property name="hibernate.hbm2ddl.auto" value="update"/>
             <property name="org.hibernate.envers.store_data_at_delete" value="true"/>
 
+            <!-- there is a chicken egg problem between JPA and CDI and eagerness of hibernate makes it "in use" so this is a workaround for that -->
+            <property name="tomee.jpa.factory.lazy" value="true" />
+
             <property name="show_sql" value="true"/>
         </properties>
     </persistence-unit>

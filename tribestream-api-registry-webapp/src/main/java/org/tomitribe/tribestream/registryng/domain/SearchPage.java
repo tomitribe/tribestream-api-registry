@@ -18,88 +18,21 @@
  */
 package org.tomitribe.tribestream.registryng.domain;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.Collection;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class SearchPage {
     private Collection<SearchResult> results;
+    private int total;
+    private int current;
     private Collection<CloudItem> applications;
     private Collection<CloudItem> categories;
     private Collection<CloudItem> tags;
     private Collection<CloudItem> roles;
-    private int total;
-    private int current;
-
-    public SearchPage() {
-        // no-op
-    }
-
-    public SearchPage(final Collection<SearchResult> results, final int total, final int current,
-                      final Collection<CloudItem> aggregatedApplications,
-                      final Collection<CloudItem> aggregatedCategories,
-                      final Collection<CloudItem> aggregatedTags,
-                      final Collection<CloudItem> aggregatedRoles) {
-        this.results = results;
-        this.total = total;
-        this.current = current;
-        this.applications = aggregatedApplications;
-        this.categories = aggregatedCategories;
-        this.tags = aggregatedTags;
-        this.roles = aggregatedRoles;
-    }
-
-    public Collection<CloudItem> getApplications() {
-        return applications;
-    }
-
-    public void setApplications(final Collection<CloudItem> applications) {
-        this.applications = applications;
-    }
-
-    public Collection<CloudItem> getCategories() {
-        return categories;
-    }
-
-    public void setCategories(final Collection<CloudItem> categories) {
-        this.categories = categories;
-    }
-
-    public Collection<CloudItem> getTags() {
-        return tags;
-    }
-
-    public Collection<CloudItem> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Collection<CloudItem> roles) {
-        this.roles = roles;
-    }
-
-    public void setTags(final Collection<CloudItem> tags) {
-        this.tags = tags;
-    }
-
-    public Collection<SearchResult> getResults() {
-        return results;
-    }
-
-    public void setResults(final Collection<SearchResult> results) {
-        this.results = results;
-    }
-
-    public int getTotal() {
-        return total;
-    }
-
-    public void setTotal(final int total) {
-        this.total = total;
-    }
-
-    public int getCurrent() {
-        return current;
-    }
-
-    public void setCurrent(final int current) {
-        this.current = current;
-    }
 }

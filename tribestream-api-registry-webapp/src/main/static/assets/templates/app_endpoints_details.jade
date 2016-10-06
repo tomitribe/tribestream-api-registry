@@ -3,7 +3,7 @@ div
     a(href=".")
       i.fa.fa-home
     i.fa.fa-chevron-right
-    a(x-ng-href="application/{{applicationId}}") {{application.swagger.info.title}}
+    a(x-ng-href="application/{{application.humanReadableName}}") {{application.swagger.info.title}}
     i.fa.fa-chevron-right
     span(x-ng-if="historyItem") Revision {{historyItem.revisionId}} by {{historyItem.username}} created on {{historyItem.timestamp | date:'medium'}}
     .actions

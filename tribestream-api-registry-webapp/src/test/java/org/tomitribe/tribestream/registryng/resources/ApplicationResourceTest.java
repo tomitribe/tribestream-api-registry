@@ -25,6 +25,7 @@ import io.swagger.models.Swagger;
 import io.swagger.models.Tag;
 import org.apache.openejb.testing.Application;
 import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.tomitribe.tribestream.registryng.cdi.Tribe;
@@ -32,6 +33,7 @@ import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
 import org.tomitribe.tribestream.registryng.domain.SearchResult;
+import org.tomitribe.tribestream.registryng.entities.Normalizer;
 import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 
 import javax.inject.Inject;
@@ -66,6 +68,11 @@ public class ApplicationResourceTest {
     @Inject
     private SearchEngine engine;
 
+    @After
+    public void reset() {
+        registry.restoreData();
+    }
+
     @Test(expected = NotAuthorizedException.class)
     public void applicationEndpointsAreSecured() throws Exception {
         registry.target(false).path("api/application")
@@ -94,7 +101,7 @@ public class ApplicationResourceTest {
             final int oldApplicationCount = loadAllApplications().size();
 
             final Swagger swagger = objectMapper.readValue(getClass().getResourceAsStream("/api-with-examples.json"), Swagger.class);
-            final ApplicationWrapper request = new ApplicationWrapper(swagger);
+            final ApplicationWrapper request = new ApplicationWrapper(swagger, Normalizer.normalize(swagger.getInfo().getTitle()));
 
             // When: The Swagger document is posted to the application resource
             final Response response = registry.target().path("api/application")
@@ -155,7 +162,7 @@ public class ApplicationResourceTest {
                 "  }\n" +
                 "}";
         final Swagger createSwagger = objectMapper.readValue(initialDocument, Swagger.class);
-        final ApplicationWrapper createRequest = new ApplicationWrapper(createSwagger);
+        final ApplicationWrapper createRequest = new ApplicationWrapper(createSwagger, null);
         final Response newApplicationWrapperResponse = registry.target().path("api/application")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .buildPost(Entity.entity(createRequest, MediaType.APPLICATION_JSON_TYPE))
@@ -165,6 +172,7 @@ public class ApplicationResourceTest {
 
         ApplicationWrapper newApplicationWrapper = newApplicationWrapperResponse.readEntity(ApplicationWrapper.class);
         assertNotNull(newApplicationWrapper);
+        assertEquals("Test-API", newApplicationWrapper.getHumanReadableName());
 
         // When: I add tags and a path to the application
         final String updateDocument = "{\n" +
@@ -187,7 +195,7 @@ public class ApplicationResourceTest {
                 "  ]\n" +
                 "}";
         final Swagger updateSwagger = objectMapper.readValue(updateDocument, Swagger.class);
-        final ApplicationWrapper updateRequest = new ApplicationWrapper(updateSwagger);
+        final ApplicationWrapper updateRequest = new ApplicationWrapper(updateSwagger, null);
 
         final ApplicationWrapper updatedApplicationWrapper = registry.client().target(newApplicationWrapperResponse.getLink("self"))
                 .request(MediaType.APPLICATION_JSON_TYPE)
@@ -196,6 +204,7 @@ public class ApplicationResourceTest {
         // Then: The old information is still present
         assertNotNull(updatedApplicationWrapper);
         assertEquals("Test API", updatedApplicationWrapper.getSwagger().getInfo().getTitle());
+        assertEquals("Test-API", updatedApplicationWrapper.getHumanReadableName());
         assertEquals("v2", updatedApplicationWrapper.getSwagger().getInfo().getVersion());
 
         // And: The new information is applied as well

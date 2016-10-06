@@ -22,6 +22,7 @@ package org.tomitribe.tribestream.registryng.resources;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.openejb.testing.Application;
 import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.tomitribe.tribestream.registryng.cdi.Tribe;
@@ -57,6 +58,11 @@ public class ApplicationHistoryResourceTest {
     private Registry registry;
 
     private Random random = new Random(System.currentTimeMillis());
+
+    @After
+    public void reset() {
+        registry.restoreData();
+    }
 
     @Test
     public void shouldLoadApplicationHistory() {
@@ -144,12 +150,6 @@ public class ApplicationHistoryResourceTest {
         assertEquals(newDescription, currentApplicationWrapper.getSwagger().getInfo().getDescription());
         assertEquals(oldDescription, oldApplicationWrapper.getSwagger().getInfo().getDescription());
 
-    }
-
-
-    private ApplicationWrapper loadApplication(final String applicationId) {
-        return loadApplicationResponse(applicationId)
-                .readEntity(ApplicationWrapper.class);
     }
 
     private Response loadApplicationResponse(final String applicationId) {
