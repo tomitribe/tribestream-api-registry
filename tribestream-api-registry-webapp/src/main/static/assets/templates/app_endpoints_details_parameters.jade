@@ -21,18 +21,22 @@ div
               div(data-tribe-singleselect,
                 data-editable="true",
                 data-selected-option="param.name",
+                data-placeholder="",
                 data-available-options="['Authorization', 'Date', 'Content-Type', 'Accept']")
             td
               div(data-tribe-singleselect,
                 data-selected-option="param.type",
+                data-placeholder="",
                 data-available-options="['integer', 'long', 'float', 'double', 'string', 'byte', 'binary', 'boolean', 'date', 'dateTime', 'password']")
             td
               div(data-tribe-singleselect,
                   data-selected-option="param.in",
+                  data-placeholder="",
                   data-available-options="[{text:'Query', value:'query'}, {text:'Header', value:'header'}, {text:'Path', value:'path'}, {text:'Form data', value:'formData'}, {text:'Body', value:'body'}]")
             td
               div(data-tribe-singleselect,
                   data-selected-option="param.required",
+                  data-placeholder="No",
                   data-available-options="[{text: 'Yes', value: true}, {text: 'No', value: false}]")
             td.description
               div
