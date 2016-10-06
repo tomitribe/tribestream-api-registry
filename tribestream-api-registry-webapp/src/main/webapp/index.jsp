@@ -37,12 +37,12 @@
             document.write("<base href='" + window.location.protocol + result + "' />");
         }());
     </script>
-    <link rel="stylesheet" href="app/third-party/styles/_.css"/>
-    <link rel="stylesheet" href="app/styles/_.css"/>
+    <link rel="stylesheet" href="<%=request.getContextPath()%>/app/third-party/styles/_.css"/>
+    <link rel="stylesheet" href="<%=request.getContextPath()%>/app/styles/_.css"/>
     <% if(testing) { %>
-        <link rel="stylesheet" href="app/third-party/styles/_tests.css"/>
+        <link rel="stylesheet" href="<%=request.getContextPath()%>/app/third-party/styles/_tests.css"/>
     <% } %>
-    <link rel="icon" href="app/images/favicon.png">
+    <link rel="icon" href="<%=request.getContextPath()%>/app/images/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width">
 </head>
@@ -55,26 +55,26 @@
     <div class="app-loading"></div>
 </div>
 <% if(testing) { %>
-    <script type="text/javascript" src="app/third-party/_tests_1.js"></script>
+    <script type="text/javascript" src="<%=request.getContextPath()%>/app/third-party/_tests_1.js"></script>
     <script type="text/javascript">
         mocha.setup({
             "ui": "bdd",
             "reporter": "html"
         });
     </script>
-    <script type="text/javascript" src="app/third-party/_tests_2.js"></script>
+    <script type="text/javascript" src="<%=request.getContextPath()%>/app/third-party/_tests_2.js"></script>
 <% } else { %>
-    <script type="text/javascript" src="app/third-party/_.js"></script>
+    <script type="text/javascript" src="<%=request.getContextPath()%>/app/third-party/_.js"></script>
 <% } %>
-<script type="text/javascript" src="app/scripts/_.js"></script>
+<script type="text/javascript" src="<%=request.getContextPath()%>/app/scripts/_.js"></script>
 <% if(testing) { %>
     <div id="mocha"></div>
-    <script type="text/javascript" src="app/scripts/_tests.js"></script>
+    <script type="text/javascript" src="<%=request.getContextPath()%>/app/scripts/_tests.js"></script>
     <script type="text/javascript">
         mocha.run();
     </script>
 <% } else { %>
-<script type="text/javascript" src="app/scripts/_templates.js"></script>
+<script type="text/javascript" src="<%=request.getContextPath()%>/app/scripts/_templates.js"></script>
 <% } %>
 </body>
 </html>

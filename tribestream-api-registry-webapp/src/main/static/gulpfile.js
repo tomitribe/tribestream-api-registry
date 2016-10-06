@@ -28,7 +28,8 @@ gulp.task('css-third-party', function () {
         './bower_components/open-sans/css/open-sans.min.css',
         './bower_components/normalize-css/normalize.css',
         './bower_components/font-awesome/css/font-awesome.min.css',
-        './bower_components/codemirror/lib/codemirror.css'
+        './bower_components/codemirror/lib/codemirror.css',
+        './bower_components/codemirror/addon/merge/merge.css'
         ]),
         // wrap simplemde and highlightjs because it changes existing codemirror code.
         gulp.src([
@@ -185,7 +186,10 @@ gulp.task('js-third-party', function () {
         './bower_components/ngstorage/ngStorage.min.js',
         './bower_components/angular-cookies/angular-cookies.min.js',
         './bower_components/angular-resource/angular-resource.min.js',
+        './bower_components/google-diff-match-patch-js/diff_match_patch.js',
         './bower_components/codemirror/lib/codemirror.js',
+        './bower_components/codemirror/addon/merge/merge.js',
+        './bower_components/codemirror/mode/javascript/javascript.js',
         './bower_components/angular-ui-codemirror/ui-codemirror.min.js',
         './bower_components/codemirror/mode/markdown/markdown.js',
         './bower_components/marked/lib/marked.js',

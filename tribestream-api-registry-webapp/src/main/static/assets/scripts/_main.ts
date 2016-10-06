@@ -14,8 +14,10 @@ angular.module('tribe-main', [
 ])
 
     .config([
-        '$locationProvider', '$routeProvider', '$httpProvider',
-        function ($locationProvider, $routeProvider, $httpProvider) {
+        '$locationProvider', '$routeProvider', '$httpProvider', '$logProvider',
+        function ($locationProvider, $routeProvider, $httpProvider, $logProvider) {
+            $logProvider.debugEnabled(false); // GUI is really too slow, let's use a debugger if needed
+
             // important so that we can intercept any 401 and fire
             // an authentication process
             $httpProvider.interceptors.push('httpInterceptor');

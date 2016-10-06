@@ -22,6 +22,8 @@ package org.tomitribe.tribestream.registryng.resources;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.openejb.testing.Application;
 import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
+import org.hibernate.envers.AuditReader;
+import org.hibernate.envers.AuditReaderFactory;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,11 +32,15 @@ import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.HistoryItem;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
 import org.tomitribe.tribestream.registryng.domain.SearchResult;
+import org.tomitribe.tribestream.registryng.entities.Endpoint;
 
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -43,8 +49,10 @@ import java.util.UUID;
 
 import static javax.ws.rs.client.Entity.entity;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.tomitribe.tribestream.registryng.resources.Registry.TESTUSER;
 
 @RunWith(TomEEEmbeddedSingleRunner.class)
@@ -55,6 +63,9 @@ public class EndpointHistoryResourceTest {
 
     @Application
     private Registry registry;
+
+    @PersistenceContext
+    private EntityManager em;
 
     private Random random = new Random(System.currentTimeMillis());
 
@@ -96,6 +107,36 @@ public class EndpointHistoryResourceTest {
         assertNotNull(historyResponse.getLink("last"));
         assertNotNull(historyResponse.getLink("self"));
         historyResponse.getLinks().forEach(System.out::println);
+    }
+
+    @Test
+    public void loadRevisionHasPayload() {
+        // Given: A random application
+        Collection<SearchResult> searchResults = getSearchPage().getResults();
+        final SearchResult searchResult = new ArrayList<>(searchResults).get(random.nextInt(searchResults.size()));
+
+        final String applicationId = searchResult.getApplicationId();
+        final String endpointId = searchResult.getEndpointId();
+
+        final AuditReader auditReader = AuditReaderFactory.get(em);
+        final Number revision = auditReader.getRevisions(Endpoint.class, endpointId).iterator().next();
+
+        final String json = registry.target()
+                .path("api/history/application/{applicationId}/endpoint/{endpointId}/{revision}")
+                .resolveTemplate("applicationId", applicationId)
+                .resolveTemplate("endpointId", endpointId)
+                .resolveTemplate("revision", revision.intValue())
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(EndpointWrapper.class)
+                .getJson();
+
+        assertNotNull(json);
+        assertFalse(json.trim().isEmpty());
+        try { // valid it is json
+            new ObjectMapper().readTree(json);
+        } catch (final IOException e) {
+            fail(e.getMessage());
+        }
     }
 
     @Test
