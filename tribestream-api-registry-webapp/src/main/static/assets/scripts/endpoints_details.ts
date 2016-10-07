@@ -32,6 +32,11 @@ angular.module('tribe-endpoints-details', [
                 $scope.$watch('application', function () {
                     // Compute endpoint URL
                     if ($scope.application && $scope.application.swagger && $scope.application.swagger.host && $scope.application.swagger.basePath) {
+                        $scope.$watch('endpoint.path', () => {
+                            if($scope.endpoint && $scope.endpoint.path) {
+                                $scope.resourceUrl = srv.getBaseUrl($scope.application.swagger, $scope.endpoint.path) + $scope.endpoint.path;
+                            }
+                        });
                         $timeout(function () {
                             $scope.$apply(function () {
                                 // TODO: Reflect changes back to scheme into model
