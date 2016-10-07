@@ -13,6 +13,7 @@ var autoprefixer = require('gulp-autoprefixer');
 var angularTemplateCache = require('gulp-angular-templatecache');
 var cssWrap = require('gulp-css-wrap');
 var merge = require('merge-stream');
+var insert = require('gulp-insert');
 
 gulp.task('css', gulpsync.sync(['images', 'css-build', 'css-third-party', 'css-third-party-resources']));
 gulp.task('images', function () {
@@ -176,7 +177,10 @@ gulp.task('copy-ts', function () {
 });
 
 gulp.task('js-third-party', function () {
-    return es.concat(gulp.src([
+    return es.concat(merge(
+      gulp.src(['./bower_components/google-diff-match-patch-js/diff_match_patch.js']) // misses a semicolon or comma to be concatenable
+        .pipe(insert.append(';')),
+      gulp.src([
         './bower_components/underscore/underscore-min.js',
         './bower_components/jquery/dist/jquery.min.js',
         './bower_components/js-base64/base64.min.js',
@@ -186,7 +190,6 @@ gulp.task('js-third-party', function () {
         './bower_components/ngstorage/ngStorage.min.js',
         './bower_components/angular-cookies/angular-cookies.min.js',
         './bower_components/angular-resource/angular-resource.min.js',
-        './bower_components/google-diff-match-patch-js/diff_match_patch.js',
         './bower_components/codemirror/lib/codemirror.js',
         './bower_components/codemirror/addon/merge/merge.js',
         './bower_components/codemirror/mode/javascript/javascript.js',
@@ -196,7 +199,7 @@ gulp.task('js-third-party', function () {
         './bower_components/angular-marked/dist/angular-marked.min.js',
         './bower_components/simplemde/dist/simplemde.min.js',
         './bower_components/highlightjs/highlight.pack.js'
-    ]).pipe(concat('_.js')).pipe(gulp.dest('../../../target/static-resources/app/third-party/')));
+    ])).pipe(concat('_.js')).pipe(gulp.dest('../../../target/static-resources/app/third-party/')));
 });
 
 gulp.task('copy-all', function () {
