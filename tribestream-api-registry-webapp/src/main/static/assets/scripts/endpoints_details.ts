@@ -50,7 +50,10 @@ angular.module('tribe-endpoints-details', [
                         });
                     }
                 });
-            }]
+            }],
+            link: (scope, el) => {
+                scope.$on('$destroy', () => el.remove());
+            }
         };
     }])
 
