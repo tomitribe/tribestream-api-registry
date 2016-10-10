@@ -1,7 +1,8 @@
 div(tabindex=0, x-ng-click="open()")
   .value
     span(ng-show="valueText && valueText.trim() !== ''") {{valueText}}
-    span.empty(ng-show="!valueText || valueText.trim() === ''") {{emptyText}}
+    span(ng-show="!(valueText && valueText.trim() !== '') && defaultText && defaultText.trim() !== ''") {{defaultText}}
+    span.empty(ng-show="!(valueText && valueText.trim() !== '') && !(defaultText && defaultText.trim() !== '')") {{emptyText}}
     div
       i.fa.fa-caret-up
       i.fa.fa-caret-down

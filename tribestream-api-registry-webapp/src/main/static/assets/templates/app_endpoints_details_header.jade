@@ -9,8 +9,8 @@ div
   .resourceUrl(x-ng-if="resourceUrl")
     h2(app-endpoints-details-toc-anchor="Resource URL") Resource URL
     div
-      i(data-tribe-editable-option, data-value="endpointProtocol", data-options="['http', 'https']")
+      i(data-tribe-editable-option, data-value="endpoint.operation['x-tribestream-api-registry']['endpoint-protocol']", data-options="['http', 'https']", data-default-text='http')
       span ://
-      a(x-ng-href="{{endpointProtocol + '://' + resourceUrl}}") {{resourceUrl}}
+      a(x-ng-href="{{ (endpoint.operation['x-tribestream-api-registry']['endpoint-protocol'] || 'http') + '://' + resourceUrl}}") {{resourceUrl}}
 
 
