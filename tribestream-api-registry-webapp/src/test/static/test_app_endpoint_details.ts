@@ -112,4 +112,33 @@ describe('it tests the endpoint details page', () => {
         });
     });
 
+    it('should update resource url on path commit', (done) => {
+        let scope = rootScope.$new();
+        scope.application = {
+            swagger: {
+                host: 'lala',
+                basePath: 'tete'
+            }
+        };
+        scope.endpoint = {
+            path: 'titi',
+            operation: {
+                schemes: []
+            }
+        };
+        let element = angular.element('<div data-app-endpoints-details-header></div>');
+        compile(element)(scope);
+        // append to body so we can click on it.
+        element.appendTo(document.find('body'));
+        timeoutTryCatch(200, done, () => {
+            let computedScope = element.find('> div').scope();
+            expect(computedScope.resourceUrl).to.equal('lalatetetiti');
+            computedScope.endpoint.path = 'toto';
+            timeoutTryCatch(200, done, () => {
+                expect(computedScope.resourceUrl).to.equal('lalatetetoto');
+                done();
+            });
+        });
+    });
+
 });
