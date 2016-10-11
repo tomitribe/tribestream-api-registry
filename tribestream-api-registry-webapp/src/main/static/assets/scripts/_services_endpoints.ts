@@ -223,7 +223,23 @@ module services {
                     saveEndpoint(endpointLink, endpoint) {
                         return {
                             then: function (successCallback, errorCallback) {
-                                $http.put(`api/application/${applicationId}/endpoint/${endpointId ? endpointId : ''}`, endpoint)
+                                $http.put(endpointLink, endpoint)
+                                    .then(
+                                        function (data) {
+                                            if (data && data.data && data.data.operation) {
+                                                // we will have at most one result. only one application queried.
+                                                successCallback(data);
+                                            }
+                                        },
+                                        tribeErrorHandlerService.ensureErrorHandler(errorCallback)
+                                    );
+                            }
+                        };
+                    },
+                    createEndpoint(endpointsLink, endpoint) {
+                        return {
+                            then: function (successCallback, errorCallback) {
+                                $http.post(endpointsLink, endpoint)
                                     .then(
                                         function (data) {
                                             if (data && data.data && data.data.operation) {
