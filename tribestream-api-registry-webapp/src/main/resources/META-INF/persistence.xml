@@ -29,12 +29,12 @@
         <jta-data-source>registryDatasource</jta-data-source>
         <non-jta-data-source>registryDatasourceUnmanaged</non-jta-data-source>
 
-        <class>org.tomitribe.tribestream.registryng.entities.OpenApiDocument</class>
-        <class>org.tomitribe.tribestream.registryng.entities.Endpoint</class>
-        <class>org.tomitribe.tribestream.registryng.entities.Revision</class>
+        <class>org.tomitribe.tribestream.registry.entities.OpenApiDocument</class>
+        <class>org.tomitribe.tribestream.registry.entities.Endpoint</class>
+        <class>org.tomitribe.tribestream.registry.entities.Revision</class>
 
-        <class>org.tomitribe.tribestream.registryng.lucene.File$IndexId</class>
-        <class>org.tomitribe.tribestream.registryng.lucene.File</class>
+        <class>org.tomitribe.tribestream.registry.lucene.File$IndexId</class>
+        <class>org.tomitribe.tribestream.registry.lucene.File</class>
 
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
 
