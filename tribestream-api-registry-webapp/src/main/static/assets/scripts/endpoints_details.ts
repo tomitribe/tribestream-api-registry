@@ -34,11 +34,12 @@ angular.module('tribe-endpoints-details', [
                     if ($scope.application && $scope.application.swagger && $scope.application.swagger.host && $scope.application.swagger.basePath) {
                         $timeout(function () {
                             $scope.$apply(function () {
-                                // TODO: Reflect changes back to scheme into model
-                                if ($scope.endpoint.operation.schemes) {
-                                    $scope.endpointProtocol = $scope.endpoint.operation.schemes.indexOf('https') >= 0 ? 'https' : 'http';
+                                if (!!$scope.endpoint.operation.schemes && $scope.endpoint.operation.schemes[0]) {
+                                    $scope.endpoint.endpointProtocol = $scope.endpoint.operation.schemes[0];
                                 } else if ($scope.application && $scope.application.swagger && $scope.application.swagger.schemes) {
-                                    $scope.endpointProtocol = $scope.application.swagger.schemes.indexOf('https') >= 0 ? 'https' : 'http';
+                                    $scope.endpoint.endpointProtocol = $scope.application.swagger.schemes[0];
+                                } else {
+                                  $scope.endpoint.endpointProtocol = 'http';
                                 }
                                 $scope.resourceUrl = srv.getBaseUrl($scope.application.swagger, $scope.endpoint.path) + $scope.endpoint.path;
                             });
@@ -554,7 +555,10 @@ angular.module('tribe-endpoints-details', [
               });
             });
           }
-          $scope.save = function () {
+          $scope.save = () => {
+            if (!!$scope.endpoint.endpointProtocol) {
+              $scope.endpoint.operation.schemes = [$scope.endpoint.endpointProtocol];
+            }
             srv.saveEndpoint($scope.applicationId, $scope.endpointId, {
               // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
               httpMethod: $scope.endpoint.httpMethod,
