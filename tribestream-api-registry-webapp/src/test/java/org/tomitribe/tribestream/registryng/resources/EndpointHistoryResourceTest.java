@@ -26,6 +26,7 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.tomitribe.tribestream.registryng.cdi.Tribe;
+import org.tomitribe.tribestream.registryng.test.Registry;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.HistoryItem;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
@@ -45,7 +46,7 @@ import static javax.ws.rs.client.Entity.entity;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.tomitribe.tribestream.registryng.resources.Registry.TESTUSER;
+import static org.tomitribe.tribestream.registryng.test.Registry.TESTUSER;
 
 @RunWith(TomEEEmbeddedSingleRunner.class)
 public class EndpointHistoryResourceTest {
