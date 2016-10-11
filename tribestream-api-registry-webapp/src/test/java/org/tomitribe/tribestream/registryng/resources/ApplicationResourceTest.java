@@ -117,10 +117,11 @@ public class ApplicationResourceTest {
             assertEquals("List API versions", applicationWrapper.getSwagger().getPaths().get("/").getGet().getSummary());
             assertEquals("Show API version details", applicationWrapper.getSwagger().getPaths().get("/v2").getGet().getSummary());
 
-            // And: The response contains links for self, history and the two endpoints
-            assertEquals(4, response.getLinks().size());
+            // And: The response contains links for self, history and the two endpoints and where to post new endpoints
+            assertEquals(5, response.getLinks().size());
             assertNotNull(response.getLink("self"));
             assertNotNull(response.getLink("history"));
+            assertNotNull(response.getLink("endpoints"));
             assertNotNull(response.getLink("GET /"));
             assertNotNull(response.getLink("GET /v2"));
 
