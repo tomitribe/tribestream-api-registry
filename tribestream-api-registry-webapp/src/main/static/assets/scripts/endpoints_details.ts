@@ -610,7 +610,7 @@ angular.module('tribe-endpoints-details', [
           // Triggered by the Show History button on the endpoint details page to show the revision log for that entity
           // TODO: Pagination!
           $scope.showHistory = function() {
-            srv.getEndpointHistory($scope.historyLink).then(function(response) {
+            srv.getHistory($scope.historyLink).then(function(response) {
 
               let links = tribeLinkHeaderService.parseLinkHeader(response.headers('link'));
               for (let entry of response.data) {
@@ -640,7 +640,7 @@ angular.module('tribe-endpoints-details', [
                 $scope.history = null;
               });
             });
-            srv.getHistoricEndpoint(historyItem).then(function(response) {
+            srv.getHistoricItem(historyItem).then(function(response) {
               $timeout(function () {
                 $scope.$apply(function () {
                   let detailsData = response.data;
