@@ -17,6 +17,7 @@ div
         div(data-app-endpoints-details-response-request)
         div(data-app-endpoints-details-history)
         div
-          button.orange(x-ng-click="save()") Save
-          button.orange(x-ng-click="showHistory()") Show History
+          button.orange(x-ng-if="endpointLink" x-ng-click="save()") Save
+          button.orange(x-ng-if="endpointsLink" x-ng-click="create()") Create
+          button.orange(x-ng-if="historyLink" x-ng-click="showHistory()") Show History
     div(data-app-footer)

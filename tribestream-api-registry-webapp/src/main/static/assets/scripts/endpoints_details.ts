@@ -526,10 +526,11 @@ angular.module('tribe-endpoints-details', [
             .then(function (detailsResponse) {
               $scope.applicationId = detailsResponse.data.applicationId;
               $scope.endpointId = detailsResponse.data.endpointId;
-
               if(detailsResponse.headers) {
                 let links = tribeLinkHeaderService.parseLinkHeader(detailsResponse.headers('link'));
                 $scope.historyLink = links['history'];
+                $scope.endpointLink = links['self'];
+                $scope.endpointsLink = null;
                 $timeout(function () {
                   $scope.$apply(function () {
                     let detailsData = detailsResponse.data;
@@ -551,19 +552,23 @@ angular.module('tribe-endpoints-details', [
               });
             });
           } else {
-            srv.getApplicationFromName($scope.requestMetadata.applicationName).then(function (applicationDetails) {
+            srv.getApplicationDetailsFromName($scope.requestMetadata.applicationName).then(function (response) {
               $timeout(function () {
                 $scope.$apply(function () {
-                  if (!applicationDetails.data || !applicationDetails.data.swagger) {
+                  if (!response.data || !response.data.swagger) {
                     $log.error("Got no application details!");
                   }
-                  $scope.application = applicationDetails.data;
+                  $scope.application = response.data;
+                  let links = tribeLinkHeaderService.parseLinkHeader(response.headers('link'));
+                  $scope.endpointLink = null;
+                  $scope.endpointsLink = links['endpoints'];
+                  $scope.historyLink = null;
                 });
               });
             });
           }
           $scope.save = function () {
-            srv.saveEndpoint($scope.applicationId, $scope.endpointId, {
+            srv.saveEndpoint($scope.endpointLink, $scope.endpoint, {
               // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
               httpMethod: $scope.endpoint.httpMethod,
               path: $scope.endpoint.path,
@@ -571,6 +576,30 @@ angular.module('tribe-endpoints-details', [
             }).then(
               function (saveResponse) {
                 systemMessagesService.info("Saved endpoint details! " + saveResponse.status);
+              }
+            );
+          };
+          $scope.create = function () {
+            srv.createEndpoint($scope.endpointsLink, {
+              // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
+              httpMethod: $scope.endpoint.httpMethod,
+              path: $scope.endpoint.path,
+              operation: $scope.endpoint.operation
+            }).then(
+              function (saveResponse) {
+                $timeout(() => {
+                    $scope.$apply(() => {
+                        $scope.endpointId = saveResponse.data.endpointId;
+                        $scope.endpoint.path = saveResponse.data.path;
+                        $scope.endpoint.httpMethod = saveResponse.data.httpMethod;
+                        $scope.endpoint.operation = saveResponse.data.operation;
+                        let links = tribeLinkHeaderService.parseLinkHeader(saveResponse.headers('link'));
+                        $scope.endpointLink = links['self'];
+                        $scope.historyLink = links['history'];
+                        $scope.endpointsLink = null;
+                    });
+                });
+                systemMessagesService.info("Created new endpoint! " + saveResponse.status);
               }
             );
           };

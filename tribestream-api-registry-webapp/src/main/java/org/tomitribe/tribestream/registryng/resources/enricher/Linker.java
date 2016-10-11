@@ -67,6 +67,12 @@ public class Linker {
                         .resolveTemplate("applicationId", application.getId()))
                         .rel("history")
                         .build());
+        result.add(
+                fromUriBuilder(uriInfo.getBaseUriBuilder()
+                        .path("application/{applicationId}/endpoint")
+                        .resolveTemplate("applicationId", application.getId()))
+                        .rel("endpoints")
+                        .build());
         for (Endpoint endpoint : application.getEndpoints()) {
             result.add(
                     fromUriBuilder(uriInfo.getBaseUriBuilder()
