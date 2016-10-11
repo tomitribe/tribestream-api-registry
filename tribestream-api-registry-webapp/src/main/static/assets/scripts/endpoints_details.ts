@@ -578,7 +578,7 @@ angular.module('tribe-endpoints-details', [
               path: $scope.endpoint.path,
               operation: $scope.endpoint.operation
             }).then(
-              function (saveResponse) {
+              (saveResponse) => {
                 systemMessagesService.info("Saved endpoint details! " + saveResponse.status);
               }
             );
@@ -590,7 +590,7 @@ angular.module('tribe-endpoints-details', [
               path: $scope.endpoint.path,
               operation: $scope.endpoint.operation
             }).then(
-              function (saveResponse) {
+              (saveResponse) => {
                 $timeout(() => {
                     $scope.$apply(() => {
                         $scope.endpointId = saveResponse.data.endpointId;
