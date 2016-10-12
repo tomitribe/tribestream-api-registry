@@ -9,34 +9,34 @@ angular.module('website-components-text', [
                 originalValue: '=value',
                 type: '@'
             },
-            templateUrl: 'app/templates/component_text.html',
+            template: require('../templates/component_text.jade'),
             controller: ['$log', '$scope', ($log, $scope) => $timeout(() => {
-                $scope.version = 0;
-                $scope.fieldDirty = false;
+                $scope['version'] = 0;
+                $scope['fieldDirty'] = false;
                 $scope.$watch('originalValue', () => $timeout(() => $scope.$apply(() => {
-                    $scope.value = _.clone($scope.originalValue);
+                    $scope['value'] = _.clone($scope['originalValue']);
                 })));
-                $scope.onCommit = () =>  $timeout(() => $scope.$apply(() => {
-                    if ($scope.fieldDirty) {
-                        $scope.fieldDirty = false;
-                        $scope.originalValue = _.clone($scope.value);
+                $scope['onCommit'] = () =>  $timeout(() => $scope.$apply(() => {
+                    if ($scope['fieldDirty']) {
+                        $scope['fieldDirty'] = false;
+                        $scope['originalValue'] = _.clone($scope['value']);
                         $scope.$broadcast('fieldCommited');
                     }
                 }));
                 $scope.onCancel = () =>  $timeout(() => $scope.$apply(() => {
-                    $scope.fieldDirty = false;
-                    $scope.value = _.clone($scope.originalValue);
+                    $scope['fieldDirty'] = false;
+                    $scope['value'] = _.clone($scope['originalValue']);
                     $scope.$broadcast('fieldCanceled');
                 }));
                 $scope.onChange = () =>  $timeout(() => $scope.$apply(() => {
-                    $scope.version = $scope.version + 1;
-                    if ($scope.originalValue !== $scope.value) {
-                        $scope.fieldDirty = true;
+                    $scope['version'] = $scope['version'] + 1;
+                    if ($scope['originalValue'] !== $scope['value']) {
+                        $scope['fieldDirty'] = true;
                     }
                 }));
                 $scope.keyEntered = (event) =>  $timeout(() => $scope.$apply(() => {
                     if (event.keyCode === 13 /* Enter */) {
-                        $scope.onCommit();
+                        $scope['onCommit']();
                     } else if (event.keyCode === 27 /* Escape */) {
                         $scope.onCancel();
                     } else {
@@ -55,7 +55,7 @@ angular.module('website-components-text', [
                 let deactivate = () => {
                     cancelDeactivate();
                     deactivatePromise = $timeout(() => {
-                        scope.onCommit();
+                        scope['onCommit']();
                         element.removeClass('active');
                     }, 500);
                 };
@@ -68,8 +68,8 @@ angular.module('website-components-text', [
                     element.addClass('active');
                     input.select();
                     $timeout(() => scope.$apply(() => {
-                        scope.version = scope.version + 1;
-                        scope.fieldDirty = true;
+                        scope['version'] = scope['version'] + 1;
+                        scope['fieldDirty'] = true;
                     }));
                 });
                 element.find('> div').on('focus', () => input.focus());

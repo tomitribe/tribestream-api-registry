@@ -1,5 +1,3 @@
-///<reference path="../../bower_components/DefinitelyTyped/angularjs/angular.d.ts"/>
-
 angular.module('tribe-endpoints-details', [
     'website-services',
     'website-services-endpoints'
@@ -17,7 +15,7 @@ angular.module('tribe-endpoints-details', [
     .directive('appEndpointsDetailsHeader', ['$window', '$timeout', '$filter', function ($window, $timeout, $filter) {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/app_endpoints_details_header.html',
+            template: require('../templates/app_endpoints_details_header.jade'),
             scope: true,
             controller: ['$scope', '$timeout', 'appEndpointsDetailsHeaderService', function ($scope, $timeout, srv) {
                 $scope.toUppercase = (item) => {
@@ -33,19 +31,19 @@ angular.module('tribe-endpoints-details', [
                     // Compute endpoint URL
                     if ($scope.application && $scope.application.swagger && $scope.application.swagger.host && $scope.application.swagger.basePath) {
                         $scope.$watch('endpoint.path', () => {
-                            if($scope.endpoint && $scope.endpoint.path) {
-                                $scope.resourceUrl = srv.getBaseUrl($scope.application.swagger, $scope.endpoint.path) + $scope.endpoint.path;
+                            if($scope['endpoint'] && $scope['endpoint'].path) {
+                                $scope.resourceUrl = srv.getBaseUrl($scope.application.swagger, $scope['endpoint'].path) + $scope['endpoint'].path;
                             }
                         });
                         $timeout(function () {
                             $scope.$apply(function () {
                                 // TODO: Reflect changes back to scheme into model
-                                if ($scope.endpoint.operation.schemes) {
-                                    $scope.endpointProtocol = $scope.endpoint.operation.schemes.indexOf('https') >= 0 ? 'https' : 'http';
+                                if ($scope['endpoint'].operation.schemes) {
+                                    $scope.endpointProtocol = $scope['endpoint'].operation.schemes.indexOf('https') >= 0 ? 'https' : 'http';
                                 } else if ($scope.application && $scope.application.swagger && $scope.application.swagger.schemes) {
                                     $scope.endpointProtocol = $scope.application.swagger.schemes.indexOf('https') >= 0 ? 'https' : 'http';
                                 }
-                                $scope.resourceUrl = srv.getBaseUrl($scope.application.swagger, $scope.endpoint.path) + $scope.endpoint.path;
+                                $scope.resourceUrl = srv.getBaseUrl($scope.application.swagger, $scope['endpoint'].path) + $scope['endpoint'].path;
                             });
                         });
                     }
@@ -84,7 +82,7 @@ angular.module('tribe-endpoints-details', [
     .directive('appEndpointsDetailsToc', ['tribeEndpointDetailsTocService', '$window', function (srv, $window) {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/app_endpoints_details_toc.html',
+            template: require('../templates/app_endpoints_details_toc.jade'),
             scope: {},
             controller: ['tribeEndpointDetailsTocService', '$scope', '$document', function (srv, $scope, $document) {
                 $scope.anchors = srv.getData().anchors;
@@ -92,8 +90,8 @@ angular.module('tribe-endpoints-details', [
                     var tags = $document.find('article.app-ep-details-body *[app-endpoints-details-toc-anchor]')
                     return tags.index(anchor.el);
                 };
-                this.clearAnchors = function () {
-                    srv.clearAnchors();
+                this['clearAnchors'] = function () {
+                    srv['clearAnchors']();
                 };
             }],
             link: function (scope, el, attrs, controller) {
@@ -104,7 +102,7 @@ angular.module('tribe-endpoints-details', [
                     el.removeClass('collapsed');
                 });
                 scope.$on('$destroy', function () {
-                    controller.clearAnchors();
+                    controller['clearAnchors']();
                 });
             }
         };
@@ -116,10 +114,10 @@ angular.module('tribe-endpoints-details', [
             scope: {
                 anchor: '=appEndpointsDetailsTocItem'
             },
-            templateUrl: 'app/templates/app_endpoints_details_toc_item.html',
+            template: require('../templates/app_endpoints_details_toc_item.jade'),
             controller: ['$scope', 'tribeEndpointDetailsTocService', function ($scope, srv) {
                 $scope.tocData = srv.getData();
-                this.selectMe = function () {
+                this['selectMe'] = function () {
                     $timeout(function () {
                         $scope.$apply(function () {
                             $scope.tocData.selectedAnchor = $scope.anchor;
@@ -129,10 +127,10 @@ angular.module('tribe-endpoints-details', [
             }],
             link: function (scope, el, attrs, controller) {
                 el.on('click', function () {
-                    controller.selectMe();
+                    controller['selectMe']();
                     var winEl = angular.element('div[data-app-endpoints-details] > div');
                     var calculateScroll = function () {
-                        var target = scope.anchor.el;
+                        var target = scope['anchor'].el;
                         var elOffset = target.offset().top;
                         var elHeight = target.height();
                         var windowHeight = $(window).height();
@@ -146,11 +144,11 @@ angular.module('tribe-endpoints-details', [
                     winEl.animate({
                         scrollTop: calculateScroll()
                     }, function () {
-                        scope.anchor.el.focus();
-                        if (scope.anchor.el.is(':focus')) {
+                        scope['anchor'].el.focus();
+                        if (scope['anchor'].el.is(':focus')) {
                             return;
                         }
-                        scope.anchor.el.find('*').each(function (kidindex, rawKid) {
+                        scope['anchor'].el.find('*').each(function (kidindex, rawKid) {
                             var kid = angular.element(rawKid);
                             kid.focus();
                             if (kid.is(':focus')) {
@@ -161,7 +159,7 @@ angular.module('tribe-endpoints-details', [
                 });
                 scope.$watch('tocData.selectedAnchor', function () {
                     var selected = scope.$eval('tocData.selectedAnchor');
-                    if (selected && selected === scope.anchor) {
+                    if (selected && selected === scope['anchor']) {
                         el.find('h4').addClass('selected');
                     } else {
                         el.find('h4').removeClass('selected');
@@ -180,14 +178,14 @@ angular.module('tribe-endpoints-details', [
             },
             controller: ['tribeEndpointDetailsTocService', '$scope', function (srv, $scope) {
                 $scope.data = srv.getData();
-                this.registerAnchor = function (el) {
+                this['registerAnchor'] = function (el) {
                     srv.setAnchor($scope.title, $scope.submenu, el);
                 };
-                this.setSelectedAnchor = function (el) {
+                this['setSelectedAnchor'] = function (el) {
                     $timeout(function () {
                         $scope.$apply(function () {
                             var anchors = $scope.data.anchors;
-                            $scope.data.selectedAnchor = anchors.find(function (item) {
+                            $scope['data'].selectedAnchor = anchors.find(function (item) {
                                 return item.el === el;
                             });
                         });
@@ -196,9 +194,9 @@ angular.module('tribe-endpoints-details', [
             }],
             link: function (scope, el, attrs, controller) {
                 $timeout(function () {
-                    controller.registerAnchor(el);
+                    controller['registerAnchor'](el);
                     var callback = function () {
-                        controller.setSelectedAnchor(el);
+                        controller['setSelectedAnchor'](el);
                     };
                     el.find('*').on('focus', callback);
                     el.find('*').on('click', callback);
@@ -210,7 +208,7 @@ angular.module('tribe-endpoints-details', [
     .directive('appEndpointsDetailsParameters', [function () {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/app_endpoints_details_parameters.html',
+            template: require('../templates/app_endpoints_details_parameters.jade'),
             scope: true,
             controller: ['$scope', '$timeout', function ($scope, $timeout) {
                 $scope.$watch('endpoint.uri.path', function () {
@@ -220,7 +218,7 @@ angular.module('tribe-endpoints-details', [
                     }
                     var params = path.match(/:[a-zA-Z0-9_]+/g);
                     if (params) {
-                        params = _.map(params, function (value) {
+                        params = _.map(params, function (value:string) {
                             return value.substring(1);
                         });
                     }
@@ -234,16 +232,16 @@ angular.module('tribe-endpoints-details', [
                     });
                 });
                 $scope.removeParam = (p) => $timeout(() => $scope.$apply(() => {
-                    $scope.endpoint.operation.parameters = _.without($scope.endpoint.operation.parameters, p);
+                    $scope['endpoint'].operation.parameters = _.without($scope['endpoint'].operation.parameters, p);
                 }));
                 $scope.addParam = function () {
                     var params = $scope.$eval('endpoint.operation.parameters');
                     if (!params) {
-                        if (!$scope.endpoint.operation) {
-                            $scope.endpoint.operation = {};
+                        if (!$scope['endpoint'].operation) {
+                            $scope['endpoint'].operation = {};
                         }
-                        $scope.endpoint.operation.parameters = [];
-                        params = $scope.endpoint.operation.parameters;
+                        $scope['endpoint'].operation.parameters = [];
+                        params = $scope['endpoint'].operation.parameters;
                     }
                     $timeout(function () {
                         $scope.$apply(function () {
@@ -264,7 +262,7 @@ angular.module('tribe-endpoints-details', [
     .directive('appEndpointsDetailsResourceInformation', [function () {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/app_endpoints_details_resource_information.html',
+            template: require('../templates/app_endpoints_details_resource_information.jade'),
             scope: true,
             controller: ['$scope', '$timeout', function ($scope, $timeout) {
                 $scope.requestFormatsOptions = [
@@ -276,38 +274,38 @@ angular.module('tribe-endpoints-details', [
                 $scope.statusOptions = ['PROPOSAL', 'STUB', 'DRAFT', 'TEST', 'VALIDATION', 'ACCEPTED', 'CONFIDENTIAL'];
                 $scope.rateUnits = ['SECONDS', 'MINUTES', 'HOURS', 'DAYS'];
                 $scope.$watch('endpoint', function () {
-                    if (!$scope.endpoint || !$scope.endpoint.operation) {
+                    if (!$scope['endpoint'] || !$scope['endpoint'].operation) {
                         return;
                     }
                     $scope.addRate = function () {
                         $timeout(function () {
                             $scope.$apply(function () {
-                                if (!$scope.endpoint.operation) {
+                                if (!$scope['endpoint'].operation) {
                                     return;
                                 }
-                                if (!$scope.endpoint.operation['x-tribestream-api-registry']) {
-                                    $scope.endpoint.operation['x-tribestream-api-registry'] = {};
+                                if (!$scope['endpoint'].operation['x-tribestream-api-registry']) {
+                                    $scope['endpoint'].operation['x-tribestream-api-registry'] = {};
                                 }
-                                if (!$scope.endpoint.operation['x-tribestream-api-registry']['rates']) {
-                                    $scope.endpoint.operation['x-tribestream-api-registry']['rates'] = [];
+                                if (!$scope['endpoint'].operation['x-tribestream-api-registry']['rates']) {
+                                    $scope['endpoint'].operation['x-tribestream-api-registry']['rates'] = [];
                                 }
-                                $scope.endpoint.operation['x-tribestream-api-registry']['rates'].push({});
+                                $scope['endpoint'].operation['x-tribestream-api-registry']['rates'].push({});
                             });
                         });
                     };
                     $scope.removeRate = function (rate) {
                         $timeout(function () {
                             $scope.$apply(function () {
-                                if (!$scope.endpoint.operation) {
+                                if (!$scope['endpoint'].operation) {
                                     return;
                                 }
-                                if (!$scope.endpoint.operation['x-tribestream-api-registry']) {
+                                if (!$scope['endpoint'].operation['x-tribestream-api-registry']) {
                                     return;
                                 }
-                                if (!$scope.endpoint.operation['x-tribestream-api-registry']['rates']) {
+                                if (!$scope['endpoint'].operation['x-tribestream-api-registry']['rates']) {
                                     return;
                                 }
-                                $scope.endpoint.operation['x-tribestream-api-registry']['rates'] = _.without($scope.endpoint.operation['x-tribestream-api-registry']['rates'], rate);
+                                $scope['endpoint'].operation['x-tribestream-api-registry']['rates'] = _.without($scope['endpoint'].operation['x-tribestream-api-registry']['rates'], rate);
                             });
                         });
                     };
@@ -338,24 +336,24 @@ angular.module('tribe-endpoints-details', [
     .directive('appEndpointsDetailsResponseRequest', [function () {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/app_endpoints_details_response_request.html',
+            template: require('../templates/app_endpoints_details_response_request.jade'),
             scope: true,
             controller: ['$scope', '$timeout', function ($scope, $timeout) {
                 $scope.$watch('endpoint.operation', function () {
                     $timeout(function () {
                         $scope.$apply(function () {
                             // TODO: This MUST go somewhere else, both properties
-                            if (!$scope.endpoint.operation) {
-                                $scope.endpoint.operation = {};
+                            if (!$scope['endpoint'].operation) {
+                                $scope['endpoint'].operation = {};
                             }
-                            if (!$scope.endpoint.operation['x-tribestream-api-registry']) {
-                                $scope.endpoint.operation['x-tribestream-api-registry'] = {};
+                            if (!$scope['endpoint'].operation['x-tribestream-api-registry']) {
+                                $scope['endpoint'].operation['x-tribestream-api-registry'] = {};
                             }
-                            if (!$scope.endpoint.operation['x-tribestream-api-registry']['response-codes']) {
-                                $scope.endpoint.operation['x-tribestream-api-registry']['response-codes'] = [];
+                            if (!$scope['endpoint'].operation['x-tribestream-api-registry']['response-codes']) {
+                                $scope['endpoint'].operation['x-tribestream-api-registry']['response-codes'] = [];
                             }
-                            if (!$scope.endpoint.operation['x-tribestream-api-registry']['expected-values']) {
-                                $scope.endpoint.operation['x-tribestream-api-registry']['expected-values'] = [];
+                            if (!$scope['endpoint'].operation['x-tribestream-api-registry']['expected-values']) {
+                                $scope['endpoint'].operation['x-tribestream-api-registry']['expected-values'] = [];
                             }
                         });
                     });
@@ -363,17 +361,17 @@ angular.module('tribe-endpoints-details', [
                 $scope.removeErrorCode = function (code) {
                     $timeout(function () {
                         $scope.$apply(function () {
-                            if (!$scope.endpoint.operation) {
+                            if (!$scope['endpoint'].operation) {
                                 return;
                             }
-                            if (!$scope.endpoint.operation['x-tribestream-api-registry']) {
+                            if (!$scope['endpoint'].operation['x-tribestream-api-registry']) {
                                 return;
                             }
-                            if (!$scope.endpoint.operation['x-tribestream-api-registry']['response-codes']) {
+                            if (!$scope['endpoint'].operation['x-tribestream-api-registry']['response-codes']) {
                                 return;
                             }
-                            $scope.endpoint.operation['x-tribestream-api-registry']['response-codes'] = _.without(
-                                $scope.endpoint.operation['x-tribestream-api-registry']['response-codes'],
+                            $scope['endpoint'].operation['x-tribestream-api-registry']['response-codes'] = _.without(
+                                $scope['endpoint'].operation['x-tribestream-api-registry']['response-codes'],
                                 code
                             );
                         });
@@ -382,16 +380,16 @@ angular.module('tribe-endpoints-details', [
                 $scope.addErrorCode = function () {
                     $timeout(function () {
                         $scope.$apply(function () {
-                            if (!$scope.endpoint.operation) {
-                                $scope.endpoint.operation = {};
+                            if (!$scope['endpoint'].operation) {
+                                $scope['endpoint'].operation = {};
                             }
-                            if (!$scope.endpoint.operation['x-tribestream-api-registry']) {
-                                $scope.endpoint.operation['x-tribestream-api-registry'] = {};
+                            if (!$scope['endpoint'].operation['x-tribestream-api-registry']) {
+                                $scope['endpoint'].operation['x-tribestream-api-registry'] = {};
                             }
-                            if (!$scope.endpoint.operation['x-tribestream-api-registry']['response-codes']) {
-                                $scope.endpoint.operation['x-tribestream-api-registry']['response-codes'] = [];
+                            if (!$scope['endpoint'].operation['x-tribestream-api-registry']['response-codes']) {
+                                $scope['endpoint'].operation['x-tribestream-api-registry']['response-codes'] = [];
                             }
-                            $scope.endpoint.operation['x-tribestream-api-registry']['response-codes'].push({
+                            $scope['endpoint'].operation['x-tribestream-api-registry']['response-codes'].push({
                                 http_status: 0,
                                 error_code: 0,
                                 message: '',
@@ -403,17 +401,17 @@ angular.module('tribe-endpoints-details', [
                 $scope.removeExpectedValue = function (value) {
                     $timeout(function () {
                         $scope.$apply(function () {
-                            if (!$scope.endpoint.operation) {
+                            if (!$scope['endpoint'].operation) {
                                 return;
                             }
-                            if (!$scope.endpoint.operation['x-tribestream-api-registry']) {
+                            if (!$scope['endpoint'].operation['x-tribestream-api-registry']) {
                                 return;
                             }
-                            if (!$scope.endpoint.operation['x-tribestream-api-registry']['expected-values']) {
+                            if (!$scope['endpoint'].operation['x-tribestream-api-registry']['expected-values']) {
                                 return;
                             }
-                            $scope.endpoint.operation['x-tribestream-api-registry']['expected-values'] = _.without(
-                                $scope.endpoint.operation['x-tribestream-api-registry']['expected-values'],
+                            $scope['endpoint'].operation['x-tribestream-api-registry']['expected-values'] = _.without(
+                                $scope['endpoint'].operation['x-tribestream-api-registry']['expected-values'],
                                 value
                             );
                         });
@@ -422,16 +420,16 @@ angular.module('tribe-endpoints-details', [
                 $scope.addExpectedValue = function () {
                     $timeout(function () {
                         $scope.$apply(function () {
-                            if (!$scope.endpoint.operation) {
-                                $scope.endpoint.operation = {};
+                            if (!$scope['endpoint'].operation) {
+                                $scope['endpoint'].operation = {};
                             }
-                            if (!$scope.endpoint.operation['x-tribestream-api-registry']) {
-                                $scope.endpoint.operation['x-tribestream-api-registry'] = {};
+                            if (!$scope['endpoint'].operation['x-tribestream-api-registry']) {
+                                $scope['endpoint'].operation['x-tribestream-api-registry'] = {};
                             }
-                            if (!$scope.endpoint.operation['x-tribestream-api-registry']['expected-values']) {
-                                $scope.endpoint.operation['x-tribestream-api-registry']['expected-values'] = [];
+                            if (!$scope['endpoint'].operation['x-tribestream-api-registry']['expected-values']) {
+                                $scope['endpoint'].operation['x-tribestream-api-registry']['expected-values'] = [];
                             }
-                            $scope.endpoint.operation['x-tribestream-api-registry']['expected-values'].push({
+                            $scope['endpoint'].operation['x-tribestream-api-registry']['expected-values'].push({
                                 name: '',
                                 values: ''
                             });
@@ -448,36 +446,36 @@ angular.module('tribe-endpoints-details', [
     .directive('appEndpointsDetailsSee', ['$timeout', function ($timeout) {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/app_endpoints_details_see.html',
+            template: require('../templates/app_endpoints_details_see.jade'),
             scope: {
                 'endpoint': '='
             },
             controller: ['$scope', function ($scope) {
-                this.addLink = function () {
+                this['addLink'] = function () {
                     $timeout(function () {
                         $scope.$apply(function () {
-                            $scope.endpoint.operation['x-tribestream-api-registry'] = $scope.endpoint.operation['x-tribestream-api-registry'] || {};
-                            $scope.endpoint.operation['x-tribestream-api-registry'].sees = $scope.endpoint.operation['x-tribestream-api-registry'].sees || [];
-                            $scope.endpoint.operation['x-tribestream-api-registry'].sees.push({});
+                            $scope['endpoint'].operation['x-tribestream-api-registry'] = $scope['endpoint'].operation['x-tribestream-api-registry'] || {};
+                            $scope['endpoint'].operation['x-tribestream-api-registry'].sees = $scope['endpoint'].operation['x-tribestream-api-registry'].sees || [];
+                            $scope['endpoint'].operation['x-tribestream-api-registry'].sees.push({});
                         });
                     });
                 };
                 $scope.removeLink = function (link) {
                     $timeout(function () {
                         $scope.$apply(function () {
-                            if (!$scope.endpoint.operation
-                                || !$scope.endpoint.operation['x-tribestream-api-registry']
-                                || !$scope.endpoint.operation['x-tribestream-api-registry'].sees) {
+                            if (!$scope['endpoint'].operation
+                                || !$scope['endpoint'].operation['x-tribestream-api-registry']
+                                || !$scope['endpoint'].operation['x-tribestream-api-registry'].sees) {
                                 return;
                             }
-                            $scope.endpoint.operation['x-tribestream-api-registry'].sees = _.without($scope.endpoint.operation['x-tribestream-api-registry'].sees, link);
+                            $scope['endpoint'].operation['x-tribestream-api-registry'].sees = _.without($scope['endpoint'].operation['x-tribestream-api-registry'].sees, link);
                         });
                     });
                 };
             }],
             link: function (scope, el, attrs, controller) {
                 el.find('div.add-link').on('click', function () {
-                    controller.addLink();
+                    controller['addLink']();
                     $timeout(function () {
                         var newItem = el.find('i[data-tribe-editable-text] > div').last();
                         newItem.focus();
@@ -491,7 +489,7 @@ angular.module('tribe-endpoints-details', [
     .directive('appEndpointsDetailsHistory', [function() {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/app_endpoints_details_history.html',
+            template: require('../templates/app_endpoints_details_history.jade'),
             scope: true,
             controller: [
                 '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', 'systemMessagesService', 'tribeLinkHeaderService',
@@ -504,7 +502,7 @@ angular.module('tribe-endpoints-details', [
 .directive('appEndpointsDetails', [function () {
   return {
     restrict: 'A',
-    templateUrl: 'app/templates/app_endpoints_details.html',
+      template: require('../templates/app_endpoints_details.jade'),
     scope: {
       'requestMetadata': '='
     },
@@ -514,7 +512,7 @@ angular.module('tribe-endpoints-details', [
         $timeout(function () {
           $scope.$apply(function () {
             $scope.history = null;
-            $scope.endpoint = {
+            $scope['endpoint'] = {
               httpMethod: "",
               path: "",
               operation: {}
@@ -524,8 +522,8 @@ angular.module('tribe-endpoints-details', [
           if ($scope.requestMetadata.endpointPath) {
             srv.getDetailsFromMetadata($scope.requestMetadata)
             .then(function (detailsResponse) {
-              $scope.applicationId = detailsResponse.data.applicationId;
-              $scope.endpointId = detailsResponse.data.endpointId;
+              $scope['applicationId'] = detailsResponse['data']['applicationId'];
+              $scope['endpointId'] = detailsResponse['data']['endpointId'];
               if(detailsResponse.headers) {
                 let links = tribeLinkHeaderService.parseLinkHeader(detailsResponse.headers('link'));
                 $scope.historyLink = links['history'];
@@ -533,20 +531,20 @@ angular.module('tribe-endpoints-details', [
                 $scope.endpointsLink = null;
                 $timeout(function () {
                   $scope.$apply(function () {
-                    let detailsData = detailsResponse.data;
-                    $scope.endpoint.httpMethod = detailsData.httpMethod;
-                    $scope.endpoint.path = $filter('pathencode')(detailsData.path);
-                    $scope.endpoint.operation = detailsData.operation;
+                    let detailsData = detailsResponse['data'];
+                    $scope['endpoint']['httpMethod'] = detailsData['httpMethod'];
+                    $scope['endpoint'].path = $filter('pathencode')(detailsData.path);
+                    $scope['endpoint'].operation = detailsData.operation;
                   });
                 });
               }
-              srv.getApplicationDetails($scope.applicationId).then(function (applicationDetails) {
+              srv.getApplicationDetails($scope['applicationId']).then(function (applicationDetails) {
                 $timeout(function () {
                   $scope.$apply(function () {
-                    if (!applicationDetails.data || !applicationDetails.data.swagger) {
+                    if (!applicationDetails['data'] || !applicationDetails['data'].swagger) {
                       $log.error("Got no application details!");
                     }
-                    $scope.application = applicationDetails.data;
+                    $scope.application = applicationDetails['data'];
                   });
                 });
               });
@@ -555,10 +553,10 @@ angular.module('tribe-endpoints-details', [
             srv.getApplicationDetailsFromName($scope.requestMetadata.applicationName).then(function (response) {
               $timeout(function () {
                 $scope.$apply(function () {
-                  if (!response.data || !response.data.swagger) {
+                  if (!response['data'] || !response['data'].swagger) {
                     $log.error("Got no application details!");
                   }
-                  $scope.application = response.data;
+                  $scope.application = response['data'];
                   let links = tribeLinkHeaderService.parseLinkHeader(response.headers('link'));
                   $scope.endpointLink = null;
                   $scope.endpointsLink = links['endpoints'];
@@ -568,11 +566,11 @@ angular.module('tribe-endpoints-details', [
             });
           }
           $scope.save = function () {
-            srv.saveEndpoint($scope.endpointLink, $scope.endpoint, {
+            srv.saveEndpoint($scope.endpointLink, $scope['endpoint'], {
               // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
-              httpMethod: $scope.endpoint.httpMethod,
-              path: $scope.endpoint.path,
-              operation: $scope.endpoint.operation
+              httpMethod: $scope['endpoint']['httpMethod'],
+              path: $scope['endpoint'].path,
+              operation: $scope['endpoint'].operation
             }).then(
               function (saveResponse) {
                 systemMessagesService.info("Saved endpoint details! " + saveResponse.status);
@@ -582,17 +580,17 @@ angular.module('tribe-endpoints-details', [
           $scope.create = function () {
             srv.createEndpoint($scope.endpointsLink, {
               // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
-              httpMethod: $scope.endpoint.httpMethod,
-              path: $scope.endpoint.path,
-              operation: $scope.endpoint.operation
+              httpMethod: $scope['endpoint']['httpMethod'],
+              path: $scope['endpoint'].path,
+              operation: $scope['endpoint'].operation
             }).then(
               function (saveResponse) {
                 $timeout(() => {
                     $scope.$apply(() => {
-                        $scope.endpointId = saveResponse.data.endpointId;
-                        $scope.endpoint.path = saveResponse.data.path;
-                        $scope.endpoint.httpMethod = saveResponse.data.httpMethod;
-                        $scope.endpoint.operation = saveResponse.data.operation;
+                        $scope['endpointId'] = saveResponse['data']['endpointId'];
+                        $scope['endpoint'].path = saveResponse['data'].path;
+                        $scope['endpoint']['httpMethod'] = saveResponse['data']['httpMethod'];
+                        $scope['endpoint'].operation = saveResponse['data'].operation;
                         let links = tribeLinkHeaderService.parseLinkHeader(saveResponse.headers('link'));
                         $scope.endpointLink = links['self'];
                         $scope.historyLink = links['history'];
@@ -609,13 +607,13 @@ angular.module('tribe-endpoints-details', [
             srv.getEndpointHistory($scope.historyLink).then(function(response) {
 
               let links = tribeLinkHeaderService.parseLinkHeader(response.headers('link'));
-              for (let entry of response.data) {
+              for (let entry of response['data']) {
                 entry.link = links["revision " + entry.revisionId];
               }
 
               $timeout(function () {
                 $scope.$apply(function () {
-                  $scope.history = response.data;
+                  $scope.history = response['data'];
                 });
               });
             });
@@ -639,11 +637,11 @@ angular.module('tribe-endpoints-details', [
             srv.getHistoricEndpoint(historyItem).then(function(response) {
               $timeout(function () {
                 $scope.$apply(function () {
-                  let detailsData = response.data;
-                  $scope.historyItem = historyItem;
-                  $scope.endpoint.httpMethod = detailsData.httpMethod;
-                  $scope.endpoint.path = $filter('pathencode')(detailsData.path);
-                  $scope.endpoint.operation = detailsData.operation;
+                  let detailsData = response['data'];
+                  $scope['historyItem'] = historyItem;
+                  $scope['endpoint']['httpMethod'] = detailsData['httpMethod'];
+                  $scope['endpoint'].path = $filter('pathencode')(detailsData.path);
+                  $scope['endpoint'].operation = detailsData.operation;
                 });
               });
             });
