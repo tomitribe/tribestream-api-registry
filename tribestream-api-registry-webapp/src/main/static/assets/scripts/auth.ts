@@ -92,11 +92,6 @@ angular
                               }
                           );
                     };
-                    // TODO: Guest login should probably
-                    $scope.loginAsGuest = function() {
-                        $sessionStorage.tribe.isConnected = true;
-                        redirect();
-                    };
                 }
             ],
             link: function (scope, el, attrs, controller) {
