@@ -18,31 +18,19 @@
  */
 package org.tomitribe.tribestream.registryng.security;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import java.security.Principal;
+import lombok.Getter;
+import lombok.Setter;
 
-import static java.util.Optional.ofNullable;
+import javax.enterprise.context.RequestScoped;
+import java.util.Set;
 
-@ApplicationScoped
+@RequestScoped
+@Getter
+@Setter
 public class LoginContext {
-    @Inject
-    private HttpServletRequest request;
 
-    public String getUsername() {
-        Principal userPrincipal = null;
-        try {
-            // if no request injected, this is probably provisioning or some batch operations.
-            // let's set the user to a technical user - we can't really test if request is null because it will never
-            // really be - it's a proxy
-            userPrincipal = request.getUserPrincipal();
+    private String username;
 
-        } catch (final NullPointerException npe) {
-            return System.getProperty("tribe.revision.username", "tribe-provisioning");
-        }
+    private Set<String> roles;
 
-        return ofNullable(userPrincipal).map(Principal::getName)
-                .orElseThrow(() -> new IllegalStateException("No user in current context"));
-    }
 }

@@ -18,6 +18,7 @@
  */
 package org.tomitribe.tribestream.registryng.security;
 
+import org.apache.catalina.User;
 import org.tomitribe.tribestream.registryng.entities.AccessToken;
 import org.tomitribe.tribestream.registryng.security.oauth2.AccessTokenService;
 
@@ -33,7 +34,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.Principal;
 import java.util.Base64;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,6 +51,9 @@ public class SecurityWebFilter implements Filter {
 
     @Inject
     private AccessTokenService accessTokenService;
+
+    @Inject
+    private LoginContext loginContext;
 
     /**
      * Contains all request URIs that are available without authentication.
@@ -90,6 +96,10 @@ public class SecurityWebFilter implements Filter {
 
                 AccessToken accessToken = accessTokenService.getToken(authHeader.substring("Bearer ".length()));
                 if (accessToken != null) {
+                    loginContext.setRoles(
+                            Stream.of(accessToken.getScope().split("\\s+"))
+                                .collect(toSet()));
+
                     filterChain.doFilter(servletRequest, servletResponse);
                 } else {
                     LOGGER.log(Level.INFO, "Did not find submitted access token");
@@ -123,6 +133,17 @@ public class SecurityWebFilter implements Filter {
         final String password = userPassword[1];
         try {
             httpServletRequest.login(username, password);
+            loginContext.setUsername(username);
+            Principal principal = httpServletRequest.getUserPrincipal();
+            if (principal instanceof User) {
+                Set<String> roles = new HashSet<>();
+                User.class.cast(principal).getGroups()
+                        .forEachRemaining(group ->
+                                group.getRoles().forEachRemaining(role -> roles.add(role.getRolename())));
+                User.class.cast(principal).getRoles()
+                        .forEachRemaining(role -> roles.add(role.getRolename()));
+                loginContext.setRoles(roles);
+            }
             return true;
         } catch (ServletException e) {
             LOGGER.log(Level.WARNING, e, () -> String.format("Login failed for user %s", username));
