@@ -154,12 +154,12 @@ module services {
                             }
                         };
                     },
-                    getEndpointHistory: function (url) {
+                    getHistory: function (url) {
                         return {
-                            then: function (successCallback, errorCallback) {
+                            then: (successCallback, errorCallback) => {
                                 if (url) {
                                     $http.get(url)
-                                        .then(function (data) {
+                                        .then((data) => {
                                             successCallback(data);
                                         }, tribeErrorHandlerService.ensureErrorHandler(errorCallback));
                                 } else {
@@ -168,7 +168,7 @@ module services {
                             }
                         };
                     },
-                    getHistoricEndpoint: function(historyItem) {
+                    getHistoricItem: function(historyItem) {
                         return {
                             then: function(successCallback, errorCallback) {
                                 $http.get(historyItem.link)
@@ -186,6 +186,37 @@ module services {
                                         successCallback(data.data);
                                     }, tribeErrorHandlerService.ensureErrorHandler(errorCallback)
                                 );
+                            }
+                        };
+                    },
+                    saveApplication(applicationLink, application) {
+                        return {
+                            then: (successCallback, errorCallback) => {
+                                $http.put(applicationLink, {swagger:application})
+                                  .then(
+                                    (data) => {
+                                      if (data && data.data && data.data.swagger) {
+                                        successCallback(data);
+                                      }
+                                    },
+                                    tribeErrorHandlerService.ensureErrorHandler(errorCallback)
+                                  );
+                            }
+                        };
+                    },
+                    createApplication(applicationsLink, application) {
+                        return {
+                            then: function (successCallback, errorCallback) {
+                                $http.post(applicationsLink, {swagger:application})
+                                    .then(
+                                        function (data) {
+                                            if (data && data.data && data.data.swagger) {
+                                                // we will have at most one result. only one application queried.
+                                                successCallback(data);
+                                            }
+                                        },
+                                        tribeErrorHandlerService.ensureErrorHandler(errorCallback)
+                                    );
                             }
                         };
                     },
