@@ -24,6 +24,10 @@ import org.tomitribe.tribestream.registryng.security.oauth2.AccessTokenService;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -40,7 +44,14 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @ApplicationScoped
 @Path("security/oauth2")
@@ -48,26 +59,44 @@ import java.util.Base64;
 @Produces(MediaType.APPLICATION_JSON)
 public class Oauth2TokenResource {
 
-    private static final String GRANT_TYPE = "grant_type";
-
-    private static final String GRANT_TYPE_PASSWORD = "password";
-
-    private static final String GRANT_TYPE_REFRESH_TOKEN = "refresh_token";
+    private static final Logger LOG = Logger.getLogger(Oauth2TokenResource.class.getName());
 
     @Inject
-    @ConfigProperty(name = "registry.oauthGatewayUrl")
+    @ConfigProperty(name = "registry.oauth2.gatewayUrl")
     private String tagUrl;
 
     @Inject
-    @ConfigProperty(name = "registry.clientId")
+    @ConfigProperty(name = "registry.oauth2.clientId")
     private String clientId;
 
     @Inject
-    @ConfigProperty(name = "registry.clientSecret")
+    @ConfigProperty(name = "registry.oauth2.clientSecret")
     private String clientSecret;
 
     @Inject
+    @ConfigProperty(name = "registry.oauth2.tlsProtocol", defaultValue = "TLSv1.2")
+    private String tlsProtocol;
+
+    @Inject
+    @ConfigProperty(name = "registry.oauth2.tlsProvider")
+    private String tlsProvider;
+
+    @Inject
+    @ConfigProperty(name = "registry.oauth2.trustStore")
+    private String trustStoreFileName;
+
+    @Inject
+    @ConfigProperty(name = "registry.oauth2.trustStoreType")
+    private String trustStoreType;
+
+    @Inject
+    @ConfigProperty(name = "registry.oauth2.trustStoreProvider")
+    private String trustStoreProvider;
+
+    @Inject
     private AccessTokenService accessTokenService;
+
+    private volatile SSLContext sslContext;
 
     @POST
     public Response getToken(final MultivaluedMap<String, String> formParameters) {
@@ -76,7 +105,9 @@ public class Oauth2TokenResource {
         // TODO: Pool clients
         Client client = null;
         try {
-            client = ClientBuilder.newClient();
+            client = ClientBuilder.newBuilder()
+                    .sslContext(getSslContext())
+                    .build();
             if (clientId != null) {
                 client.register(new BasicAuthFilter());
             }
@@ -100,10 +131,81 @@ public class Oauth2TokenResource {
                         .entity(responsePayload)
                         .build();
             }
-
+        } catch (GeneralSecurityException e) {
+            LOG.log(Level.SEVERE, "Cannot setup Oauth2 client!", e);
+            return Response.serverError().build();
         } finally {
-            client.close();
+            if (client != null) {
+                client.close();
+            }
         }
+    }
+
+    private SSLContext getSslContext() throws GeneralSecurityException {
+        if (sslContext == null) {
+            SSLContext newSslContext;
+            if (tlsProvider != null) {
+                newSslContext = SSLContext.getInstance(tlsProtocol, tlsProvider);
+            } else {
+                newSslContext = SSLContext.getInstance(tlsProtocol);
+            }
+
+
+            final KeyStore trustStore;
+            if (trustStoreFileName != null) {
+                if (trustStoreType == null) {
+                    if (trustStoreProvider == null) {
+                        trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+                    } else {
+                        trustStore = KeyStore.getInstance(KeyStore.getDefaultType(), trustStoreProvider);
+                    }
+                } else {
+                    if (trustStoreProvider == null) {
+                        trustStore = KeyStore.getInstance(trustStoreType);
+                    } else {
+                        trustStore = KeyStore.getInstance(trustStoreType, trustStoreProvider);
+                    }
+                }
+            } else {
+                trustStore = null;
+            }
+
+            final TrustManagerFactory tmfactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmfactory.init(trustStore);
+
+            final TrustManager[] tms = tmfactory.getTrustManagers();
+            if (tms != null) {
+                for (int i = 0; i < tms.length; ++i) {
+                    final TrustManager mgr = tms[i];
+                    if (!X509TrustManager.class.isInstance(mgr)) {
+                        continue;
+                    }
+
+                    final X509TrustManager x509TrustManager = X509TrustManager.class.cast(mgr);
+                    tms[i] = new X509TrustManager() {
+                        @Override
+                        public void checkClientTrusted(final X509Certificate[] x509Certificates, final String s) throws CertificateException {
+                            x509TrustManager.checkClientTrusted(x509Certificates, s);
+                        }
+
+                        @Override
+                        public void checkServerTrusted(final X509Certificate[] x509Certificates, final String s) throws CertificateException {
+                            if (x509Certificates.length == 1) {
+                                x509TrustManager.checkServerTrusted(x509Certificates, s);
+                            }
+                        }
+
+                        @Override
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return x509TrustManager.getAcceptedIssuers();
+                        }
+                    };
+                }
+            }
+            newSslContext.init(null, tms, new SecureRandom());
+            sslContext = newSslContext;
+        }
+        return sslContext;
     }
 
     private class BasicAuthFilter implements ClientRequestFilter {

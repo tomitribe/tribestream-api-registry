@@ -303,7 +303,7 @@
             <db>new://Resource?type=DataSource</db>
             <db.JdbcUrl>jdbc:h2:mem:registry</db.JdbcUrl>
             <db.JdbcDriver>org.h2.Driver</db.JdbcDriver>
-            <registry.oauthGatewayUrl>https://tribe.tomitribe.com/user/oauth/token</registry.oauthGatewayUrl>
+            <registry.oauth2.gatewayUrl>https://tribe.tomitribe.com/user/oauth/token</registry.oauth2.gatewayUrl>
           </containerProperties>
           <users>
             <admin>admin</admin>
@@ -344,7 +344,7 @@
             <db>new://Resource?type=DataSource</db>
             <db.JdbcUrl>jdbc:h2:mem:registry</db.JdbcUrl>
             <db.JdbcDriver>org.h2.Driver</db.JdbcDriver>
-            <registry.oauthGatewayUrl>https://tribe.tomitribe.com/user/oauth/token</registry.oauthGatewayUrl>
+            <registry.oauth2.gatewayUrl>https://tribe.tomitribe.com/user/oauth/token</registry.oauth2.gatewayUrl>
           </systemVariables>
         </configuration>
       </plugin>
