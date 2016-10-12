@@ -102,6 +102,11 @@ public class Oauth2TokenResource {
     @POST
     public Response getToken(final MultivaluedMap<String, String> formParameters) {
 
+        if (tagUrl == null || tagUrl.trim().length() == 0) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity("No Oauth2 gateway configured")
+                    .build();
+        }
         // TODO: Configure, set SSL Truststore or SSLContext etc.
         // TODO: Pool clients
         Client client = null;
