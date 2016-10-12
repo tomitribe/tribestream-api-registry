@@ -36,9 +36,10 @@ angular
         return {
             restrict: 'A',
             scope: true,
-            controller: ['$scope', '$location', 'tribeAuthorizationService', '$sessionStorage', 'systemMessagesService', 'tribeHeaderProviderSelector', 'currentAuthProvider',
+            controller: ['$scope', '$location', '$timeout', 'tribeAuthorizationService', '$sessionStorage', 'systemMessagesService', 'tribeHeaderProviderSelector', 'currentAuthProvider',
                 function ($scope,
                           $location,
+                          $timeout,
                           authorization,
                           $sessionStorage,
                           systemMessagesService,
@@ -63,6 +64,13 @@ angular
                             $location.path('/');
                         }
                     };
+                    authorization.getOauth2Status().then((response) => {
+                        $timeout(() => {
+                            $scope.$apply(() => {
+                              $scope.oauth2Status = response.data;
+                            });
+                        });
+                    });
                     $scope.login = function () {
                         let headerProvider;
                         if ($scope.companyLogin) {
@@ -143,4 +151,3 @@ angular
     .run(function () {
         // placeholder
     });
-

@@ -18,18 +18,24 @@
  */
 package org.tomitribe.tribestream.registryng.resources;
 
-import org.apache.deltaspike.core.api.config.ConfigProperty;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 import org.tomitribe.tribestream.registryng.security.oauth2.AccessTokenResponse;
 import org.tomitribe.tribestream.registryng.security.oauth2.AccessTokenService;
+import org.tomitribe.tribestream.registryng.security.oauth2.Oauth2Configuration;
 import org.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonBuilderFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -51,6 +57,7 @@ import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,42 +70,39 @@ public class Oauth2TokenResource {
     private static final Logger LOG = Logger.getLogger(Oauth2TokenResource.class.getName());
 
     @Inject
-    @ConfigProperty(name = "registry.oauth2.authorizationServerUrl")
-    private String authServerUrl;
-
-    @Inject
-    @ConfigProperty(name = "registry.oauth2.clientId")
-    private String clientId;
-
-    @Inject
-    @ConfigProperty(name = "registry.oauth2.clientSecret")
-    private String clientSecret;
-
-    @Inject
-    @ConfigProperty(name = "registry.oauth2.tlsProtocol", defaultValue = "TLSv1.2")
-    private String tlsProtocol;
-
-    @Inject
-    @ConfigProperty(name = "registry.oauth2.tlsProvider")
-    private String tlsProvider;
-
-    @Inject
-    @ConfigProperty(name = "registry.oauth2.trustStore")
-    private String trustStoreFileName;
-
-    @Inject
-    @ConfigProperty(name = "registry.oauth2.trustStoreType")
-    private String trustStoreType;
+    private Oauth2Configuration oauth2Config;
 
     @Inject
     private AccessTokenService accessTokenService;
 
+    private JsonBuilderFactory jsonBuilderFactory = Json.createBuilderFactory(new HashMap<>());
+
     private volatile SSLContext sslContext;
+
+    @Getter
+    @Setter
+    @Builder
+    public static class Oauth2Status {
+        private boolean enabled;
+    }
+
+    @GET
+    @Path("/status")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getOauth2Status() {
+        return Response
+                .ok(
+                        Oauth2Status.builder()
+                                .enabled(oauth2Config.getAuthServerUrl() != null && oauth2Config.getAuthServerUrl().length() > 0)
+                                .build())
+                .build();
+    }
+
 
     @POST
     public Response getToken(final MultivaluedMap<String, String> formParameters) {
 
-        if (authServerUrl == null || authServerUrl.trim().length() == 0) {
+        if (oauth2Config.getAuthServerUrl() == null || oauth2Config.getAuthServerUrl().trim().length() == 0) {
             return Response.status(Response.Status.UNAUTHORIZED)
                     .entity("No Oauth2 gateway configured")
                     .build();
@@ -110,11 +114,11 @@ public class Oauth2TokenResource {
             client = ClientBuilder.newBuilder()
                     .sslContext(getSslContext())
                     .build();
-            if (clientId != null && clientId.length() > 0) {
+            if (oauth2Config.getClientId() != null && oauth2Config.getClientId().length() > 0) {
                 client.register(new BasicAuthFilter());
             }
             client.register(new CustomJacksonJaxbJsonProvider());
-            WebTarget target = client.target(authServerUrl);
+            WebTarget target = client.target(oauth2Config.getAuthServerUrl());
 
             // Pass the client parameters through
             Form form = new Form(formParameters);
@@ -147,26 +151,26 @@ public class Oauth2TokenResource {
     private SSLContext getSslContext() throws GeneralSecurityException {
         if (sslContext == null) {
             SSLContext newSslContext;
-            if (tlsProvider != null) {
-                newSslContext = SSLContext.getInstance(tlsProtocol, tlsProvider);
+            if (oauth2Config.getTlsProvider() != null) {
+                newSslContext = SSLContext.getInstance(oauth2Config.getTlsProtocol(), oauth2Config.getTlsProvider());
             } else {
-                newSslContext = SSLContext.getInstance(tlsProtocol);
+                newSslContext = SSLContext.getInstance(oauth2Config.getTlsProtocol());
             }
 
 
             final KeyStore trustStore;
-            if (trustStoreFileName != null) {
-                if (trustStoreType == null) {
-                    if (tlsProvider == null) {
+            if (oauth2Config.getTrustStoreFileName() != null && oauth2Config.getTrustStoreFileName().length() > 0) {
+                if (oauth2Config.getTrustStoreType() == null) {
+                    if (oauth2Config.getTlsProvider() == null) {
                         trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
                     } else {
-                        trustStore = KeyStore.getInstance(KeyStore.getDefaultType(), tlsProvider);
+                        trustStore = KeyStore.getInstance(KeyStore.getDefaultType(), oauth2Config.getTlsProvider());
                     }
                 } else {
-                    if (tlsProvider == null) {
-                        trustStore = KeyStore.getInstance(trustStoreType);
+                    if (oauth2Config.getTlsProvider() == null) {
+                        trustStore = KeyStore.getInstance(oauth2Config.getTrustStoreType());
                     } else {
-                        trustStore = KeyStore.getInstance(trustStoreType, tlsProvider);
+                        trustStore = KeyStore.getInstance(oauth2Config.getTrustStoreType(), oauth2Config.getTlsProvider());
                     }
                 }
             } else {
@@ -214,7 +218,7 @@ public class Oauth2TokenResource {
     private class BasicAuthFilter implements ClientRequestFilter {
         @Override
         public void filter(ClientRequestContext clientRequestContext) throws IOException {
-            final byte[] plain = (clientId + ":" + clientSecret).getBytes(StandardCharsets.UTF_8);
+            final byte[] plain = (oauth2Config.getClientId() + ":" + oauth2Config.getClientSecret()).getBytes(StandardCharsets.UTF_8);
             final String encoded = Base64.getEncoder().encodeToString(plain);
             clientRequestContext.getHeaders().putSingle("Authorization", "Basic " + encoded);
         }

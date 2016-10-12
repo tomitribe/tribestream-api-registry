@@ -63,7 +63,7 @@ public class SecurityWebFilter implements Filter {
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        urlWhiteList = Stream.of("/api/server/info", "/api/login", "/api/security/oauth2")
+        urlWhiteList = Stream.of("/api/server/info", "/api/login", "/api/security/oauth2", "/api/security/oauth2/status")
                 .map(p -> filterConfig.getServletContext().getContextPath() + p)
                 .collect(toSet());
     }

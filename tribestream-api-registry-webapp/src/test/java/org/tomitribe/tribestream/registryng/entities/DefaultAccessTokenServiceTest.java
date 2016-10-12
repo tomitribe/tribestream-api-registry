@@ -25,14 +25,18 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.tomitribe.tribestream.registryng.security.oauth2.AccessTokenResponse;
 import org.tomitribe.tribestream.registryng.security.oauth2.AccessTokenService;
+import org.tomitribe.tribestream.registryng.security.oauth2.InvalidTokenException;
 import org.tomitribe.tribestream.registryng.test.Registry;
 
 import javax.inject.Inject;
+import java.util.List;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @RunWith(TomEEEmbeddedSingleRunner.class)
 public class DefaultAccessTokenServiceTest {
@@ -44,7 +48,7 @@ public class DefaultAccessTokenServiceTest {
     private AccessTokenService accessTokenService;
 
     @Test
-    public void shouldCreateAndFindAccessToken() {
+    public void shouldCreateAndFindAccessToken() throws Exception {
 
         final String accessToken = UUID.randomUUID().toString();
 
@@ -54,11 +58,11 @@ public class DefaultAccessTokenServiceTest {
 
         accessTokenService.addAccessToken(tokenResponse);
 
-        assertNotNull(accessTokenService.getToken(accessToken));
+        assertNotNull(accessTokenService.getScopes(accessToken));
     }
 
     @Test
-    public void shouldDeleteAccessToken() {
+    public void shouldDeleteAccessToken() throws Exception {
 
         // Given: a valid access token
         final String accessToken = UUID.randomUUID().toString();
@@ -68,21 +72,31 @@ public class DefaultAccessTokenServiceTest {
         tokenResponse.setExpiresIn(1000);
 
         accessTokenService.addAccessToken(tokenResponse);
-        assertNotNull(accessTokenService.getToken(accessToken));
+        assertNotNull(accessTokenService.getScopes(accessToken));
 
         // When: I delete it
         accessTokenService.deleteToken(accessToken);
 
         // Then: I also don't find it anymore
-        assertNull(accessTokenService.getToken(accessToken));
+        try {
+            List<String> scopes = accessTokenService.getScopes(accessToken);
+            fail("Expected no scopes, but got " + scopes);
+        } catch (InvalidTokenException e) {
+            Logger.getAnonymousLogger().fine("Got expected invalid token exception");
+        }
     }
 
     @Test
-    public void shouldNotFindInvalidAccessToken() {
+    public void shouldNotFindInvalidAccessToken() throws Exception {
 
         final String accessToken = UUID.randomUUID().toString();
 
-        assertNull(accessTokenService.getToken(accessToken));
+        try {
+            List<String> scopes = accessTokenService.getScopes(accessToken);
+            fail("Expected no scopes, but got " + scopes);
+        } catch (InvalidTokenException e) {
+            Logger.getAnonymousLogger().fine("Got expected invalid token exception");
+        }
     }
 
     @Test
@@ -96,13 +110,18 @@ public class DefaultAccessTokenServiceTest {
         tokenResponse.setExpiresIn(2);
 
         accessTokenService.addAccessToken(tokenResponse);
-        assertNotNull(accessTokenService.getToken(accessToken));
+        assertNotNull(accessTokenService.getScopes(accessToken));
 
         // When: the token expires
         Thread.sleep(3000);
 
         // Then: the Token is no longer found
-        assertNull(accessTokenService.getToken(accessToken));
+        try {
+            List<String> scopes = accessTokenService.getScopes(accessToken);
+            fail("Expected no scopes, but got " + scopes);
+        } catch (InvalidTokenException e) {
+            Logger.getAnonymousLogger().fine("Got expected invalid token exception");
+        }
 
         // And: the Token will be deleted
         assertTrue(accessTokenService.deleteExpiredTokens() > 0);

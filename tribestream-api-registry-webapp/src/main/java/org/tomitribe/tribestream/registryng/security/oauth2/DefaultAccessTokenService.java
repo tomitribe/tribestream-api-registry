@@ -26,6 +26,7 @@ import javax.ejb.Schedule;
 import javax.ejb.Singleton;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -87,7 +88,11 @@ public class DefaultAccessTokenService implements AccessTokenService {
         if (accessTokenEntity.getExpiryTimestamp() < System.currentTimeMillis()) {
             throw new InvalidTokenException("Found expired access token! " + accessTokenEntity.getAccessToken());
         } else {
-            return Stream.of(accessTokenEntity.getScope().split("\\s+")).collect(toList());
+            if (accessTokenEntity.getScope() == null) {
+                return Collections.emptyList();
+            } else {
+                return Stream.of(accessTokenEntity.getScope().split("\\s+")).collect(toList());
+            }
         }
     }
 
