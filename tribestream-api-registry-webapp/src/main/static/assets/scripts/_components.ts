@@ -241,6 +241,7 @@ angular.module('website-components', [
             scope: {
                 value: '=',
                 options: '=',
+                defaultText: '@?',
                 emptyText: '@?'
             },
             templateUrl: 'app/templates/component_editable_option.html',

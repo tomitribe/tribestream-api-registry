@@ -26,6 +26,7 @@ import org.junit.runner.RunWith;
 import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension;
+import org.tomitribe.tribestream.registryng.test.Registry;
 
 import javax.ws.rs.NotFoundException;
 import java.util.Map;
