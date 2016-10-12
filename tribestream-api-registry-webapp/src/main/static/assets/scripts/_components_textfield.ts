@@ -7,7 +7,8 @@ angular.module('website-components-text', [
             restrict: 'A',
             scope: {
                 originalValue: '=value',
-                type: '@'
+                type: '@',
+                placeholder: '@'
             },
             templateUrl: 'app/templates/component_text.html',
             controller: ['$log', '$scope', ($log, $scope) => $timeout(() => {
