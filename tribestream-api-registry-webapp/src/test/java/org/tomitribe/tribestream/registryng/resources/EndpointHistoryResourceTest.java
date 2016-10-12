@@ -23,14 +23,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.openejb.testing.Application;
 import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.rules.TestRule;
 import org.tomitribe.tribestream.registryng.cdi.Tribe;
-import org.tomitribe.tribestream.registryng.test.Registry;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.HistoryItem;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
 import org.tomitribe.tribestream.registryng.domain.SearchResult;
+import org.tomitribe.tribestream.registryng.test.Registry;
+import org.tomitribe.tribestream.registryng.test.retry.Retry;
+import org.tomitribe.tribestream.registryng.test.retry.RetryRule;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.GenericType;
@@ -46,9 +49,9 @@ import static javax.ws.rs.client.Entity.entity;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.rules.RuleChain.outerRule;
 import static org.tomitribe.tribestream.registryng.test.Registry.TESTUSER;
 
-@RunWith(TomEEEmbeddedSingleRunner.class)
 public class EndpointHistoryResourceTest {
     @Inject
     @Tribe
@@ -59,12 +62,16 @@ public class EndpointHistoryResourceTest {
 
     private Random random = new Random(System.currentTimeMillis());
 
+    @Rule
+    public final TestRule rule = outerRule(new TomEEEmbeddedSingleRunner.Rule(this)).around(new RetryRule(() -> registry));
+
     @After
     public void reset() {
         registry.restoreData();
     }
 
     @Test
+    @Retry
     public void shouldLoadEndpointHistory() {
         // Given: A random application
         Collection<SearchResult> searchResults = getSearchPage().getResults();
@@ -81,9 +88,10 @@ public class EndpointHistoryResourceTest {
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get();
 
-        assertEquals(200, historyResponse.getStatus());
+        assertEquals(Response.Status.OK.getStatusCode(), historyResponse.getStatus());
 
-        List<HistoryItem> historyItems = historyResponse.readEntity(new GenericType<List<HistoryItem>>() {});
+        List<HistoryItem> historyItems = historyResponse.readEntity(new GenericType<List<HistoryItem>>() {
+        });
 
         // Then: I get at least one result
         assertNotNull(historyItems);
@@ -102,18 +110,22 @@ public class EndpointHistoryResourceTest {
     @Test
     public void shouldAddRevisionOnUpdate() {
         // Given: A random application with a history
-        Collection<SearchResult> searchResults = getSearchPage().getResults();
-        final SearchResult searchResult = new ArrayList<>(searchResults).get(random.nextInt(searchResults.size()));
+        final Response endpointResponse = registry.withRetries(() -> {
+            Collection<SearchResult> searchResults = getSearchPage().getResults();
+            final SearchResult searchResult = new ArrayList<>(searchResults).get(random.nextInt(searchResults.size()));
 
-        final String applicationId = searchResult.getApplicationId();
-        final String endpointId = searchResult.getEndpointId();
+            final String applicationId = searchResult.getApplicationId();
+            final String endpointId = searchResult.getEndpointId();
 
-        Response endpointResponse = loadEndpointResponse(applicationId, endpointId);
+            return loadEndpointResponse(applicationId, endpointId);
+        });
+
         final EndpointWrapper endpointWrapper = endpointResponse.readEntity(EndpointWrapper.class);
 
         final List<HistoryItem> historyItems = registry.client().target(endpointResponse.getLink("history"))
                 .request(MediaType.APPLICATION_JSON_TYPE)
-                .get(new GenericType<List<HistoryItem>>() {});
+                .get(new GenericType<List<HistoryItem>>() {
+                });
 
         final String oldDescription = endpointWrapper.getOperation().getDescription();
         final String newDescription = UUID.randomUUID().toString();
@@ -124,32 +136,35 @@ public class EndpointHistoryResourceTest {
                 registry.client().target(endpointResponse.getLink("self"))
                         .request(MediaType.APPLICATION_JSON_TYPE)
                         .put(entity(endpointWrapper, MediaType.APPLICATION_JSON_TYPE));
-        assertEquals(200, updateResponse.getStatus());
+        assertEquals(Response.Status.OK.getStatusCode(), updateResponse.getStatus());
 
         // Then: The history contains one additional item
-        final Response newHistoryResponse = registry.client().target(updateResponse.getLink("history"))
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .get();
+        registry.withRetries(() -> {
+            final Response newHistoryResponse = registry.client().target(updateResponse.getLink("history"))
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .get();
 
-        final List<HistoryItem> newHistoryItems = newHistoryResponse.readEntity(new GenericType<List<HistoryItem>>() {});
+            final List<HistoryItem> newHistoryItems = newHistoryResponse.readEntity(new GenericType<List<HistoryItem>>() {
+            });
 
-        assertEquals(historyItems.size() + 1, newHistoryItems.size());
+            assertEquals(historyItems.size() + 1, newHistoryItems.size());
 
-        // And: Username is set to the current user and revisiontype is MOD
-        assertEquals("MOD", newHistoryItems.get(0).getRevisionType());
-        assertEquals(TESTUSER, newHistoryItems.get(0).getUsername());
+            // And: Username is set to the current user and revisiontype is MOD
+            assertEquals("MOD", newHistoryItems.get(0).getRevisionType());
+            assertEquals(TESTUSER, newHistoryItems.get(0).getUsername());
 
-        // And: The response with the new history contains links to the 2 different historic applications
-        newHistoryResponse.getLinks().forEach(System.out::println);
-        EndpointWrapper currentEndpointWrapper = registry.client().target(newHistoryResponse.getLink("revision " + newHistoryItems.get(0).getRevisionId()))
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .get(EndpointWrapper.class);
-        EndpointWrapper oldEndpointWrapper = registry.client().target(newHistoryResponse.getLink("revision " + newHistoryItems.get(1).getRevisionId()))
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .get(EndpointWrapper.class);
+            // And: The response with the new history contains links to the 2 different historic applications
+            newHistoryResponse.getLinks().forEach(System.out::println);
+            EndpointWrapper currentEndpointWrapper = registry.client().target(newHistoryResponse.getLink("revision " + newHistoryItems.get(0).getRevisionId()))
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .get(EndpointWrapper.class);
+            EndpointWrapper oldEndpointWrapper = registry.client().target(newHistoryResponse.getLink("revision " + newHistoryItems.get(1).getRevisionId()))
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .get(EndpointWrapper.class);
 
-        assertEquals(newDescription, currentEndpointWrapper.getOperation().getDescription());
-        assertEquals(oldDescription, oldEndpointWrapper.getOperation().getDescription());
+            assertEquals(newDescription, currentEndpointWrapper.getOperation().getDescription());
+            assertEquals(oldDescription, oldEndpointWrapper.getOperation().getDescription());
+        });
     }
 
     private Response loadEndpointResponse(final String applicationId, final String endpointId) {

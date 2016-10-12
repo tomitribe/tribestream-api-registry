@@ -16,29 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.tomitribe.tribestream.registryng.service;
+package org.tomitribe.tribestream.registryng.test.logging;
 
-import java.util.stream.Stream;
+import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
 
-import static java.util.stream.Collectors.joining;
+import java.io.Closeable;
 
-public final class PathTransformUtil {
-
-    private PathTransformUtil() {
-
-    }
-
-    public static String bracesToColon(String openApiTemplate) { // TODO: what's wrong with openApiTemplate.replaceAll("\\{(\\w+)\\}", ":$1")
-        // The root path is the most simple case
-        if (openApiTemplate.equals("/")) {
-            return openApiTemplate;
-        }
-
-        return Stream.of(openApiTemplate.split("/"))
-                .map(part ->
-                    part.startsWith("{") && part.endsWith("}")
-                            ? ":" + part.substring(1, part.length() - 1)
-                            : part)
-                .collect(joining("/"));
+public class LoggingSetup implements TomEEEmbeddedSingleRunner.LifecycleTask {
+    @Override
+    public Closeable beforeContainerStartup() {
+        System.setProperty("java.util.logging.SimpleFormatter.format", "[TOMEE  SERVER][%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS,%1$tL][%4$s][%3$s] %5$s%6$s%n");
+        return () -> {
+        };
     }
 }

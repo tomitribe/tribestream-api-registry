@@ -29,13 +29,13 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.tomitribe.tribestream.registryng.cdi.Tribe;
-import org.tomitribe.tribestream.registryng.test.Registry;
 import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
 import org.tomitribe.tribestream.registryng.domain.SearchResult;
 import org.tomitribe.tribestream.registryng.entities.Normalizer;
 import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
+import org.tomitribe.tribestream.registryng.test.Registry;
 
 import javax.inject.Inject;
 import javax.ws.rs.NotAuthorizedException;
@@ -78,17 +78,18 @@ public class ApplicationResourceTest {
     public void applicationEndpointsAreSecured() throws Exception {
         registry.target(false).path("api/application")
                 .request(MediaType.APPLICATION_JSON_TYPE)
-                .get(new GenericType<List<ApplicationWrapper>>() {});
+                .get(new GenericType<List<ApplicationWrapper>>() {
+                });
     }
 
     @Test
     public void shouldLoadAllApplications() throws Exception {
         List<String> applicationNames =
                 loadAllApplications().stream()
-                .map(ApplicationWrapper::getSwagger)
-                .map(Swagger::getInfo)
-                .map(Info::getTitle)
-                .collect(toList());
+                        .map(ApplicationWrapper::getSwagger)
+                        .map(Swagger::getInfo)
+                        .map(Info::getTitle)
+                        .collect(toList());
 
         assertThat(applicationNames, hasItems("Swagger Petstore", "Uber API"));
     }
@@ -107,46 +108,47 @@ public class ApplicationResourceTest {
             // When: The Swagger document is posted to the application resource
             final Response response = registry.target().path("api/application")
                     .request(MediaType.APPLICATION_JSON_TYPE)
-                    .buildPost(Entity.entity(request, MediaType.APPLICATION_JSON_TYPE))
-                    .invoke();
+                    .post(Entity.entity(request, MediaType.APPLICATION_JSON_TYPE));
 
             // Then: The response status 201 and contains the imported document
-            assertEquals(201, response.getStatus());
+            assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
             final ApplicationWrapper applicationWrapper = response.readEntity(ApplicationWrapper.class);
 
             assertEquals("List API versions", applicationWrapper.getSwagger().getPaths().get("/").getGet().getSummary());
             assertEquals("Show API version details", applicationWrapper.getSwagger().getPaths().get("/v2").getGet().getSummary());
 
-            // And: The response contains links for self, history and the two endpoints and where to post new endpoints
-            assertEquals(5, response.getLinks().size());
+            // And: The response contains links for self, history and the two endpoints
+            assertEquals(response.getLinks().toString(), 5, response.getLinks().size());
             assertNotNull(response.getLink("self"));
             assertNotNull(response.getLink("history"));
             assertNotNull(response.getLink("endpoints"));
             assertNotNull(response.getLink("GET /"));
             assertNotNull(response.getLink("GET /v2"));
 
-            EndpointWrapper endpoint = getSearchPage().getResults().stream()
-                    .filter((SearchResult sr) -> "/v2".equals(sr.getPath()) && "GET".equals(sr.getHttpMethod()))
-                    .findFirst()
-                    .map((SearchResult sr) -> loadEndpoint(sr.getApplicationId(), sr.getEndpointId()))
-                    .get();
-            assertEquals(singletonList("application/json"), endpoint.getOperation().getProduces());
+            registry.withRetries(() -> {
+                EndpointWrapper endpoint = getSearchPage().getResults().stream()
+                        .filter((SearchResult sr) -> "/v2".equals(sr.getPath()) && "GET".equals(sr.getHttpMethod()))
+                        .findFirst()
+                        .map((SearchResult sr) -> loadEndpoint(sr.getApplicationId(), sr.getEndpointId()))
+                        .get();
+                assertEquals(singletonList("application/json"), endpoint.getOperation().getProduces());
 
-            // And: When loading all applications the number of applications has increased by 1
-            assertEquals(oldApplicationCount + 1, loadAllApplications().size());
+                // And: When loading all applications the number of applications has increased by 1
+                assertEquals(oldApplicationCount + 1, loadAllApplications().size());
 
-            // And: The search also returns the two imported endpoints
-            SearchPage searchPage = registry.target().path("api/registry")
-                    .queryParam("tag", "test")
-                    .request(MediaType.APPLICATION_JSON_TYPE)
-                    .get(SearchPage.class);
+                // And: The search also returns the two imported endpoints
+                SearchPage searchPage = registry.target().path("api/registry")
+                        .queryParam("tag", "test")
+                        .request(MediaType.APPLICATION_JSON_TYPE)
+                        .get(SearchPage.class);
 
-            assertEquals(2, searchPage.getResults().size());
-            final List<String> foundPaths = searchPage.getResults().stream()
-                    .map(SearchResult::getPath)
-                    .collect(toList());
-            assertThat(foundPaths, both(hasItem("/")).and(hasItem("/v2")));
+                assertEquals(2, searchPage.getResults().size());
+                final List<String> foundPaths = searchPage.getResults().stream()
+                        .map(SearchResult::getPath)
+                        .collect(toList());
+                assertThat(foundPaths, both(hasItem("/")).and(hasItem("/v2")));
+            });
         } catch (Exception e) {
             e.printStackTrace(System.out);
             throw e;
@@ -219,19 +221,19 @@ public class ApplicationResourceTest {
 
     @Test
     public void shouldDeleteApplication() throws Exception {
-
         final List<ApplicationWrapper> apps = loadAllApplications();
 
-        final List<SearchResult> searchResults = new ArrayList<>(getSearchPage().getResults());
-        final SearchResult searchResult = searchResults.get(0);
-        final ApplicationWrapper first = loadApplication(searchResult.getApplicationId());
-        assertNotNull(first);
+        final SearchResult searchResult = registry.withRetries(() -> {
+            final List<SearchResult> searchResults = new ArrayList<>(getSearchPage().getResults());
+            final SearchResult result = searchResults.get(0);
+            assertNotNull(loadApplication(result.getApplicationId()));
+            return result;
+        });
 
-        Response response =  registry.target().path("api/application/{applicationId}")
+        Response response = registry.target().path("api/application/{applicationId}")
                 .resolveTemplate("applicationId", searchResult.getApplicationId())
                 .request()
-                .buildDelete()
-                .invoke();
+                .delete();
 
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
@@ -241,40 +243,26 @@ public class ApplicationResourceTest {
         Response response2 = registry.target().path("api/application/{applicationId}")
                 .resolveTemplate("applicationId", searchResult.getApplicationId())
                 .request(MediaType.APPLICATION_JSON_TYPE)
-                .buildGet()
-                .invoke();
+                .get();
 
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response2.getStatus());
 
-        SearchPage searchPage = registry.target().path("api/registry")
+        registry.withRetries(() -> assertFalse(registry.target().path("api/registry")
                 .request(MediaType.APPLICATION_JSON_TYPE)
-                .get(SearchPage.class);
-
-        assertFalse(
-            searchPage.getResults().stream()
-                    .filter(sr -> searchResult.getApplicationId().equals(sr.getApplicationId()))
-                    .findFirst()
-                    .isPresent());
+                .get(SearchPage.class)
+                .getResults().stream()
+                .filter(sr -> searchResult.getApplicationId().equals(sr.getApplicationId()))
+                .findFirst()
+                .isPresent()));
     }
 
     @Test
     public void shouldGet404WhenDeletingNotExistingApplication() throws Exception {
-
-        final List<ApplicationWrapper> apps = loadAllApplications();
-        assertNotNull(apps);
-
-        final List<SearchResult> searchResults = new ArrayList<>(getSearchPage().getResults());
-        final SearchResult searchResult = searchResults.get(0);
-        final ApplicationWrapper first = loadApplication(searchResult.getApplicationId());
-        assertNotNull(first);
-
-        Response response = registry.target().path("api/application/{applicationId}")
-                .resolveTemplate("applicationId", searchResult.getApplicationId() + "_doesNotExist")
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), registry.target().path("api/application/{applicationId}")
+                .resolveTemplate("applicationId", "whatever_doesNotExist")
                 .request()
-                .buildDelete()
-                .invoke();
-
-        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
+                .delete()
+                .getStatus());
     }
 
     @Test
@@ -315,7 +303,6 @@ public class ApplicationResourceTest {
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(EndpointWrapper.class);
     }
-
 
 
     private SearchPage getSearchPage() {

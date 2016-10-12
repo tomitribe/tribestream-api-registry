@@ -33,9 +33,6 @@
         <class>org.tomitribe.tribestream.registryng.entities.Endpoint</class>
         <class>org.tomitribe.tribestream.registryng.entities.Revision</class>
 
-        <class>org.tomitribe.tribestream.registryng.lucene.File$IndexId</class>
-        <class>org.tomitribe.tribestream.registryng.lucene.File</class>
-
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
 
         <validation-mode>NONE</validation-mode>

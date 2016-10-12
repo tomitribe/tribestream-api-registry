@@ -31,8 +31,4 @@ public class SearchPage {
     private Collection<SearchResult> results;
     private int total;
     private int current;
-    private Collection<CloudItem> applications;
-    private Collection<CloudItem> categories;
-    private Collection<CloudItem> tags;
-    private Collection<CloudItem> roles;
 }
