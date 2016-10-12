@@ -8,7 +8,7 @@ module services_endpoints {
         'tribe-alerts'
     ])
         .factory('tribeLinkHeaderService', [
-            function () {
+            function() {
                 return {
                     parseLinkHeader: function (linkHeader) {
                         if (!linkHeader) {
@@ -21,7 +21,7 @@ module services_endpoints {
                         _.each(parts, function (p: string) {
                             let section = p.split(';');
                             if (section.length != 2) {
-                                throw new Error("section could not be split on ';'");
+                              throw new Error("section could not be split on ';'");
                             }
                             var url = section[0].replace(/<(.*)>/, '$1').trim();
                             var name = section[1].replace(/rel="(.*)"/, '$1').trim();
@@ -125,7 +125,7 @@ module services_endpoints {
                             then: function (successCallback, errorCallback) {
                                 if (request && request.endpointPath) {
                                     const params = request.version ? {version: request.version} : {};
-                                    $http.get(`api/ui/endpoint/${request.applicationName}/${request.verb || '-'}/${request.endpointPath}`, {params: params})
+                                    $http.get(`api/ui/endpoint/${request.applicationName}/${request.verb || '-'}/${request.endpointPath}`, {params : params})
                                         .then(function (data) {
                                             successCallback(data);
                                         }, tribeErrorHandlerService.ensureErrorHandler(errorCallback));
@@ -165,9 +165,9 @@ module services_endpoints {
                             }
                         };
                     },
-                    getHistoricItem: function (historyItem) {
+                    getHistoricItem: function(historyItem) {
                         return {
-                            then: function (successCallback, errorCallback) {
+                            then: function(successCallback, errorCallback) {
                                 $http.get(historyItem.link)
                                     .then(function (data) {
                                         successCallback(data);
