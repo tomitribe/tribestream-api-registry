@@ -58,13 +58,22 @@ public class ElasticsearchClient {
     @ConfigProperty(name = "tribe.registry.elasticsearch.features")
     private String features;
 
-    // TODO: timeouts
+    @Inject
+    @ConfigProperty(name = "tribe.registry.elasticsearch.timeout.receive", defaultValue = "30000")
+    private String receiveTimeout;
+
+    @Inject
+    @ConfigProperty(name = "tribe.registry.elasticsearch.timeout.connect", defaultValue = "30000")
+    private String connectTimeout;
 
     private Client client;
 
     @PostConstruct
     private void init() {
-        client = ClientBuilder.newClient();
+        client = ClientBuilder.newClient()
+                .property("http.connection.timeout", connectTimeout)
+                .property("http.receive.timeout", receiveTimeout);
+
         ofNullable(features).ifPresent(f -> Stream.of(f.split(",")).forEach(v -> {
             try {
                 client.register(Thread.currentThread().getContextClassLoader().loadClass(v).newInstance());
