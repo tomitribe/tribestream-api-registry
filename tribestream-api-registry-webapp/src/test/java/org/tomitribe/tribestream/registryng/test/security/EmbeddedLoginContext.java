@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.tomitribe.tribestream.registryng.resources.security;
+package org.tomitribe.tribestream.registryng.test.security;
 
 import org.tomitribe.tribestream.registryng.security.LoginContext;
 
