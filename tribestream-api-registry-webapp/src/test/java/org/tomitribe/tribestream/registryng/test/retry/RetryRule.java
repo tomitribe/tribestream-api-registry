@@ -45,7 +45,7 @@ public class RetryRule implements TestRule {
                         } catch (Throwable throwable) {
                             throw new IllegalStateException(throwable);
                         }
-                    });
+                    }, description.getDisplayName());
                 } else {
                     base.evaluate();
                 }

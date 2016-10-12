@@ -18,25 +18,23 @@
  */
 package org.tomitribe.tribestream.registryng.service.search;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import org.tomitribe.tribestream.registryng.domain.CloudItem;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
 import org.tomitribe.tribestream.registryng.domain.SearchResult;
 import org.tomitribe.tribestream.registryng.elasticsearch.ElasticsearchClient;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
-import org.tomitribe.util.Join;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonBuilderFactory;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -55,9 +53,9 @@ import static org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExte
 import static org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension.PROP_ROLES;
 import static org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension.VENDOR_EXTENSION_KEY;
 
+// TODO: refactor this class to get rid of all that strings and
+// use a json mapper instead
 @ApplicationScoped
-@NoArgsConstructor(force = true)
-@AllArgsConstructor(onConstructor = @__(@Inject))
 public class SearchEngine {
     private static final Logger LOGGER = Logger.getLogger(SearchEngine.class.getName());
 
@@ -74,38 +72,50 @@ public class SearchEngine {
     private static final String SUMMARY = "summary";
 
     private final JsonBuilderFactory jsonFactory = Json.createBuilderFactory(emptyMap());
-    private final ElasticsearchClient elasticsearch;
+
+    @Inject
+    private ElasticsearchClient elasticsearch;
 
     public SearchPage search(final SearchRequest request) {
         final int pageSize = request.getCount();
-        final JsonArrayBuilder should = jsonFactory.createArrayBuilder();
 
-        final JsonArray must = ofNullable(request.getQuery())
-                .filter(q -> !q.isEmpty() && !"*".equals(q) /*default*/)
-                .map(q -> jsonFactory.createArrayBuilder().add(jsonFactory.createObjectBuilder()
-                        .add("query_string", jsonFactory.createObjectBuilder()
-                                .add("query", q)))
-                        .build()).orElse(null);
+        final JsonObjectBuilder aggs = jsonFactory.createObjectBuilder()
+                .add("tags", term("tag"))
+                .add("categories", term("category"))
+                .add("roles", term("role"))
+                .add("applications", term("applicationName"));
 
-        addDrillDown(request.getCategories(), should, "category");
-        addDrillDown(request.getTags(), should, "tag");
-        addDrillDown(request.getRoles(), should, "role");
-        addDrillDown(request.getApps(), should, "context", "applicationName");
+        final JsonObjectBuilder query = jsonFactory.createObjectBuilder().add("aggs", aggs);
+        if ((request.getQuery() != null && !"*".equals(request.getQuery()) && !request.getQuery().isEmpty())
+                || (request.getCategories() != null && !request.getCategories().isEmpty())
+                || (request.getTags() != null && !request.getTags().isEmpty())
+                || (request.getRoles() != null && !request.getRoles().isEmpty())
+                || (request.getApps() != null && !request.getApps().isEmpty())) {
+            final JsonArrayBuilder must = jsonFactory.createArrayBuilder();
 
-        final JsonObject object;
-        if (must == null && should == null) {
-            object = elasticsearch.search(null, request.getPage() * pageSize, pageSize);
-        } else {
-            final JsonObjectBuilder bool = jsonFactory.createObjectBuilder();
-            ofNullable(must).ifPresent(m -> bool.add("must", m));
-            ofNullable(should).ifPresent(s -> bool.add("should", s));
+            ofNullable(request.getQuery())
+                    .filter(q -> !q.isEmpty() && !"*".equals(q) /*default*/)
+                    .ifPresent(q -> must.add(jsonFactory.createObjectBuilder()
+                            .add("query_string", jsonFactory.createObjectBuilder()
+                                    .add("query", q)))
+                            .build());
 
-            object = elasticsearch.search(jsonFactory.createObjectBuilder().add("query",
-                    jsonFactory.createObjectBuilder().add("bool", bool))
-                    .build(), request.getPage() * pageSize, pageSize);
+            addDrillDown(request.getCategories(), must, "category");
+            addDrillDown(request.getTags(), must, "tag");
+            addDrillDown(request.getRoles(), must, "role");
+            addDrillDown(request.getApps(), must, "context", "applicationName");
+
+            query.add("query", jsonFactory.createObjectBuilder()
+                    .add("bool", jsonFactory.createObjectBuilder()
+                            .add("must", must)));
         }
+
+        final JsonObject object = elasticsearch.search(query.build(), request.getPage() * pageSize, pageSize);
+
         final JsonObject hits = object.getJsonObject("hits");
-        return new SearchPage(hits.getJsonArray("hits").stream()
+        final JsonObject aggregations = object.getJsonObject("aggregations");
+        final int total = hits.getInt("total");
+        return new SearchPage(total == 0 ? new ArrayList<>() : hits.getJsonArray("hits").stream()
                 .map(json -> JsonObject.class.cast(json).getJsonObject("_source"))
                 .map(source -> new SearchResult(
                         getString(source, APPLICATION_ID_FIELD),
@@ -122,7 +132,11 @@ public class SearchEngine {
                         getStrings(source, "role"),
                         getDouble(source, "_score"),
                         null))
-                .collect(toList()), hits.getInt("total"), request.getPage());
+                .collect(toList()), total, request.getPage(),
+                aggregationToSet(aggregations, "applications", request.getApps()),
+                aggregationToSet(aggregations, "categories", request.getCategories()),
+                aggregationToSet(aggregations, "tags", request.getTags()),
+                aggregationToSet(aggregations, "roles", request.getRoles()));
     }
 
     public void indexEndpoint(final Endpoint endpoint) {
@@ -140,31 +154,6 @@ public class SearchEngine {
     public void deleteEndpoint(final Endpoint endpoint) {
         LOGGER.info(() -> String.format("Deleting Index %s %s", endpoint.getVerb(), endpoint.getPath()));
         ofNullable(endpoint.getElasticsearchId()).ifPresent(elasticsearch::delete);
-    }
-
-    private Set<String> getStrings(final JsonObject object, final String key) {
-        return object.containsKey(key) ? object.getJsonArray("category").getValuesAs(JsonString.class).stream().map(JsonString::getString).collect(toSet()) : new HashSet<>();
-    }
-
-    private double getDouble(final JsonObject object, final String key) {
-        return object.containsKey(key) ? object.getJsonNumber(key).doubleValue() : 0.;
-    }
-
-    private String getString(final JsonObject object, final String key) {
-        return object.containsKey(key) ? object.getString(key) : null;
-    }
-
-    private void addDrillDown(final List<String> values, final JsonArrayBuilder builder, final String... names) {
-        ofNullable(values).filter(c -> !c.isEmpty())
-                .ifPresent(c -> c.forEach(it -> builder.add(jsonFactory.createObjectBuilder()
-                        .add("term", names.length == 1 ?
-                                jsonFactory.createObjectBuilder().add(names[0], it) :
-                                jsonFactory.createObjectBuilder().add("bool", jsonFactory.createObjectBuilder().add("should",
-                                        Stream.of(names)
-                                                .map(n -> jsonFactory.createObjectBuilder().add("match", jsonFactory.createObjectBuilder().add(n, it)))
-                                                .collect(jsonFactory::createArrayBuilder, JsonArrayBuilder::add, JsonArrayBuilder::add)
-
-                                ))))));
     }
 
     private JsonObject createDocument(final Endpoint endpoint, final String webCtx) {
@@ -227,35 +216,6 @@ public class SearchEngine {
             eDoc.add(DOC, doc);
         }
 
-        // compute subwords for the URI only to make searching easier
-        final String[] split = endpoint.getPath().split("[-_:/]");
-        final List<String> pathSplit = new ArrayList<>();
-        for (String s : split) {
-            if (s.length() == 0) continue;
-            // add the word anyway
-            pathSplit.add(s);
-            for (int i = 0; i < s.length() - 1; i++) { // more than 2 char combinations
-                for (int j = 2; j <= s.length() - i; j++) { // more than 2 char combinations
-                    final String sub = s.substring(i, i + j);
-                    if (!s.equals(sub)) {
-                        pathSplit.add(sub);
-                    }
-                }
-            }
-        }
-
-        final String tags = endpoint.getOperation().getTags() == null ? "" : Join.join(",", endpoint.getOperation().getTags());
-        // where search is done if not explicit
-        final String search = endpoint.getVerb() + " "
-                + endpoint.getPath() + " "
-                + Join.join(",", pathSplit) + " "
-                + Join.join(",", getExtensionProperty(endpoint, PROP_CATEGORIES, Collections::<String>emptyList)) + " "
-                + Join.join(",", roles) + " "
-                + tags + " "
-                + (doc == null ? "" : doc) + " "
-                + webCtx;
-        eDoc.add("search", search);
-
         return eDoc.build();
     }
 
@@ -264,5 +224,47 @@ public class SearchEngine {
                 .map(vendorExtensions -> (Map<String, Object>) vendorExtensions.get(VENDOR_EXTENSION_KEY))
                 .map(tapirExtension -> tapirExtension.get(extensionPropertyName))
                 .orElseGet(defaultSupplier);
+    }
+
+    private Set<String> getStrings(final JsonObject object, final String key) {
+        return object.containsKey(key) ? object.getJsonArray(key).getValuesAs(JsonString.class).stream()
+                .map(JsonString::getString).collect(toSet()) : new HashSet<>();
+    }
+
+    private double getDouble(final JsonObject object, final String key) {
+        return object.containsKey(key) ? object.getJsonNumber(key).doubleValue() : 0.;
+    }
+
+    private String getString(final JsonObject object, final String key) {
+        return object.containsKey(key) ? object.getString(key) : null;
+    }
+
+    private void addDrillDown(final List<String> values, final JsonArrayBuilder builder, final String... names) {
+        ofNullable(values).filter(c -> !c.isEmpty())
+                .ifPresent(c -> c.forEach(it -> builder.add(jsonFactory.createObjectBuilder()
+                        .add("term", names.length == 1 ?
+                                jsonFactory.createObjectBuilder().add(names[0], it) :
+                                jsonFactory.createObjectBuilder().add("bool", jsonFactory.createObjectBuilder().add("should",
+                                        Stream.of(names)
+                                                .map(n -> jsonFactory.createObjectBuilder().add("match", jsonFactory.createObjectBuilder().add(n, it)))
+                                                .collect(jsonFactory::createArrayBuilder, JsonArrayBuilder::add, JsonArrayBuilder::add)
+
+                                ))))));
+    }
+
+    private JsonObjectBuilder term(final String term) {
+        return jsonFactory.createObjectBuilder()
+                .add("terms", jsonFactory.createObjectBuilder()
+                        .add("field", term));
+    }
+
+    private Set<CloudItem> aggregationToSet(final JsonObject aggregations, final String key, final Collection<String> filtered) {
+        return aggregations.getJsonObject(key).getJsonArray("buckets").stream()
+                .map(json -> {
+                    final JsonObject o = JsonObject.class.cast(json);
+                    return new CloudItem(o.getString("key"), o.getInt("doc_count"));
+                })
+                .filter(o -> filtered == null || !filtered.contains(o.getText())) // remove passed ones
+                .collect(toSet());
     }
 }

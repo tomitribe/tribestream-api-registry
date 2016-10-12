@@ -27,6 +27,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Invocation;
@@ -34,6 +35,7 @@ import javax.ws.rs.client.WebTarget;
 import java.util.stream.Stream;
 
 import static java.util.Optional.ofNullable;
+import static java.util.logging.Level.SEVERE;
 import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 
@@ -113,15 +115,20 @@ public class ElasticsearchClient {
     }
 
     public JsonObject search(final JsonObject query, final long from, final long size) {
-        WebTarget target = client.target(base).path("_search");
-        if (from >= 0) {
-            target = target.queryParam("from", from);
+        try {
+            WebTarget target = client.target(base).path("_search");
+            if (from >= 0) {
+                target = target.queryParam("from", from);
+            }
+            if (size > 0) {
+                target = target.queryParam("size", size);
+            }
+            final Invocation.Builder builder = target.request(APPLICATION_JSON_TYPE);
+            return query == null ? builder.get(JsonObject.class) : builder.post(entity(query, APPLICATION_JSON_TYPE), JsonObject.class);
+        } catch (final WebApplicationException wae) {
+            log.log(SEVERE, wae.getMessage() + ": " + ofNullable(wae.getResponse()).map(r -> r.readEntity(String.class)).orElse("-"), wae);
+            throw wae;
         }
-        if (size > 0) {
-            target = target.queryParam("size", size);
-        }
-        final Invocation.Builder builder = target.request(APPLICATION_JSON_TYPE);
-        return query == null ? builder.get(JsonObject.class) : builder.post(entity(query, APPLICATION_JSON_TYPE), JsonObject.class);
     }
 
     @PreDestroy

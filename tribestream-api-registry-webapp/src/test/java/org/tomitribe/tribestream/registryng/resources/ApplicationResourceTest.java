@@ -148,7 +148,7 @@ public class ApplicationResourceTest {
                         .map(SearchResult::getPath)
                         .collect(toList());
                 assertThat(foundPaths, both(hasItem("/")).and(hasItem("/v2")));
-            });
+            }, "shouldImportOpenAPIDocument");
         } catch (Exception e) {
             e.printStackTrace(System.out);
             throw e;

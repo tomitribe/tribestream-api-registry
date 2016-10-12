@@ -52,10 +52,13 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import static java.lang.Thread.sleep;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.joining;
 import static javax.xml.bind.DatatypeConverter.printBase64Binary;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -91,14 +94,14 @@ public class Registry {
 
     private PhantomJsLifecycle phantomJs;
 
-    public void withRetries(final Runnable task) {
+    public void withRetries(final Runnable task, final String... description) {
         withRetries(() -> {
             task.run();
             return null;
         });
     }
 
-    public <T> T withRetries(final Supplier<T> task) {
+    public <T> T withRetries(final Supplier<T> task, final String... description) {
         Throwable lastErr = null;
         final int max = Integer.getInteger("test.registry.retries", 60);
         final Client client = ClientBuilder.newClient();
@@ -116,7 +119,9 @@ public class Registry {
                 } catch (final Throwable error) {
                     lastErr = error;
                     if (i % 3 == 0) {
-                        Logger.getLogger(Registry.class.getName()).info("Retry cause (" + (i + 1) + "/" + max + "): " + error.getMessage());
+                        Logger.getLogger(Registry.class.getName()).info("Retry cause (" + (i + 1) + "/" + max + ")"
+                                + ofNullable(description).filter(d -> d.length >= 1).map(d -> Stream.of(d).collect(joining(" "))).orElse("")
+                                + ": " + error.getMessage());
                     }
                     try {
                         sleep(1000);
