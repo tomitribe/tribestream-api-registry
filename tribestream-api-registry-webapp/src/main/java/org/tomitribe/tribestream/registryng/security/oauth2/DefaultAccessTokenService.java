@@ -18,12 +18,26 @@
  */
 package org.tomitribe.tribestream.registryng.security.oauth2;
 
-import javax.enterprise.context.ApplicationScoped;
+import org.tomitribe.tribestream.registryng.entities.AccessToken;
+
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
+import javax.ejb.Schedule;
+import javax.ejb.Singleton;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Logger;
 
-@ApplicationScoped
+@Singleton
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class DefaultAccessTokenService implements AccessTokenService {
+
+    public static final Logger LOG = Logger.getLogger(DefaultAccessTokenService.class.getName());
+
+    @PersistenceContext
+    private EntityManager em;
 
     private static class TokenHolder {
 
@@ -51,25 +65,50 @@ public class DefaultAccessTokenService implements AccessTokenService {
 
     @Override
     public void addAccessToken(final AccessTokenResponse tokenResponse){
-        System.out.println("Add accesstoken " + tokenResponse);
-        tokenCache.put(tokenResponse.getAccessToken(), new TokenHolder(tokenResponse));
-
+        LOG.fine("Add new access token " + tokenResponse);
+        AccessToken accessTokenEntity = new AccessToken();
+        accessTokenEntity.setAccessToken(tokenResponse.getAccessToken());
+        accessTokenEntity.setExpiryTimestamp(System.currentTimeMillis() + tokenResponse.getExpiresIn() * 1000);
+        accessTokenEntity.setScope(tokenResponse.getScope());
+        em.persist(accessTokenEntity);
     }
 
     @Override
-    public boolean hasToken(final String accessToken) {
+    public AccessToken getToken(final String accessToken) {
 
-        TokenHolder tokenHolder = tokenCache.get(accessToken);
-
-        if (tokenHolder == null) {
-            return false;
-        } else if (tokenHolder.isExpired()) {
-            tokenCache.remove(accessToken);
-            return false;
-        } else {
-            return true;
+        AccessToken accessTokenEntity = em.find(AccessToken.class, accessToken);
+        if (accessTokenEntity == null) {
+            LOG.info("Could not find access token: " + accessToken);
+            return null;
         }
+        if (accessTokenEntity.getExpiryTimestamp() < System.currentTimeMillis()) {
+            LOG.info("Found expired access token! " + accessTokenEntity.getAccessToken());
+            // Don't delete here, but do it from a timed method
+            return null;
+        } else {
+            return accessTokenEntity;
+        }
+    }
 
+    @Override
+    public void deleteToken(final String accessToken) {
+        AccessToken accessTokenEntity = em.getReference(AccessToken.class, accessToken);
+        em.remove(accessTokenEntity);
+    }
+
+    @Schedule(minute="*", hour="*")
+    public void timedDeleteExpiredTokens() {
+        LOG.fine("Delete expired tokens");
+        int deletedTokens = deleteExpiredTokens();
+        if (deletedTokens > 0) {
+            LOG.info("Purged " + deletedTokens + " expired tokens");
+        }
+    }
+
+    public int deleteExpiredTokens() {
+        return em.createNamedQuery(AccessToken.Queries.DELETE_EXPIRED_TOKENS)
+                .setParameter("now", System.currentTimeMillis())
+                .executeUpdate();
     }
 
 }

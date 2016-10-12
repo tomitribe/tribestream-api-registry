@@ -18,6 +18,7 @@
  */
 package org.tomitribe.tribestream.registryng.security;
 
+import org.tomitribe.tribestream.registryng.entities.AccessToken;
 import org.tomitribe.tribestream.registryng.security.oauth2.AccessTokenService;
 
 import javax.inject.Inject;
@@ -87,7 +88,8 @@ public class SecurityWebFilter implements Filter {
 
             } else if (authHeader.startsWith("Bearer ")) {
 
-                if (accessTokenService.hasToken(authHeader.substring("Bearer ".length()))) {
+                AccessToken accessToken = accessTokenService.getToken(authHeader.substring("Bearer ".length()));
+                if (accessToken != null) {
                     filterChain.doFilter(servletRequest, servletResponse);
                 } else {
                     LOGGER.log(Level.INFO, "Did not find submitted access token");

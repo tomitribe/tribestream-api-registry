@@ -18,9 +18,15 @@
  */
 package org.tomitribe.tribestream.registryng.security.oauth2;
 
+import org.tomitribe.tribestream.registryng.entities.AccessToken;
+
 public interface AccessTokenService {
 
     void addAccessToken(final AccessTokenResponse tokenResponse);
 
-    boolean hasToken(final String accessToken);
+    AccessToken getToken(final String accessToken);
+
+    void deleteToken(final String accessToken);
+
+    int deleteExpiredTokens();
 }
