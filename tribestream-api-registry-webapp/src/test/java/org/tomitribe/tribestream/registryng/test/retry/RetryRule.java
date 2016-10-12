@@ -35,7 +35,10 @@ public class RetryRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                final Retry annotation = description.getAnnotation(Retry.class);
+                Retry annotation = description.getAnnotation(Retry.class);
+                if (annotation == null) {
+                    annotation = description.getTestClass().getAnnotation(Retry.class);
+                }
                 if (annotation != null && annotation.active()) {
                     registry.get().withRetries(() -> {
                         try {
