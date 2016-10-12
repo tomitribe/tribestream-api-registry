@@ -63,8 +63,8 @@ public class Oauth2TokenResource {
     private static final Logger LOG = Logger.getLogger(Oauth2TokenResource.class.getName());
 
     @Inject
-    @ConfigProperty(name = "registry.oauth2.gatewayUrl")
-    private String tagUrl;
+    @ConfigProperty(name = "registry.oauth2.authorizationServerUrl")
+    private String authServerUrl;
 
     @Inject
     @ConfigProperty(name = "registry.oauth2.clientId")
@@ -91,10 +91,6 @@ public class Oauth2TokenResource {
     private String trustStoreType;
 
     @Inject
-    @ConfigProperty(name = "registry.oauth2.trustStoreProvider")
-    private String trustStoreProvider;
-
-    @Inject
     private AccessTokenService accessTokenService;
 
     private volatile SSLContext sslContext;
@@ -102,7 +98,7 @@ public class Oauth2TokenResource {
     @POST
     public Response getToken(final MultivaluedMap<String, String> formParameters) {
 
-        if (tagUrl == null || tagUrl.trim().length() == 0) {
+        if (authServerUrl == null || authServerUrl.trim().length() == 0) {
             return Response.status(Response.Status.UNAUTHORIZED)
                     .entity("No Oauth2 gateway configured")
                     .build();
@@ -114,11 +110,11 @@ public class Oauth2TokenResource {
             client = ClientBuilder.newBuilder()
                     .sslContext(getSslContext())
                     .build();
-            if (clientId != null) {
+            if (clientId != null && clientId.length() > 0) {
                 client.register(new BasicAuthFilter());
             }
             client.register(new CustomJacksonJaxbJsonProvider());
-            WebTarget target = client.target(tagUrl);
+            WebTarget target = client.target(authServerUrl);
 
             // Pass the client parameters through
             Form form = new Form(formParameters);
@@ -161,16 +157,16 @@ public class Oauth2TokenResource {
             final KeyStore trustStore;
             if (trustStoreFileName != null) {
                 if (trustStoreType == null) {
-                    if (trustStoreProvider == null) {
+                    if (tlsProvider == null) {
                         trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
                     } else {
-                        trustStore = KeyStore.getInstance(KeyStore.getDefaultType(), trustStoreProvider);
+                        trustStore = KeyStore.getInstance(KeyStore.getDefaultType(), tlsProvider);
                     }
                 } else {
-                    if (trustStoreProvider == null) {
+                    if (tlsProvider == null) {
                         trustStore = KeyStore.getInstance(trustStoreType);
                     } else {
-                        trustStore = KeyStore.getInstance(trustStoreType, trustStoreProvider);
+                        trustStore = KeyStore.getInstance(trustStoreType, tlsProvider);
                     }
                 }
             } else {

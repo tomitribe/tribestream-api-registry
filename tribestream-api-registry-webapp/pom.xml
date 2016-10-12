@@ -303,7 +303,7 @@
             <db>new://Resource?type=DataSource</db>
             <db.JdbcUrl>jdbc:h2:mem:registry</db.JdbcUrl>
             <db.JdbcDriver>org.h2.Driver</db.JdbcDriver>
-            <registry.oauth2.gatewayUrl>${registry.oauth2.gatewayUrl}</registry.oauth2.gatewayUrl>
+            <registry.oauth2.authorizationServerUrl>${registry.oauth2.gatewayUrl}</registry.oauth2.authorizationServerUrl>
           </containerProperties>
           <users>
             <admin>admin</admin>
@@ -344,7 +344,13 @@
             <db>new://Resource?type=DataSource</db>
             <db.JdbcUrl>jdbc:h2:mem:registry</db.JdbcUrl>
             <db.JdbcDriver>org.h2.Driver</db.JdbcDriver>
-            <registry.oauth2.gatewayUrl>${registry.oauth2.gatewayUrl}</registry.oauth2.gatewayUrl>
+            <registry.oauth2.authorizationServerUrl>${registry.oauth2.authorizationServerUrl}</registry.oauth2.authorizationServerUrl>
+            <registry.oauth2.clientId>${registry.oauth2.clientId}</registry.oauth2.clientId>
+            <registry.oauth2.clientSecret>${registry.oauth2.clientSecret}</registry.oauth2.clientSecret>
+            <registry.oauth2.tlsProtocol>${registry.oauth2.tlsProtocol}</registry.oauth2.tlsProtocol>
+            <registry.oauth2.tlsProvider>${registry.oauth2.tlsProvider}</registry.oauth2.tlsProvider>
+            <registry.oauth2.trustStore>${registry.oauth2.tlsProvider}</registry.oauth2.trustStore>
+            <registry.oauth2.trustStoreType>${registry.oauth2.trustStoreType}</registry.oauth2.trustStoreType>
           </systemVariables>
         </configuration>
       </plugin>

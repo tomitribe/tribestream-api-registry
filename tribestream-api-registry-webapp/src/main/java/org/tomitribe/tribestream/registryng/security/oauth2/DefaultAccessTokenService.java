@@ -26,9 +26,13 @@ import javax.ejb.Schedule;
 import javax.ejb.Singleton;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
 
 @Singleton
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
@@ -74,19 +78,16 @@ public class DefaultAccessTokenService implements AccessTokenService {
     }
 
     @Override
-    public AccessToken getToken(final String accessToken) {
+    public List<String> getScopes(final String accessToken) throws InvalidTokenException {
 
         AccessToken accessTokenEntity = em.find(AccessToken.class, accessToken);
         if (accessTokenEntity == null) {
-            LOG.info("Could not find access token: " + accessToken);
-            return null;
+            throw new InvalidTokenException("Could not find access token: " + accessToken);
         }
         if (accessTokenEntity.getExpiryTimestamp() < System.currentTimeMillis()) {
-            LOG.info("Found expired access token! " + accessTokenEntity.getAccessToken());
-            // Don't delete here, but do it from a timed method
-            return null;
+            throw new InvalidTokenException("Found expired access token! " + accessTokenEntity.getAccessToken());
         } else {
-            return accessTokenEntity;
+            return Stream.of(accessTokenEntity.getScope().split("\\s+")).collect(toList());
         }
     }
 

@@ -18,15 +18,20 @@
  */
 package org.tomitribe.tribestream.registryng.security.oauth2;
 
-import java.util.List;
+public class InvalidTokenException extends Exception {
 
-public interface AccessTokenService {
+    public InvalidTokenException() {
+    }
 
-    void addAccessToken(final AccessTokenResponse tokenResponse);
+    public InvalidTokenException(String message) {
+        super(message);
+    }
 
-    List<String> getScopes(final String accessToken) throws InvalidTokenException;
+    public InvalidTokenException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-    void deleteToken(final String accessToken);
-
-    int deleteExpiredTokens();
+    public InvalidTokenException(Throwable cause) {
+        super(cause);
+    }
 }

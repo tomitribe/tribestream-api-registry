@@ -19,8 +19,8 @@
 package org.tomitribe.tribestream.registryng.security;
 
 import org.apache.catalina.User;
-import org.tomitribe.tribestream.registryng.entities.AccessToken;
 import org.tomitribe.tribestream.registryng.security.oauth2.AccessTokenService;
+import org.tomitribe.tribestream.registryng.security.oauth2.InvalidTokenException;
 
 import javax.inject.Inject;
 import javax.servlet.Filter;
@@ -95,15 +95,11 @@ public class SecurityWebFilter implements Filter {
 
             } else if (authHeader.startsWith("Bearer ")) {
 
-                AccessToken accessToken = accessTokenService.getToken(authHeader.substring("Bearer ".length()));
-                if (accessToken != null) {
-                    loginContext.setRoles(
-                            Stream.of(accessToken.getScope().split("\\s+"))
-                                .collect(toSet()));
-
+                try {
+                    loginContext.setRoles(new HashSet<>(accessTokenService.getScopes(authHeader.substring("Bearer ".length()))));
                     filterChain.doFilter(servletRequest, servletResponse);
-                } else {
-                    LOGGER.log(Level.INFO, "Did not find submitted access token");
+                } catch (InvalidTokenException e) {
+                    LOGGER.log(Level.INFO, "Token could not be validated!", e);
                     sendUnauthorizedResponse(servletResponse);
                 }
 
