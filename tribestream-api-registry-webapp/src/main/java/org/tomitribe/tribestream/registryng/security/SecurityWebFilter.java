@@ -84,10 +84,11 @@ public class SecurityWebFilter implements Filter {
             if (authHeader.startsWith("Basic ")) {
 
                 if (loginBasic(httpServletRequest, authHeader)) {
-
-                    filterChain.doFilter(servletRequest, servletResponse);
-
-                    logoutBasic(httpServletRequest);
+                    try {
+                        filterChain.doFilter(servletRequest, servletResponse);
+                    } finally {
+                        logoutBasic(httpServletRequest);
+                    }
                 } else {
                     sendUnauthorizedResponse(servletResponse);
                 }
