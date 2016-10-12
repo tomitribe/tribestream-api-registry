@@ -71,8 +71,12 @@ public class ElasticsearchClient {
     @PostConstruct
     private void init() {
         client = ClientBuilder.newClient()
+                // CXF
                 .property("http.connection.timeout", connectTimeout)
-                .property("http.receive.timeout", receiveTimeout);
+                .property("http.receive.timeout", receiveTimeout)
+                // Jersey
+                .property("jersey.config.client.connectTimeout", connectTimeout)
+                .property("jersey.config.client.readTimeout", receiveTimeout);
 
         ofNullable(features).ifPresent(f -> Stream.of(f.split(",")).forEach(v -> {
             try {
