@@ -9,7 +9,7 @@ require("../../../static/bower_components/codemirror/lib/codemirror.js");
 require("../../../static/bower_components/angular-ui-codemirror/ui-codemirror.js");
 require("../../../static/bower_components/codemirror/mode/markdown/markdown.js");
 window['_'] = require("../../../static/bower_components/underscore/underscore-min.js");
-window['Base64'] = require("../../../static/bower_components/js-base64/base64.min.js");
+window['Base64'] = require("../../../static/bower_components/js-base64/base64.min.js").Base64;
 require("../../../static/node_modules/angular-route/angular-route.js");
 require("../../../static/bower_components/foundation-apps/dist/js/foundation-apps.min.js");
 require("../../../static/node_modules/ngstorage/ngStorage.js");

@@ -71,6 +71,12 @@ angular.module('tribe-main', [
                         $scope.app = $routeParams.applicationName;
                     }]
                 })
+                .when('/application', {
+                    templateUrl: 'app/templates/page_application_details.html',
+                    controller: ['$scope', '$routeParams', function ($scope, $routeParams) {
+                        //$scope.app = $routeParams.applicationName;
+                    }]
+                })
                 .when('/endpoint/:application/:verb/:endpoint*', {
                     template: require('../templates/page_endpoints_details.jade'),
                     controller: ['$scope', '$routeParams', function ($scope, $routeParams) {

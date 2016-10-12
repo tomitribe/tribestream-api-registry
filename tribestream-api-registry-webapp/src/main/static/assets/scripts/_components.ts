@@ -206,43 +206,13 @@ module components {
             };
         }])
 
-        .directive('tribeEditableText', ['$timeout', '$interval', function ($timeout, $interval) {
-            return {
-                restrict: 'A',
-                scope: {
-                    value: '=',
-                    adjust: '@?',
-                    emptyText: '@?'
-                },
-                template: require('../templates/component_editable_text.jade'),
-                link: function (scope, el) {
-                    $timeout(function () {
-                        var activate = function () {
-                            var span = el.find('span');
-                            var width = span.width();
-                            el.addClass('edit');
-                            var input = el.find('input');
-                            if (scope['adjust'] !== 'false') {
-                                input.width(width);
-                            }
-                            input.focus();
-                        };
-                        el.on('click', activate);
-                        el.find('input').on('blur', function () {
-                            el.removeClass('edit');
-                        });
-                        el.find('> div').on('focus', activate);
-                    });
-                }
-            };
-        }])
-
         .directive('tribeEditableOption', ['$timeout', '$document', function ($timeout, $document) {
             return {
                 restrict: 'A',
                 scope: {
                     value: '=',
                     options: '=',
+                    defaultText: '@?',
                     emptyText: '@?'
                 },
                 template: require('../templates/component_editable_option.jade'),

@@ -2,15 +2,13 @@ div
   .title
     h1
       div(data-tribe-singleselect, data-get-option-text="toUppercase", data-available-options="[{text:'DELETE', value:'delete'}, {text:'HEAD', value:'head'}, {text:'GET', value:'get'}, {text:'OPTIONS', value:'options'}, {text:'POST', value:'post'}, {text:'PUT', value:'put'}, {text:'PATCH', value:'patch'}]", data-selected-option="endpoint.httpMethod")
-      div(data-tribe-text, data-value="endpoint.path")
+      div(data-tribe-text, data-value="endpoint.path", data-placeholder="Path")
   h2 Description
   div(data-tribe-markdown, data-value="endpoint.operation.description")
   div(data-app-endpoints-details-see, data-endpoint="endpoint")
   .resourceUrl(x-ng-if="resourceUrl")
     h2(app-endpoints-details-toc-anchor="Resource URL") Resource URL
     div
-      i(data-tribe-editable-option, data-value="endpointProtocol", data-options="['http', 'https']")
+      i(data-tribe-editable-option, data-value="endpoint.endpointProtocol", data-options="['http', 'https']")
       span ://
-      a(x-ng-href="{{endpointProtocol + '://' + resourceUrl}}") {{resourceUrl}}
-
-
+      a(x-ng-href="{{ endpoint.endpointProtocol + '://' + resourceUrl}}") {{resourceUrl}}

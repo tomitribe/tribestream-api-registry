@@ -37,11 +37,12 @@ angular.module('tribe-endpoints-details', [
                         });
                         $timeout(function () {
                             $scope.$apply(function () {
-                                // TODO: Reflect changes back to scheme into model
-                                if ($scope['endpoint'].operation.schemes) {
-                                    $scope.endpointProtocol = $scope['endpoint'].operation.schemes.indexOf('https') >= 0 ? 'https' : 'http';
+                                if (!!$scope.endpoint.operation.schemes && $scope.endpoint.operation.schemes[0]) {
+                                    $scope.endpoint.endpointProtocol = $scope.endpoint.operation.schemes[0];
                                 } else if ($scope.application && $scope.application.swagger && $scope.application.swagger.schemes) {
-                                    $scope.endpointProtocol = $scope.application.swagger.schemes.indexOf('https') >= 0 ? 'https' : 'http';
+                                    $scope.endpoint.endpointProtocol = $scope.application.swagger.schemes[0];
+                                } else {
+                                  $scope.endpoint.endpointProtocol = 'http';
                                 }
                                 $scope.resourceUrl = srv.getBaseUrl($scope.application.swagger, $scope['endpoint'].path) + $scope['endpoint'].path;
                             });
@@ -565,8 +566,11 @@ angular.module('tribe-endpoints-details', [
               });
             });
           }
-          $scope.save = function () {
-            srv.saveEndpoint($scope.endpointLink, $scope['endpoint'], {
+          $scope.save = () => {
+            if (!!$scope.endpoint.endpointProtocol) {
+              $scope.endpoint.operation.schemes = [$scope.endpoint.endpointProtocol];
+            }
+            srv.saveEndpoint($scope.endpointLink, {
               // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
               httpMethod: $scope['endpoint']['httpMethod'],
               path: $scope['endpoint'].path,
@@ -604,7 +608,7 @@ angular.module('tribe-endpoints-details', [
           // Triggered by the Show History button on the endpoint details page to show the revision log for that entity
           // TODO: Pagination!
           $scope.showHistory = function() {
-            srv.getEndpointHistory($scope.historyLink).then(function(response) {
+            srv.getHistory($scope.historyLink).then(function(response) {
 
               let links = tribeLinkHeaderService.parseLinkHeader(response.headers('link'));
               for (let entry of response['data']) {
@@ -634,7 +638,7 @@ angular.module('tribe-endpoints-details', [
                 $scope.history = null;
               });
             });
-            srv.getHistoricEndpoint(historyItem).then(function(response) {
+            srv.getHistoricItem(historyItem).then(function(response) {
               $timeout(function () {
                 $scope.$apply(function () {
                   let detailsData = response['data'];

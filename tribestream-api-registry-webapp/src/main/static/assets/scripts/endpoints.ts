@@ -37,8 +37,8 @@ angular.module('tribe-endpoints', [
                 app: '=application'
             },
             controller: [
-                '$timeout', '$scope', 'tribeEndpointsService', 'tribeFilterService', 'tribeLinkHeaderService',
-                function ($timeout, $scope, srv, tribeFilterService, tribeLinkHeaderService) {
+                '$timeout', '$scope', '$filter', 'tribeEndpointsService', 'tribeFilterService', 'tribeLinkHeaderService', 'systemMessagesService',
+                function ($timeout, $scope, $filter, srv, tribeFilterService, tribeLinkHeaderService, systemMessagesService) {
                     var getDetails = function (applicationId) {
                         srv.getApplicationDetails(applicationId).then(function (data) {
                             $timeout(function () {
@@ -48,51 +48,143 @@ angular.module('tribe-endpoints', [
                             });
                         });
                     };
-                    srv.getApplicationDetailsFromName($scope.app).then(function (response) {
-                        $timeout(function () {
-                            $scope.$apply(function () {
-                                let data = response.data;
-                                $scope.swagger = data.swagger;
-                                let endpoints = [];
-                                if (data.swagger.paths) {
-                                    for (let pathName in data.swagger.paths) {
-                                        let ops = data.swagger.paths[pathName];
-                                        for (let opname in ops) {
-                                            if (opname.match('^x-.*')) {
-                                                continue;
-                                            }
-                                            let links = tribeLinkHeaderService.parseLinkHeader(response.headers('link'));
-                                            let link = links[opname.toUpperCase() + ' ' + pathName];
-                                            let endpointId = link.substring(link.lastIndexOf('/') + 1);
-                                            let operationObject = {
-                                                path: pathName,
-                                                operation: opname,
-                                                summary: ops[opname]['summary'],
-                                                description: ops[opname]['description'],
-                                                id: endpointId,
-                                                humanReadablePath: ops[opname]['x-tribestream-api-registry']['human-readable-path']
-                                            };
-                                            endpoints.push(operationObject);
-                                        }
-                                    }
-                                }
-                                $scope.endpoints = endpoints;
-                                $scope.categories = data.categories;
-                                $scope.tags = data.tags;
-                                $scope.roles = data.roles;
-                                $scope.applicationName = data.humanReadableName;
+                    if (!!$scope.app) {
+                      srv.getApplicationDetailsFromName($scope.app).then(function (response) {
+                          $timeout(function () {
+                              $scope.$apply(function () {
+                                  let data = response.data;
+                                  $scope.swagger = data.swagger;
+                                  $scope.humanReadableName = data.humanReadableName;
+                                  let endpoints = []
+                                  let links = tribeLinkHeaderService.parseLinkHeader(response.headers('link'));
+                                  $scope.applicationLink = links['self'];
+                                  $scope.applicationsLink = null;
+                                  $scope.historyLink = links['history'];
+                                  $scope.endpointsLink = links['endpoints'];
+                                  if (data.swagger.paths) {
+                                      for (let pathName in data.swagger.paths) {
+                                          let ops = data.swagger.paths[pathName];
+                                          for (let opname in ops) {
+                                              if (opname.match('^x-.*')) {
+                                                  continue;
+                                              }
+                                              let link = links[opname.toUpperCase() + ' ' + pathName];
+                                              let endpointId = link.substring(link.lastIndexOf('/') + 1);
+                                              let operationObject = {
+                                                  path: pathName,
+                                                  operation: opname,
+                                                  summary: ops[opname].summary,
+                                                  description: ops[opname].description,
+                                                  id: endpointId,
+                                                  humanReadablePath: ops[opname]['x-tribestream-api-registry']['human-readable-path']
+                                              };
+                                              endpoints.push(operationObject);
+                                          }
+                                      }
+                                  }
+                                  $scope.endpoints = endpoints;
+                                  $scope.categories = data.categories;
+                                  $scope.tags = data.tags;
+                                  $scope.roles = data.roles;
+                                  $scope.applicationName = data.humanReadableName;
+                              });
+                          });
+                      });
+                      $scope.filterByCategory = function (category) {
+                          tribeFilterService.filterByCategory($scope.details.name, category);
+                      };
+                      $scope.filterByRole = function (role) {
+                          tribeFilterService.filterByRole($scope.details.name, role);
+                      };
+                      $scope.filterByTag = function (tag) {
+                          tribeFilterService.filterByTag($scope.details.name, tag);
+                      };
+                    } else {
+                      // New application
+                      $scope.applicationLink = null;
+                      $scope.applicationsLink = 'api/application';
+                      $scope.historyLink = null;
+                      $scope.endpointsLink = null;
+                    }
+                    $scope.save = () => {
+                      srv.saveApplication($scope.applicationLink, $scope.swagger).then(
+                        function (saveResponse) {
+                          systemMessagesService.info("Saved application details! " + saveResponse.status);
+                        }
+                      );
+                    };
+                    $scope.create = () => {
+                      srv.createApplication($scope.applicationsLink, $scope.swagger).then(
+                        function (saveResponse) {
+                          systemMessagesService.info("Created application details! " + saveResponse.status);
+                          $timeout(() => {
+                            $scope.$apply(() => {
+                              $scope.swagger = saveResponse.data.swagger;
+                              $scope.humanReadableName = saveResponse.data.humanReadableName;
+                              let links = tribeLinkHeaderService.parseLinkHeader(saveResponse.headers('link'));
+                              $scope.applicationLink = links['self'];
+                              $scope.applicationsLink = null;
+                              $scope.historyLink = links['history'];
+                              $scope.endpointsLink = links['endpoints'];
                             });
+                          });
+                        }
+                      );
+                    };
+                    $scope.showHistory = () => {
+                      srv.getHistory($scope.historyLink).then((response) => {
+                        let links = tribeLinkHeaderService.parseLinkHeader(response.headers('link'));
+                        for (let entry of response.data) {
+                          entry.link = links["revision " + entry.revisionId];
+                        }
+
+                        $timeout(function () {
+                          $scope.$apply(function () {
+                            $scope.history = response.data;
+                          });
                         });
-                    });
-                    $scope.filterByCategory = function (category) {
-                        tribeFilterService.filterByCategory($scope['details']['name'], category);
+                      });
                     };
-                    $scope.filterByRole = function (role) {
-                        tribeFilterService.filterByRole($scope['details']['name'], role);
+                    // Triggered by the "Close History" button to close the Revision Log in whatever form it will be
+                    // presented
+                    $scope.closeHistory = () => {
+                      $timeout(() => {
+                        $scope.$apply(() => {
+                          $scope.history = null;
+                        });
+                      });
                     };
-                    $scope.filterByTag = function (tag) {
-                        tribeFilterService.filterByTag($scope['details']['name'], tag);
+                    // Triggered by selecting one revision, will load it and show it
+                    $scope.showHistoricApplication = (historyItem) => {
+                      $timeout(() => {
+                        $scope.$apply(() => {
+                          $scope.history = null;
+                        });
+                      });
+                      srv.getHistoricItem(historyItem).then((response) => {
+                        $timeout(() => {
+                          $scope.$apply(() => {
+                            let detailsData = response.data;
+                            $scope.historyItem = historyItem;
+                            $scope.swagger = detailsData.swagger;
+                            $scope.humanReadableName = detailsData.humanReadableName;
+                          });
+                        });
+                      });
                     };
+                }
+            ]
+        };
+    }])
+
+    .directive('appApplicationDetailsHistory', [function() {
+        return {
+            restrict: 'A',
+            template: require('../templates/app_application_details_history.jade'),
+            scope: true,
+            controller: [
+                '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', 'systemMessagesService', 'tribeLinkHeaderService',
+                function ($scope, srv, tribeFilterService, $timeout, $filter, $log, systemMessagesService, tribeLinkHeaderService) {
                 }
             ]
         };

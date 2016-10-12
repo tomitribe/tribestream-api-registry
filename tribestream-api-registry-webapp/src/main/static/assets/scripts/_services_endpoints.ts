@@ -6,7 +6,7 @@ angular.module('website-services-endpoints', [
     'tribe-alerts'
 ])
     .factory('tribeLinkHeaderService', [
-        function() {
+        function () {
             return {
                 parseLinkHeader: function (linkHeader) {
                     if (!linkHeader) {
@@ -16,7 +16,7 @@ angular.module('website-services-endpoints', [
                     let parts = linkHeader.split(',');
                     let links = {};
                     // Parse each part into a named link
-                    _.each(parts, function(p:string) {
+                    _.each(parts, function (p: string) {
                         let section = p.split(';');
                         if (section.length != 2) {
                             throw new Error("section could not be split on ';'");
@@ -49,7 +49,7 @@ angular.module('website-services-endpoints', [
                         then: function (successCallback, errorCallback) {
                             var params = {};
                             var rawParams = $location.search();
-                            _.each(rawParams, function (value, key:string) {
+                            _.each(rawParams, function (value, key: string) {
                                 if ('a' === key) {
                                     params['app'] = value.split(',');
                                 } else if ('c' === key) {
@@ -62,7 +62,7 @@ angular.module('website-services-endpoints', [
                                     params['query'] = value;
                                 }
                             });
-                            var removeSelected = (list:{ text:string }[], qparam): { text:string }[] => {
+                            var removeSelected = (list: { text:string }[], qparam): { text:string }[] => {
                                 var param = rawParams[qparam];
                                 if (!param) {
                                     return list;
@@ -123,7 +123,7 @@ angular.module('website-services-endpoints', [
                         then: function (successCallback, errorCallback) {
                             if (request && request.endpointPath) {
                                 const params = request.version ? {version: request.version} : {};
-                                $http.get(`api/ui/endpoint/${request.applicationName}/${request.verb || '-'}/${request.endpointPath}`, {params : params})
+                                $http.get(`api/ui/endpoint/${request.applicationName}/${request.verb || '-'}/${request.endpointPath}`, {params: params})
                                     .then(function (data) {
                                         successCallback(data);
                                     }, tribeErrorHandlerService.ensureErrorHandler(errorCallback));
@@ -149,12 +149,12 @@ angular.module('website-services-endpoints', [
                         }
                     };
                 },
-                getEndpointHistory: function (url) {
+                getHistory: function (url) {
                     return {
-                        then: function (successCallback, errorCallback) {
+                        then: (successCallback, errorCallback) => {
                             if (url) {
                                 $http.get(url)
-                                    .then(function (data) {
+                                    .then((data) => {
                                         successCallback(data);
                                     }, tribeErrorHandlerService.ensureErrorHandler(errorCallback));
                             } else {
@@ -163,9 +163,9 @@ angular.module('website-services-endpoints', [
                         }
                     };
                 },
-                getHistoricEndpoint: function(historyItem) {
+                getHistoricItem: function (historyItem) {
                     return {
-                        then: function(successCallback, errorCallback) {
+                        then: function (successCallback, errorCallback) {
                             $http.get(historyItem.link)
                                 .then(function (data) {
                                     successCallback(data);
@@ -180,6 +180,37 @@ angular.module('website-services-endpoints', [
                                 .then(function (data) {
                                     successCallback(data.data);
                                 }, tribeErrorHandlerService.ensureErrorHandler(errorCallback)
+                            );
+                        }
+                    };
+                },
+                saveApplication(applicationLink, application) {
+                    return {
+                        then: (successCallback, errorCallback) => {
+                            $http.put(applicationLink, {swagger: application})
+                                .then(
+                                (data) => {
+                                    if (data && data.data && data.data.swagger) {
+                                        successCallback(data);
+                                    }
+                                },
+                                tribeErrorHandlerService.ensureErrorHandler(errorCallback)
+                            );
+                        }
+                    };
+                },
+                createApplication(applicationsLink, application) {
+                    return {
+                        then: function (successCallback, errorCallback) {
+                            $http.post(applicationsLink, {swagger: application})
+                                .then(
+                                function (data) {
+                                    if (data && data.data && data.data.swagger) {
+                                        // we will have at most one result. only one application queried.
+                                        successCallback(data);
+                                    }
+                                },
+                                tribeErrorHandlerService.ensureErrorHandler(errorCallback)
                             );
                         }
                     };
