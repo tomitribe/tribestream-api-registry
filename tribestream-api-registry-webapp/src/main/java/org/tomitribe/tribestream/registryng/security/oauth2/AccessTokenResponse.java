@@ -19,86 +19,70 @@
 package org.tomitribe.tribestream.registryng.security.oauth2;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.johnzon.mapper.JohnzonProperty;
 
 public class AccessTokenResponse {
 
     @JsonProperty("scope")
-    @JohnzonProperty("scope")
     private String scope;
 
     @JsonProperty("access_token")
-    @JohnzonProperty("access_token")
     private String accessToken;
 
     @JsonProperty("refresh_token")
-    @JohnzonProperty("refresh_token")
     private String refreshToken;
 
     @JsonProperty("token_type")
-    @JohnzonProperty("token_type")
     private String tokenType;
 
     @JsonProperty("expires_in")
-    @JohnzonProperty("expires_in")
     private int expiresIn = 120;
 
     @JsonProperty("access_token")
-    @JohnzonProperty("access_token")
     public String getAccessToken() {
         return accessToken;
     }
 
     @JsonProperty("access_token")
-    @JohnzonProperty("access_token")
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
     }
 
     @JsonProperty("refresh_token")
-    @JohnzonProperty("refresh_token")
     public String getRefreshToken() {
         return refreshToken;
     }
 
     @JsonProperty("refresh_token")
-    @JohnzonProperty("refresh_token")
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
     }
 
     @JsonProperty("token_type")
-    @JohnzonProperty("token_type")
     public String getTokenType() {
         return tokenType;
     }
 
     @JsonProperty("token_type")
-    @JohnzonProperty("token_type")
     public void setTokenType(String tokenType) {
         this.tokenType = tokenType;
     }
 
     @JsonProperty("expires_in")
-    @JohnzonProperty("expires_in")
     public int getExpiresIn() {
         return expiresIn;
     }
 
     @JsonProperty("expires_in")
-    @JohnzonProperty("expires_in")
     public void setExpiresIn(int expiresIn) {
         this.expiresIn = expiresIn;
     }
 
     @JsonProperty("scope")
-    @JohnzonProperty("scope")
     public String getScope() {
         return scope;
     }
 
     @JsonProperty("scope")
-    @JohnzonProperty("scope")
     public void setScope(String scope) {
         this.scope = scope;
     }

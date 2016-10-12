@@ -21,6 +21,7 @@ package org.tomitribe.tribestream.registryng.resources;
 import org.apache.deltaspike.core.api.config.ConfigProperty;
 import org.tomitribe.tribestream.registryng.security.oauth2.AccessTokenResponse;
 import org.tomitribe.tribestream.registryng.security.oauth2.AccessTokenService;
+import org.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -111,6 +112,7 @@ public class Oauth2TokenResource {
             if (clientId != null) {
                 client.register(new BasicAuthFilter());
             }
+            client.register(new CustomJacksonJaxbJsonProvider());
             WebTarget target = client.target(tagUrl);
 
             // Pass the client parameters through

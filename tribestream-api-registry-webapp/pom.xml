@@ -61,13 +61,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.johnzon</groupId>
-      <artifactId>johnzon-mapper</artifactId>
-      <version>0.9.3-incubating</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
       <groupId>org.apache.tomcat</groupId>
       <artifactId>tomcat-catalina</artifactId>
       <version>${version.tomcat}</version>
@@ -310,7 +303,7 @@
             <db>new://Resource?type=DataSource</db>
             <db.JdbcUrl>jdbc:h2:mem:registry</db.JdbcUrl>
             <db.JdbcDriver>org.h2.Driver</db.JdbcDriver>
-            <registry.oauth2.gatewayUrl>https://tribe.tomitribe.com/user/oauth/token</registry.oauth2.gatewayUrl>
+            <registry.oauth2.gatewayUrl>${registry.oauth2.gatewayUrl}</registry.oauth2.gatewayUrl>
           </containerProperties>
           <users>
             <admin>admin</admin>
@@ -351,7 +344,7 @@
             <db>new://Resource?type=DataSource</db>
             <db.JdbcUrl>jdbc:h2:mem:registry</db.JdbcUrl>
             <db.JdbcDriver>org.h2.Driver</db.JdbcDriver>
-            <registry.oauth2.gatewayUrl>https://tribe.tomitribe.com/user/oauth/token</registry.oauth2.gatewayUrl>
+            <registry.oauth2.gatewayUrl>${registry.oauth2.gatewayUrl}</registry.oauth2.gatewayUrl>
           </systemVariables>
         </configuration>
       </plugin>
