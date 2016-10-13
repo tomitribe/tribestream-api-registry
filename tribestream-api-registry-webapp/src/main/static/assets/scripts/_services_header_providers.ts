@@ -1,5 +1,4 @@
-///<reference path="../../bower_components/DefinitelyTyped/angularjs/angular.d.ts"/>
-///<reference path="../../bower_components/DefinitelyTyped/js-base64/js-base64.d.ts"/>
+let Base64 = require("../../../static/bower_components/js-base64/base64.min.js").Base64;
 
 interface AuthenticationHeaderProvider { // TODO: move to a shared module to do basic too?
   login(username: string, password: string): angular.IPromise<any>;

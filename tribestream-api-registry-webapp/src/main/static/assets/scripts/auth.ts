@@ -1,6 +1,3 @@
-///<reference path="../../bower_components/DefinitelyTyped/angularjs/angular.d.ts"/>
-
-
 class CurrentAuthProvider {
 
     private currentProvider: AuthenticationHeaderProvider;
@@ -50,7 +47,7 @@ angular
                         $scope.messages = msgs;
                     };
                     systemMessagesService.addListener(me);
-                    me.disconnectListener = function () {
+                    me['disconnectListener'] = function () {
                         systemMessagesService.removeListener(me);
                     };
                     var redirect = function() {
@@ -104,7 +101,7 @@ angular
             ],
             link: function (scope, el, attrs, controller) {
                 el.on('$destroy', function () {
-                    controller.disconnectListener();
+                    controller['disconnectListener']();
                 });
             }
         };
@@ -115,7 +112,7 @@ angular
             restrict: 'A',
             controller: ['$scope', '$window', '$location', 'tribeAuthorizationService',
                 function ($scope, $window, $location, authorization) {
-                    this.logout = function () {
+                    this['logout'] = function () {
                         currentAuthProvider.reset();
                         authorization.clearCredentials();
                         $location.search({});
@@ -126,7 +123,7 @@ angular
             ],
             link: function (scope, el, attr, ctlr) {
                 el.on('click', function () {
-                    ctlr.logout();
+                    ctlr['logout']();
                 });
             }
         };

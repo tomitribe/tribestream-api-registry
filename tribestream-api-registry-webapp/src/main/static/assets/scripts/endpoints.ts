@@ -1,5 +1,3 @@
-///<reference path="../../bower_components/DefinitelyTyped/angularjs/angular.d.ts"/>
-
 angular.module('tribe-endpoints', [
     'website-services'
 ])
@@ -7,7 +5,7 @@ angular.module('tribe-endpoints', [
     .directive('appSee', [function () {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/app_see.html',
+            template: require('../templates/app_see.jade'),
             scope: {
                 aggregatedId: '='
             },
@@ -15,13 +13,13 @@ angular.module('tribe-endpoints', [
                 '$timeout', '$scope', 'tribeEndpointsService',
                 function ($timeout, $scope, srv) {
                     $scope.$watch('aggregatedId', function () {
-                        if (!$scope.aggregatedId) {
+                        if (!$scope['aggregatedId']) {
                             return;
                         }
-                        srv.getSeeContent($scope.aggregatedId).then(function (data) {
+                        srv.getSeeContent($scope['aggregatedId']).then(function (data) {
                             $timeout(function () {
                                 $scope.$apply(function () {
-                                    $scope.see = data;
+                                    $scope['see'] = data;
                                 });
                             });
                         });
@@ -34,7 +32,7 @@ angular.module('tribe-endpoints', [
     .directive('appApplicationDetails', [function () {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/app_application_details.html',
+            template: require('../templates/app_application_details.jade'),
             scope: {
                 app: '=application'
             },
@@ -45,7 +43,7 @@ angular.module('tribe-endpoints', [
                         srv.getApplicationDetails(applicationId).then(function (data) {
                             $timeout(function () {
                                 $scope.$apply(function () {
-                                    $scope.details = data.data;
+                                    $scope['details'] = data.data;
                                 });
                             });
                         });
@@ -182,7 +180,7 @@ angular.module('tribe-endpoints', [
     .directive('appApplicationDetailsHistory', [function() {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/app_application_details_history.html',
+            template: require('../templates/app_application_details_history.jade'),
             scope: true,
             controller: [
                 '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', 'systemMessagesService', 'tribeLinkHeaderService',
@@ -195,7 +193,7 @@ angular.module('tribe-endpoints', [
     .directive('appEndpoints', [function () {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/app_endpoints.html',
+            template: require('../templates/app_endpoints.jade'),
             scope: {},
             controller: [
                 '$timeout', '$scope', 'tribeEndpointsService',
@@ -220,7 +218,7 @@ angular.module('tribe-endpoints', [
     .directive('appEndpointsHeader', [function () {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/app_endpoints_header.html',
+            template: require('../templates/app_endpoints_header.jade'),
             scope: {
                 total: '=',
                 endpoints: '='
@@ -231,7 +229,7 @@ angular.module('tribe-endpoints', [
     .directive('appEndpointsHeaderCreateBtn', ['$document', function ($document) {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/app_endpoints_header_create_btn.html',
+            template: require('../templates/app_endpoints_header_create_btn.jade'),
             scope: {
                 endpoints: '='
             },
@@ -240,14 +238,14 @@ angular.module('tribe-endpoints', [
                     $timeout(function () {
                         $scope.$apply(function () {
                             var applicationsMap = _.groupBy($scope.endpoints, function (endpoint) {
-                                return endpoint.applicationId;
+                                return endpoint['applicationId'];
                             });
                             var applications = [];
                             _.each(applicationsMap, function (endpoints, applicationId) {
                                 applications.push({
                                     applicationId: applicationId,
                                     applicationName: endpoints[0]['applicationName'],
-                                    name: endpoints[0].application,
+                                    name: endpoints[0]['application'],
                                     endpoints: endpoints
                                 });
                             });
@@ -292,21 +290,21 @@ angular.module('tribe-endpoints', [
     .directive('appEndpointsListApplication', [function () {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/app_endpoints_list_application.html',
+            template: require('../templates/app_endpoints_list_application.jade'),
             scope: {
                 'application': '='
             },
             controller: ['$scope', '$timeout', function ($scope, $timeout) {
                 $scope.pageSize = 5;
                 $scope.$watch('application', function () {
-                    if (!$scope.application) {
+                    if (!$scope['application']) {
                         return;
                     }
                     $timeout(function () {
                         $scope.$apply(function () {
-                            if ($scope.application.endpoints) {
-                                $scope.endpoints = $scope.application.endpoints.slice(0, $scope.pageSize);
-                                if ($scope.endpoints.length < $scope.application.endpoints.length) {
+                            if ($scope['application'].endpoints) {
+                                $scope.endpoints = $scope['application'].endpoints.slice(0, $scope.pageSize);
+                                if ($scope.endpoints.length < $scope['application'].endpoints.length) {
                                     $scope.showAll = true;
                                 }
                             } else {
@@ -316,7 +314,7 @@ angular.module('tribe-endpoints', [
                     });
                 });
                 $scope.showAllEndpoints = function () {
-                    $scope.endpoints = $scope.application.endpoints;
+                    $scope.endpoints = $scope['application'].endpoints;
                     $scope.showAll = false;
                 };
             }]
@@ -326,7 +324,7 @@ angular.module('tribe-endpoints', [
     .directive('appEndpointsList', [function () {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/app_endpoints_list.html',
+            template: require('../templates/app_endpoints_list.jade'),
             scope: {
                 'total': '=',
                 'endpoints': '='
@@ -337,15 +335,15 @@ angular.module('tribe-endpoints', [
                         $timeout(function () {
                             $scope.$apply(function () {
                                 var applicationsMap = _.groupBy($scope.endpoints, function (endpoint) {
-                                    return endpoint.applicationId;
+                                    return endpoint['applicationId'];
                                 });
                                 var applications = [];
                                 _.each(applicationsMap, function (endpoints, applicationId) {
                                     applications.push({
                                         applicationId: applicationId,
                                         applicationName: endpoints[0]['applicationName'],
-                                        name: endpoints[0].application,
-                                        version: endpoints[0].applicationVersion,
+                                        name: endpoints[0]['application'],
+                                        version: endpoints[0]['applicationVersion'],
                                         endpoints: endpoints
                                     });
                                 });
@@ -361,7 +359,7 @@ angular.module('tribe-endpoints', [
     .directive('appEndpointsListFilterEntries', [function () {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/app_endpoints_list_filter_entries.html',
+            template: require('../templates/app_endpoints_list_filter_entries.jade'),
             scope: {
                 'key': '@',
                 'list': '=',
@@ -394,20 +392,20 @@ angular.module('tribe-endpoints', [
     .directive('appEndpointsFilterBubble', [function () {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/app_endpoints_filter_bubble.html',
+            template: require('../templates/app_endpoints_filter_bubble.jade'),
             scope: {
                 'name': '=',
                 'length': '=',
                 'qfield': '='
             },
             controller: ['$location', '$route', '$scope', function ($location, $route, $scope) {
-                this.updateQuery = function () {
+                this['updateQuery'] = function () {
                     var values = $location.search();
                     var currentQuery = [];
                     if (values[$scope.qfield]) {
                         currentQuery = values[$scope.qfield].split(',');
                     }
-                    currentQuery.push($scope.name);
+                    currentQuery.push($scope['name']);
                     values[$scope.qfield] = _.uniq(currentQuery).join(',');
                     $location.search(values);
                     $route.reload();
@@ -415,7 +413,7 @@ angular.module('tribe-endpoints', [
             }],
             link: function (scope, el, attrs, controller) {
                 el.on('click', function () {
-                    controller.updateQuery();
+                    controller['updateQuery']();
                 });
             }
         };
@@ -424,7 +422,7 @@ angular.module('tribe-endpoints', [
     .directive('appEndpointsFilter', [function () {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/app_endpoints_filter.html',
+            template: require('../templates/app_endpoints_filter.jade'),
             scope: {
                 'title': '@',
                 'list': '=',
@@ -436,7 +434,7 @@ angular.module('tribe-endpoints', [
     .directive('appEndpointsQueryInput', ['$timeout', function ($timeout) {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/app_endpoints_query_input.html',
+            template: require('../templates/app_endpoints_query_input.jade'),
             scope: {},
             controller: [
                 '$scope', '$location', '$route',
@@ -447,7 +445,7 @@ angular.module('tribe-endpoints', [
                     } else {
                         $scope.value = '';
                     }
-                    this.updateQuery = function () {
+                    this['updateQuery'] = function () {
                         var values = $location.search();
                         values.q = $scope.value.trim();
                         if (values.q === '') {
@@ -456,12 +454,12 @@ angular.module('tribe-endpoints', [
                         $location.search(values);
                         $route.reload();
                     };
-                    $scope.updateQuery = this.updateQuery;
+                    $scope['updateQuery'] = this['updateQuery'];
                 }
             ],
             link: function (scope, el, attrs, controller) {
                 var update = function (event) {
-                    controller.updateQuery();
+                    controller['updateQuery']();
                     event.preventDefault();
                 };
                 el.find('input').bind("keydown keypress", function (event) {
@@ -479,7 +477,7 @@ angular.module('tribe-endpoints', [
     .directive('appEndpointsSelectedFilter', [function () {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/app_endpoints_selected_filter.html',
+            template: require('../templates/app_endpoints_selected_filter.jade'),
             scope: {},
             controller: ['$timeout', '$location', '$scope', function ($timeout, $location, $scope) {
                 var params = $location.search();

@@ -1,4 +1,27 @@
-///<reference path="../../bower_components/DefinitelyTyped/angularjs/angular.d.ts"/>
+import './_components.ts';
+import './_components_field_actions.ts';
+import './_components_filters.ts';
+import './_components_markdown.ts';
+import './_components_multiselect.ts';
+import './_components_singleselect.ts';
+import './_components_textfield.ts';
+import './_service_alerts.ts';
+import './_services.ts';
+import './_services_browser.ts';
+import './_services_endpoints.ts';
+import './_services_header_providers.ts';
+import './app.ts';
+import './app_messages.ts';
+import './auth.ts';
+import './endpoints.ts';
+import './endpoints_details.ts';
+
+require("../styles/app.sass");
+
+module tribe_main {
+
+// https://webpack.github.io/docs/list-of-plugins.html#defineplugin
+declare var PRODUCTION: boolean;
 
 angular.module('tribe-main', [
     'website-components',
@@ -26,10 +49,10 @@ angular.module('tribe-main', [
             });
             $routeProvider
                 .when('/', {
-                    templateUrl: 'app/templates/page_endpoints.html'
+                    template: require('../templates/page_endpoints.jade')
                 })
                 .when('/showcase', {
-                    templateUrl: 'app/templates/page_components.html',
+                    template: require('../templates/page_components.jade'),
                     controller: ['$scope', ($scope) => {
                         $scope.toUppercase = (item) => {
                             if (!item) {
@@ -43,13 +66,13 @@ angular.module('tribe-main', [
                     }]
                 })
                 .when('/see/:aggregatedId', {
-                    templateUrl: 'app/templates/page_see.html',
+                    template: require('../templates/page_see.jade'),
                     controller: ['$scope', '$routeParams', function ($scope, $routeParams) {
                         $scope.aggregatedId = $routeParams.aggregatedId;
                     }]
                 })
                 .when('/application/:applicationName*', {
-                    templateUrl: 'app/templates/page_application_details.html',
+                    template: require('../templates/page_application_details.jade'),
                     controller: ['$scope', '$routeParams', function ($scope, $routeParams) {
                         $scope.app = $routeParams.applicationName;
                     }]
@@ -61,33 +84,33 @@ angular.module('tribe-main', [
                     }]
                 })
                 .when('/endpoint/:application/:verb/:endpoint*', {
-                    templateUrl: 'app/templates/page_endpoints_details.html',
+                    template: require('../templates/page_endpoints_details.jade'),
                     controller: ['$scope', '$routeParams', function ($scope, $routeParams) {
                         $scope.requestMetadata = {
-                          applicationName: $routeParams.application,
-                          verb: $routeParams.verb,
-                          endpointPath: $routeParams.endpoint,
-                          version: $routeParams.version
+                            applicationName: $routeParams.application,
+                            verb: $routeParams.verb,
+                            endpointPath: $routeParams.endpoint,
+                            version: $routeParams.version
                         };
                     }]
                 })
                 .when('/endpoint/:application', {
-                    templateUrl: 'app/templates/page_endpoints_details.html',
+                    template: require('../templates/page_endpoints_details.jade'),
                     controller: ['$scope', '$routeParams', function ($scope, $routeParams) {
                         $scope.requestMetadata = {
-                          applicationName: $routeParams.application,
-                          version: $routeParams.version
+                            applicationName: $routeParams.application,
+                            version: $routeParams.version
                         };
                     }]
                 })
                 .when('/login', {
-                    templateUrl: 'app/templates/page_login.html'
+                    template: require('../templates/page_login.jade')
                 })
                 .otherwise({
                     controller: ['$scope', '$location', function ($scope, $location) {
                         $scope.path = $location.path();
                     }],
-                    templateUrl: 'app/templates/page_not_implemented.html'
+                    template: require('../templates/page_not_implemented.jade')
                 });
         }
     ])
@@ -136,6 +159,10 @@ angular.module('tribe-main', [
         }
     }])
 
-    .run(function () {
-        // placeholder
-    });
+    .config(['$logProvider', function ($logProvider) {
+        if (PRODUCTION) {
+            $logProvider.debugEnabled(false);
+        }
+    }]);
+
+}
