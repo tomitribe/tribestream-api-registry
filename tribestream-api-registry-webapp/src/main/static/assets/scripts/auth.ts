@@ -1,19 +1,47 @@
+class CurrentAuthProvider {
+
+    private currentProvider: AuthenticationHeaderProvider;
+
+    set(authenticationProvider: AuthenticationHeaderProvider) {
+        this.currentProvider = authenticationProvider;
+    }
+
+    isActive(): boolean {
+        return !!this.currentProvider;
+    }
+
+    get(): AuthenticationHeaderProvider {
+        return this.currentProvider;
+    }
+
+    reset() {
+        this.currentProvider = null;
+    }
+
+}
+
 angular
     .module('tribe-authentication', [
         'website-services',
-        'tribe-alerts'
+        'tribe-alerts',
+        'tribe-services-header-providers'
     ])
+
+    .service('currentAuthProvider', [CurrentAuthProvider])
 
     .directive('appLogin', [function () {
         return {
             restrict: 'A',
             scope: true,
-            controller: ['$scope', '$location', 'tribeAuthorizationService', '$sessionStorage', 'systemMessagesService',
+            controller: ['$scope', '$location', '$timeout', 'tribeAuthorizationService', '$sessionStorage', 'systemMessagesService', 'tribeHeaderProviderSelector', 'currentAuthProvider',
                 function ($scope,
                           $location,
+                          $timeout,
                           authorization,
                           $sessionStorage,
-                          systemMessagesService) {
+                          systemMessagesService,
+                          tribeHeaderProviderSelector,
+                          currentAuthProvider) {
                     var me = this;
                     me.onMessage = function (msgs) {
                         $scope.messages = msgs;
@@ -33,25 +61,41 @@ angular
                             $location.path('/');
                         }
                     };
-                    $scope.login = function () {
-                        var credentials = {
-                            username: $scope.username,
-                            password: $scope.password
-                        };
-                        authorization.login(credentials).success(function (data) {
-                            $sessionStorage.tribe.isConnected = true;
-                            $sessionStorage.tribe.user = data;
-
-                            // init the api
-                            authorization.setCredentials(credentials.username, credentials.password);
-                            redirect();
-                        }).error(function (data, status, headers, config) {
-                            systemMessagesService.error('The server authentication failed with status ' + status);
+                    authorization.getOauth2Status().then((response) => {
+                        $timeout(() => {
+                            $scope.$apply(() => {
+                              $scope.oauth2Status = response.data;
+                            });
                         });
-                    };
-                    $scope.loginAsGuest = function() {
-                        $sessionStorage.tribe.isConnected = true;
-                        redirect();
+                    });
+                    $scope.login = function () {
+                        let headerProvider;
+                        if ($scope.companyLogin) {
+                            headerProvider = tribeHeaderProviderSelector.select('Oauth2');
+                        } else {
+                            headerProvider = tribeHeaderProviderSelector.select('Basic');
+                        }
+
+                        headerProvider.login($scope.username, $scope.password)
+                          .then(
+                              function() {
+                                  $sessionStorage.tribe.user = {name: $scope.username};
+                                  currentAuthProvider.set(headerProvider);
+                                  // TODO: Sometimes redirects to the login page, that's stupid
+                                  redirect();
+                              },
+                              function (response) {
+                                  if (response && response.data) {
+                                      if (response.data.error_description) {
+                                          systemMessagesService.error('Login failed! ' + response.data.error_description);
+                                      } else {
+                                          systemMessagesService.error('The server authentication failed with status ' + response.data.status);
+                                      }
+                                  } else {
+                                      systemMessagesService.error('Login failed with an unknown reason!');
+                                  }
+                              }
+                          );
                     };
                 }
             ],
@@ -63,12 +107,13 @@ angular
         };
     }])
 
-    .directive('appLogout', [function () {
+    .directive('appLogout', ['currentAuthProvider', function (currentAuthProvider) {
         return {
             restrict: 'A',
             controller: ['$scope', '$window', '$location', 'tribeAuthorizationService',
                 function ($scope, $window, $location, authorization) {
                     this['logout'] = function () {
+                        currentAuthProvider.reset();
                         authorization.clearCredentials();
                         $location.search({});
                         $location.path('/');
@@ -103,4 +148,3 @@ angular
     .run(function () {
         // placeholder
     });
-

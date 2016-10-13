@@ -61,6 +61,13 @@
     </dependency>
 
     <dependency>
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>tomcat-catalina</artifactId>
+      <version>${version.tomcat}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
       <version>${version.jackson}</version>
@@ -87,8 +94,14 @@
 
     <dependency>
       <groupId>org.apache.deltaspike.core</groupId>
+      <artifactId>deltaspike-core-api</artifactId>
+      <version>${version.deltaspike}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.deltaspike.core</groupId>
       <artifactId>deltaspike-core-impl</artifactId>
-      <version>1.7.1</version>
+      <version>${version.deltaspike}</version>
     </dependency>
 
     <dependency>
@@ -290,6 +303,7 @@
             <db>new://Resource?type=DataSource</db>
             <db.JdbcUrl>jdbc:h2:mem:registry</db.JdbcUrl>
             <db.JdbcDriver>org.h2.Driver</db.JdbcDriver>
+            <registry.oauth2.authorizationServerUrl>${registry.oauth2.gatewayUrl}</registry.oauth2.authorizationServerUrl>
           </containerProperties>
           <users>
             <admin>admin</admin>
@@ -330,6 +344,13 @@
             <db>new://Resource?type=DataSource</db>
             <db.JdbcUrl>jdbc:h2:mem:registry</db.JdbcUrl>
             <db.JdbcDriver>org.h2.Driver</db.JdbcDriver>
+            <registry.oauth2.authorizationServerUrl>${registry.oauth2.authorizationServerUrl}</registry.oauth2.authorizationServerUrl>
+            <registry.oauth2.clientId>${registry.oauth2.clientId}</registry.oauth2.clientId>
+            <registry.oauth2.clientSecret>${registry.oauth2.clientSecret}</registry.oauth2.clientSecret>
+            <registry.oauth2.tlsProtocol>${registry.oauth2.tlsProtocol}</registry.oauth2.tlsProtocol>
+            <registry.oauth2.tlsProvider>${registry.oauth2.tlsProvider}</registry.oauth2.tlsProvider>
+            <registry.oauth2.trustStore>${registry.oauth2.tlsProvider}</registry.oauth2.trustStore>
+            <registry.oauth2.trustStoreType>${registry.oauth2.trustStoreType}</registry.oauth2.trustStoreType>
           </systemVariables>
         </configuration>
       </plugin>

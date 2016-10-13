@@ -16,21 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.tomitribe.tribestream.registryng.security;
+package org.tomitribe.tribestream.registryng.security.oauth2;
 
-import lombok.Getter;
-import lombok.Setter;
+import java.util.List;
 
-import javax.enterprise.context.RequestScoped;
-import java.util.Set;
+public interface AccessTokenService {
 
-@RequestScoped
-@Getter
-@Setter
-public class LoginContext {
+    void addAccessToken(final AccessTokenResponse tokenResponse);
 
-    private String username;
+    List<String> getScopes(final String accessToken) throws InvalidTokenException;
 
-    private Set<String> roles;
+    void deleteToken(final String accessToken);
 
+    int deleteExpiredTokens();
 }

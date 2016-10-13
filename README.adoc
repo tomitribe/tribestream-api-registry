@@ -365,3 +365,43 @@ Properties that are not defined as part of the {url-openapi-spec}[OpenAPI specif
   }
 }
 ----
+
+=== OAuth2 authentication
+
+The Tribestream API Registry supports authentication via OAuth2 by passing the user credentials to a OAuth2 authorization server.
+Therefore the connection to the OAuth2 server has to be configured with these properties:
+
+`registry.oauth2.authorizationServerUrl`::
+    URL of the authorization server. For example: `https://myauthhost/user/oauth/token`.
+
+`registry.oauth2.clientId`::
+    A client id used to authenticate the Tribestream API Registry server application if required.
+    For example `tribestream-api-registry`
+
+`registry.oauth2.clientSecret`::
+    If the Tribestream API Registry has to authenticate with a client id and a client secret this property contains the secret.
+    For example `very_secret!`.
+
+`registry.oauth2.tlsProtocol`
+    The TLS protocol to be used to connect to the OAuth2 server.
+    Possible values are available at http://docs.oracle.com/javase/7/docs/technotes/guides/security/StandardNames.html#SSLContext[Java Cryptography Architecture Standard Algorithm Name Documentation].
+    The default is `TLSv1.2`.
+
+`registry.oauth2.tlsProvider`::
+    Configures the name of the Security provider.
+    This could be for example `SunJCE`.
+
+`registry.oauth2.trustStore`::
+    File name of a TLS trust store.
+
+`registry.oauth2.trustStoreType`::
+    The type of the trust store.
+    This could be for example `jceks`, `jks` or `pkcs12`.
+
+To start the Tribestream API Registry with the TomEE Maven plugin that authenticates against your OAuth2 server pass you can pass the above properties to Maven:
+
+```
+mvn tomee:run -pl :tribestream-api-registry-webapp -Dregistry.oauth2.authorizationServerUrl=https://tribe.tomitribe.com/user/oauth/token
+```
+
+

@@ -16,21 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.tomitribe.tribestream.registryng.security;
+package org.tomitribe.tribestream.registryng.security.oauth2;
 
-import lombok.Getter;
-import lombok.Setter;
+public class InvalidTokenException extends Exception {
 
-import javax.enterprise.context.RequestScoped;
-import java.util.Set;
+    public InvalidTokenException() {
+    }
 
-@RequestScoped
-@Getter
-@Setter
-public class LoginContext {
+    public InvalidTokenException(String message) {
+        super(message);
+    }
 
-    private String username;
+    public InvalidTokenException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-    private Set<String> roles;
-
+    public InvalidTokenException(Throwable cause) {
+        super(cause);
+    }
 }
