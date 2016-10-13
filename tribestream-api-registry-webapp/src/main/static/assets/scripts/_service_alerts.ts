@@ -1,5 +1,3 @@
-///<reference path="../../bower_components/DefinitelyTyped/angularjs/angular.d.ts"/>
-
 angular.module('tribe-alerts', [])
 
     .factory('tribeErrorHandlerService', ['systemMessagesService', function (systemMessagesService) {

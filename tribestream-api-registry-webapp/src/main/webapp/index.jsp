@@ -1,51 +1,63 @@
-<%@ page session="false" %>
 <!DOCTYPE html>
-<%
-    boolean testing = false;
-    if(request.getParameter("test") != null) {
-        testing = Boolean.parseBoolean(request.getParameter("test").toUpperCase());
-    }
-%>
-<html <% if(!testing) { %> id="ng-app" data-ng-app="tribe-main" <% } %> ><%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<head><title>tribestream registry</title>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge;"/>
+<html id="ng-app" data-ng-app="tribe-main"><%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<head>
+    <title>tribestream registry</title>
     <script type="text/javascript">
         // doc base
         (function () {
-            var contextPath = '<%=request.getContextPath()%>';
-            var result = '';
-            if (document.location.href === '<%=request.getRequestURL()%>') {
-                if (document.location.port) {
-                    result = "//" + document.location.hostname + ":" + document.location.port + contextPath + "/";
-                } else {
-                    result = "//" + document.location.hostname + contextPath + "/";
+            var getHrefList = function(hrefStr) {
+                var hrefArr = hrefStr.split('/');
+                hrefArr.shift(); // remove protocol
+                hrefArr.shift(); // remove "//"
+                return hrefArr;
+            };
+            var getNext = function(list) {
+                if(!list.length) {
+                    return null;
                 }
-            } else {
-                var reqUrl = '<%=request.getRequestURL()%>'
-                        .replace(/^http:/, '')
-                        .replace(/^https:/, '')
-                        .replace(/^\/\//, '')
-                        .replace(/^[^\/]*/, '')
-                        .replace(new RegExp('^' + contextPath, "i"), '');
-                var baseUrl = document.location.pathname.replace(new RegExp(reqUrl + '$', 'i'), '');
-                if (document.location.port) {
-                    result = "//" + document.location.hostname + ":" + document.location.port + baseUrl + "/";
-                } else {
-                    result = "//" + document.location.hostname + baseUrl + "/";
+                var last = list.pop();
+                if(!last) {
+                    last = getNext(list);
                 }
-            }
-            document.write("<base href='" + window.location.protocol + result + "' />");
+                return last;
+            };
+            var getCleanDocLocation = function() {
+                var result = document.location.href;
+                if(document.location.hash) {
+                    result =  result.substring(0, result.length - document.location.hash.length);
+                }
+                if(document.location.search) {
+                    result =  result.substring(0, result.length - document.location.search.length);
+                }
+                return result;
+            };
+            var baseUrl = (function() {
+                var docHref = getCleanDocLocation();
+                if('<%=request.getRequestURL()%>' === docHref) {
+                    var ctxPath = '<%=request.getContextPath()%>/';
+                    return ctxPath === '/' ? '/' : ctxPath;
+                }
+                var remoteHref = getHrefList('<%=request.getRequestURL()%>');
+                var localHref = getHrefList(docHref);
+                var result = [];
+                while(remoteHref.length) {
+                    var lastRemote = getNext(remoteHref);
+                    var lastLocal = getNext(localHref);
+                    if(lastRemote !== lastLocal) {
+                        localHref.push(lastLocal);
+                        break;
+                    }
+
+                }
+                return document.location.protocol + '//' + localHref.join('/') + '/';
+            }());
+            document.open();
+            document.write("<base href='" + baseUrl + "' />");
+            document.close();
         }());
     </script>
-    <link rel="stylesheet" href="app/third-party/styles/_.css"/>
-    <link rel="stylesheet" href="app/styles/_.css"/>
-    <% if(testing) { %>
-        <link rel="stylesheet" href="app/third-party/styles/_tests.css"/>
-    <% } %>
-    <link rel="icon" href="app/images/favicon.png">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
 <!--[if lt IE 9]>
@@ -55,27 +67,9 @@
 <div data-ng-view class="app-body">
     <div class="app-loading"></div>
 </div>
-<% if(testing) { %>
-    <script type="text/javascript" src="app/third-party/_tests_1.js"></script>
-    <script type="text/javascript">
-        mocha.setup({
-            "ui": "bdd",
-            "reporter": "html"
-        });
-    </script>
-    <script type="text/javascript" src="app/third-party/_tests_2.js"></script>
-<% } else { %>
-    <script type="text/javascript" src="app/third-party/_.js"></script>
-<% } %>
-<script type="text/javascript" src="app/scripts/_.js"></script>
-<% if(testing) { %>
-    <div id="mocha"></div>
-    <script type="text/javascript" src="app/scripts/_tests.js"></script>
-    <script type="text/javascript">
-        mocha.run();
-    </script>
-<% } else { %>
-<script type="text/javascript" src="app/scripts/_templates.js"></script>
-<% } %>
+<!-- Use this instead of HtmlWebpackPlugin in order to include the charset  -->
+<script type="text/javascript" src="app/polyfills.js" charset="utf-8"></script>
+<script type="text/javascript" src="app/vendor.js" charset="utf-8"></script>
+<script type="text/javascript" src="app/app.js" charset="utf-8"></script>
 </body>
 </html>

@@ -371,13 +371,23 @@
             </configuration>
           </execution>
           <execution>
-            <id>gulp-build</id>
+            <id>build</id>
             <phase>generate-resources</phase>
             <goals>
-              <goal>gulp</goal>
+              <goal>npm</goal>
             </goals>
             <configuration>
-              <arguments>build</arguments>
+              <arguments>run build</arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>dev</id>
+            <phase/>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <configuration>
+              <arguments>run buildnwatch</arguments>
             </configuration>
           </execution>
         </executions>
