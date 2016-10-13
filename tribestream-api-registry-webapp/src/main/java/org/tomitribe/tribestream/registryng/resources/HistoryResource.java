@@ -20,6 +20,7 @@ package org.tomitribe.tribestream.registryng.resources;
 
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.apache.deltaspike.core.api.config.ConfigProperty;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.HistoryItem;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
@@ -58,6 +59,11 @@ public class HistoryResource {
     private final OpenAPIDocumentSerializer documentSerializer;
     private final ApplicationProcessor processor;
 
+    @Inject
+    @ConfigProperty(name = "tribe.registry.base")
+    private String baseUrl;
+
+
     @GET
     @Path("/{applicationId}")
     public Response getApplicationHistory(
@@ -75,7 +81,7 @@ public class HistoryResource {
                 .map(HistoryItem::new)
                 .collect(toList());
 
-        UriBuilder historyApplicationBaseUriBuilder = uriInfo.getBaseUriBuilder()
+        UriBuilder historyApplicationBaseUriBuilder = getBase(uriInfo)
                 .path("history/application/{applicationId}")
                 .resolveTemplate("applicationId", applicationId);
 
@@ -92,8 +98,12 @@ public class HistoryResource {
                 .build();
     }
 
+    private UriBuilder getBase(UriInfo uriInfo) {
+        return baseUrl == null ? uriInfo.getBaseUriBuilder() : UriBuilder.fromUri(baseUrl);
+    }
+
     private Link buildCurrentApplicationLink(final UriInfo uriInfo, final String applicationId) {
-        return Link.fromUriBuilder(uriInfo.getBaseUriBuilder()
+        return Link.fromUriBuilder(getBase(uriInfo)
                 .path("application/{applicationId}")
                 .resolveTemplate("applicationId", applicationId))
                 .rel("application")
@@ -101,7 +111,7 @@ public class HistoryResource {
     }
 
     private Link buildCurrentEndpointLink(final UriInfo uriInfo, final String applicationId, final String endpointId) {
-        return Link.fromUriBuilder(uriInfo.getBaseUriBuilder()
+        return Link.fromUriBuilder(getBase(uriInfo)
                 .path("application/{applicationId}/endpoint/{endpointId}")
                 .resolveTemplate("applicationId", applicationId)
                 .resolveTemplate("endpointId", endpointId))
