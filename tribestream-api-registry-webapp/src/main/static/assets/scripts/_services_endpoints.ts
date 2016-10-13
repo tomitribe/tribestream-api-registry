@@ -152,6 +152,9 @@ module services_endpoints {
                     },
                     getHistoricItem: function(historyItem) {
                         return {
+                            promise() {
+                              return $http.get(historyItem.link + '&payload=true');
+                            },
                             then: function(successCallback, errorCallback) {
                                 $http.get(historyItem.link)
                                     .then(function (data) {

@@ -64,7 +64,8 @@ public class HistoryResource {
             @Context UriInfo uriInfo,
             @PathParam("applicationId") final String applicationId,
             @QueryParam("page") @DefaultValue("1") final int page,
-            @QueryParam("per_page") @DefaultValue("20") final int perPage) {
+            @QueryParam("per_page") @DefaultValue("20") final int perPage,
+            @QueryParam("payload") @DefaultValue("false") final boolean payload) {
 
         final int first = (page - 1) * perPage;
 
@@ -112,7 +113,11 @@ public class HistoryResource {
         List<Link> result =
                 historyItems.stream()
                         .map((HistoryItem historyItem) ->
-                            Link.fromUriBuilder(baseUriBuilder.clone().path("/{revisionId}").resolveTemplate("revisionId", historyItem.getRevisionId()))
+                            Link.fromUriBuilder(baseUriBuilder.clone()
+                                    .path("/{revisionId}")
+                                    .queryParam("per_page", "1")
+                                    .queryParam("page", "1")
+                                    .resolveTemplate("revisionId", historyItem.getRevisionId()))
                                     .rel("revision " + historyItem.getRevisionId()).build()
                         )
                         .collect(toList());
@@ -211,9 +216,10 @@ public class HistoryResource {
 
         documentSerializer.postLoad(endpoint);
 
-        EndpointWrapper endpointWrapper = new EndpointWrapper(
+        final EndpointWrapper endpointWrapper = new EndpointWrapper(
                 applicationId, endpointId, endpoint.getHumanReadablePath(),
-                endpoint.getVerb(), endpoint.getPath(), endpoint.getOperation());
+                endpoint.getVerb(), endpoint.getPath(), endpoint.getOperation(),
+                endpoint.getDocument());
 
         return Response.ok(endpointWrapper)
                 .links(buildCurrentEndpointLink(uriInfo, applicationId, endpointId))
