@@ -38,17 +38,20 @@ public class EndpointWrapper {
     private String path;
     private Operation operation;
     private String humanReadablePath;
+    private String json;
 
     @JsonProperty("_links")
     private Map<String, String> links = new HashMap<>();
 
     public EndpointWrapper(final String appId, final String endpointId, final String pathId,
-                           final String httpMethod, final String path, final Operation operation) {
+                           final String httpMethod, final String path, final Operation operation,
+                           final String json) {
         this.applicationId = appId;
         this.endpointId = endpointId;
         this.humanReadablePath = pathId;
         this.httpMethod = ofNullable(httpMethod).map(s -> s.toLowerCase(Locale.ENGLISH)).orElse("-" /*can be null theorically*/);
         this.path = path;
         this.operation = operation;
+        this.json = json;
     }
 }

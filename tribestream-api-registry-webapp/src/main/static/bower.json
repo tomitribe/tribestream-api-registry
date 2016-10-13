@@ -18,6 +18,7 @@
     "montserrat-webfont": "^1.0.3",
     "lato": "^0.3.0",
     "angular-ui-codemirror": "~0.3.0",
+    "google-diff-match-patch-js": "v1.0.0",
     "angular-marked": "^1.2.2",
     "mocha": "^3.0.2",
     "chai": "^3.5.0",

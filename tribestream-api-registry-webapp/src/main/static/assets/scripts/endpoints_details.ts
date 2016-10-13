@@ -493,10 +493,77 @@ angular.module('tribe-endpoints-details', [
             template: require('../templates/app_endpoints_details_history.jade'),
             scope: true,
             controller: [
-                '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', 'systemMessagesService', 'tribeLinkHeaderService',
-                function ($scope, srv, tribeFilterService, $timeout, $filter, $log, systemMessagesService, tribeLinkHeaderService) {
+                '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', 'systemMessagesService', 'tribeLinkHeaderService', '$q',
+                function ($scope, srv, tribeFilterService, $timeout, $filter, $log, systemMessagesService, tribeLinkHeaderService, $q) {
+                  $scope.selected = [];
+                  $scope.showDiff = false;
+
+                  $scope.onHistorySelect = item => {
+                    $scope.showDiff = false;
+                    $scope.mergeWidget = undefined;
+
+                    if (item.$ui.selected && $scope.selected.length >= 2) { // == should be fine too
+                      item.$ui.selected = false;
+                      systemMessagesService.warn('You can select only 2 items for a diff.');
+                      return;
+                    }
+
+                    if (item.$ui.selected) {
+                      $scope.selected.push(item);
+                    } else {
+                      $scope.selected = $scope.selected.filter(i => i['revisionId'] != item['revisionId']);
+                    }
+                  };
+
+                  $scope.saveMerge = () => {
+                    // update new operation with the json content
+                    $scope.ref.operation = JSON.parse($scope.mergeWidget.editor().getValue());
+
+                    srv.saveEndpoint($scope.ref.applicationId, $scope.ref.endpointId, {
+                      // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
+                      httpMethod: $scope.ref.httpMethod,
+                      path: $scope.ref.path,
+                      operation: $scope.ref.operation
+                    }).then(
+                      function (saveResponse) {
+                        $scope.updateEndpoint(saveResponse.data);
+                        systemMessagesService.info("Saved endpoint details! " + saveResponse.status);
+                      }
+                    );
+                  };
+                  $scope.doDiff = () => {
+                    if ($scope.selected.length != 2) {
+                      systemMessagesService.warn('You need to select 2 history items to be able to do a diff.');
+                      return;
+                    }
+
+                    $scope.showDiff = !$scope.showDiff;
+
+                    if ($scope.showDiff) {
+                      $scope['diffElement'].innerHTML = ''; // reset
+                      $q.all($scope.selected.map(item => srv.getHistoricEndpoint(item).promise()))
+                        .then(results => {
+                          $scope.ref = results[0].data;
+                          const json1 = JSON.parse($scope.ref['json']);
+                          const json2 = JSON.parse(results[1]['data']['json']);
+                          $scope.mergeWidget = window['CodeMirror'].MergeView($scope['diffElement'], {
+                            value: JSON.stringify(json1, undefined, 2),
+                            orig: JSON.stringify(json2, undefined, 2),
+                            mode: 'application/json',
+                            connect: 'align',
+                            lineNumbers: true,
+                            highlightDifferences: true,
+                            collapseIdentical: false,
+                            lineWrapping: true
+                          });
+                        });
+                    }
+                  };
                 }
-            ]
+            ],
+            link: function (scope, el, attrs, controller) {
+                scope['diffElement'] = el.find('div#history-diff')[0];
+            }
         };
     }])
 
@@ -510,6 +577,8 @@ angular.module('tribe-endpoints-details', [
     controller: [
       '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', 'systemMessagesService', 'tribeLinkHeaderService',
       function ($scope, srv, tribeFilterService, $timeout, $filter, $log, systemMessagesService, tribeLinkHeaderService) {
+        $scope.updateEndpoint = e => $scope.endpoint = e;
+
         $timeout(function () {
           $scope.$apply(function () {
             $scope.history = null;
@@ -613,6 +682,7 @@ angular.module('tribe-endpoints-details', [
               let links = tribeLinkHeaderService.parseLinkHeader(response.headers('link'));
               for (let entry of response['data']) {
                 entry.link = links["revision " + entry.revisionId];
+                entry.$ui = {selected: false};
               }
 
               $timeout(function () {
