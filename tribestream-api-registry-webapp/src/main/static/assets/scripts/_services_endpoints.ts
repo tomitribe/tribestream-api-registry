@@ -1,7 +1,4 @@
-///<reference path="../../bower_components/DefinitelyTyped/angularjs/angular.d.ts"/>
-///<reference path="../../bower_components/DefinitelyTyped/underscore/underscore.d.ts"/>
-
-module services {
+module services_endpoints {
 
     angular.module('website-services-endpoints', [
         'ngRoute',
@@ -21,7 +18,7 @@ module services {
                         let parts = linkHeader.split(',');
                         let links = {};
                         // Parse each part into a named link
-                        _.each(parts, function(p) {
+                        _.each(parts, function (p: string) {
                             let section = p.split(';');
                             if (section.length != 2) {
                               throw new Error("section could not be split on ';'");
@@ -54,7 +51,7 @@ module services {
                             then: function (successCallback, errorCallback) {
                                 var params = {};
                                 var rawParams = $location.search();
-                                _.each(rawParams, function (value, key) {
+                                _.each(rawParams, function (value, key: string) {
                                     if ('a' === key) {
                                         params['app'] = value.split(',');
                                     } else if ('c' === key) {
@@ -67,7 +64,7 @@ module services {
                                         params['query'] = value;
                                     }
                                 });
-                                var removeSelected = function (list, qparam) {
+                                var removeSelected = (list: { text:string }[], qparam): { text:string }[] => {
                                     var param = rawParams[qparam];
                                     if (!param) {
                                         return list;
@@ -154,12 +151,12 @@ module services {
                             }
                         };
                     },
-                    getEndpointHistory: function (url) {
+                    getHistory: function (url) {
                         return {
-                            then: function (successCallback, errorCallback) {
+                            then: (successCallback, errorCallback) => {
                                 if (url) {
                                     $http.get(url)
-                                        .then(function (data) {
+                                        .then((data) => {
                                             successCallback(data);
                                         }, tribeErrorHandlerService.ensureErrorHandler(errorCallback));
                                 } else {
@@ -168,8 +165,11 @@ module services {
                             }
                         };
                     },
-                    getHistoricEndpoint: function(historyItem) {
+                    getHistoricItem: function(historyItem) {
                         return {
+                            promise() {
+                              return $http.get(historyItem.link + '&payload=true');
+                            },
                             then: function(successCallback, errorCallback) {
                                 $http.get(historyItem.link)
                                     .then(function (data) {
@@ -189,19 +189,50 @@ module services {
                             }
                         };
                     },
+                    saveApplication(applicationLink, application) {
+                        return {
+                            then: (successCallback, errorCallback) => {
+                                $http.put(applicationLink, {swagger: application})
+                                    .then(
+                                    (data) => {
+                                        if (data && data.data && data.data.swagger) {
+                                            successCallback(data);
+                                        }
+                                    },
+                                    tribeErrorHandlerService.ensureErrorHandler(errorCallback)
+                                );
+                            }
+                        };
+                    },
+                    createApplication(applicationsLink, application) {
+                        return {
+                            then: function (successCallback, errorCallback) {
+                                $http.post(applicationsLink, {swagger: application})
+                                    .then(
+                                    function (data) {
+                                        if (data && data.data && data.data.swagger) {
+                                            // we will have at most one result. only one application queried.
+                                            successCallback(data);
+                                        }
+                                    },
+                                    tribeErrorHandlerService.ensureErrorHandler(errorCallback)
+                                );
+                            }
+                        };
+                    },
                     saveEndpoint(endpointLink, endpoint) {
                         return {
                             then: function (successCallback, errorCallback) {
                                 $http.put(endpointLink, endpoint)
                                     .then(
-                                        function (data) {
-                                            if (data && data.data && data.data.operation) {
-                                                // we will have at most one result. only one application queried.
-                                                successCallback(data);
-                                            }
-                                        },
-                                        tribeErrorHandlerService.ensureErrorHandler(errorCallback)
-                                    );
+                                    function (data) {
+                                        if (data && data.data && data.data.operation) {
+                                            // we will have at most one result. only one application queried.
+                                            successCallback(data);
+                                        }
+                                    },
+                                    tribeErrorHandlerService.ensureErrorHandler(errorCallback)
+                                );
                             }
                         };
                     },
@@ -210,14 +241,14 @@ module services {
                             then: function (successCallback, errorCallback) {
                                 $http.post(endpointsLink, endpoint)
                                     .then(
-                                        function (data) {
-                                            if (data && data.data && data.data.operation) {
-                                                // we will have at most one result. only one application queried.
-                                                successCallback(data);
-                                            }
-                                        },
-                                        tribeErrorHandlerService.ensureErrorHandler(errorCallback)
-                                    );
+                                    function (data) {
+                                        if (data && data.data && data.data.operation) {
+                                            // we will have at most one result. only one application queried.
+                                            successCallback(data);
+                                        }
+                                    },
+                                    tribeErrorHandlerService.ensureErrorHandler(errorCallback)
+                                );
                             }
                         };
                     }

@@ -22,7 +22,7 @@ To make TomEE pick up changes to any static resources, typescript files, templat
 
 ----
 $ cd tribestream-api-registry-webapp
-$ mvn frontend:gulp
+$ mvn frontend:npm@dev
 ----
 
 Note that you need elasticsearch, to run it:

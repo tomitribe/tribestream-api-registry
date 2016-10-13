@@ -5,7 +5,6 @@ div(ng-show="history")
       table
         thead
           tr
-            th &nbsp;
             th Revision
             th Timestamp
             th Username
@@ -13,8 +12,6 @@ div(ng-show="history")
             th
         tbody
           tr(x-ng-repeat="historyItem in history")
-            td
-              input(type="checkbox", x-ng-change="onHistorySelect(historyItem)", x-ng-model="historyItem.$ui.selected")
             td
               span {{historyItem.revisionId}}
             td
@@ -24,9 +21,5 @@ div(ng-show="history")
             td
               span {{historyItem.usercomment}}
             td
-              i.fa.fa-edit(x-ng-click="showHistoricEndpoint(historyItem)")
-    div(id="history-diff", x-ng-show="showDiff && selected.length == 2")
+              i.fa.fa-edit(x-ng-click="showHistoricApplication(historyItem)")
   button.orange(x-ng-click="closeHistory()") Close
-  button(x-ng-click="doDiff()", x-ng-show="showDiff") Hide Diff
-  button(x-ng-click="doDiff()", x-ng-show="!showDiff") Show Diff
-  button(x-ng-click="saveMerge()", x-ng-show="showDiff") Save left pane as endpoint
