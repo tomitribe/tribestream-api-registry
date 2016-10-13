@@ -94,10 +94,10 @@ module services_endpoints {
                             }
                         };
                     },
-                    getApplicationDetails: function (applicationId) {
+                    getApplicationDetails: function (applicationLink) {
                         return {
                             then: function (successCallback, errorCallback) {
-                                $http.get('api/application/' + applicationId)
+                                $http.get(applicationLink)
                                     .then(function (data) {
                                         if (data && data.data && data.data.swagger) {
                                             // we will have at most one result. only one application queried.
@@ -126,21 +126,6 @@ module services_endpoints {
                                 if (request && request.endpointPath) {
                                     const params = request.version ? {version: request.version} : {};
                                     $http.get(`api/ui/endpoint/${request.applicationName}/${request.verb || '-'}/${request.endpointPath}`, {params : params})
-                                        .then(function (data) {
-                                            successCallback(data);
-                                        }, tribeErrorHandlerService.ensureErrorHandler(errorCallback));
-                                } else {
-                                    var newEntry = {};
-                                    successCallback(newEntry);
-                                }
-                            }
-                        };
-                    },
-                    getDetails: function (app, endpointId) {
-                        return {
-                            then: function (successCallback, errorCallback) {
-                                if (endpointId) {
-                                    $http.get(`api/application/${app}/endpoint/${endpointId}`)
                                         .then(function (data) {
                                             successCallback(data);
                                         }, tribeErrorHandlerService.ensureErrorHandler(errorCallback));
@@ -246,6 +231,18 @@ module services_endpoints {
                                     },
                                     tribeErrorHandlerService.ensureErrorHandler(errorCallback)
                                 );
+                            }
+                        };
+                    },
+                    delete(endpointLink) {
+                        return {
+                            then: (successCallback, errorCallback) => {
+                                $http.delete(endpointLink).then(
+                                    (response) => {
+                                        successCallback(response);
+                                    },
+                                    tribeErrorHandlerService.ensureErrorHandler(errorCallback)
+                                )
                             }
                         };
                     }

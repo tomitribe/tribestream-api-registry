@@ -37,17 +37,8 @@ angular.module('tribe-endpoints', [
                 app: '=application'
             },
             controller: [
-                '$timeout', '$scope', '$filter', 'tribeEndpointsService', 'tribeFilterService', 'tribeLinkHeaderService', 'systemMessagesService',
-                function ($timeout, $scope, $filter, srv, tribeFilterService, tribeLinkHeaderService, systemMessagesService) {
-                    var getDetails = function (applicationId) {
-                        srv.getApplicationDetails(applicationId).then(function (data) {
-                            $timeout(function () {
-                                $scope.$apply(function () {
-                                    $scope['details'] = data.data;
-                                });
-                            });
-                        });
-                    };
+                '$timeout', '$scope', '$filter', '$location', 'tribeEndpointsService', 'tribeFilterService', 'tribeLinkHeaderService', 'systemMessagesService',
+                function ($timeout, $scope, $filter, $location, srv, tribeFilterService, tribeLinkHeaderService, systemMessagesService) {
                     if (!!$scope.app) {
                       srv.getApplicationDetailsFromName($scope.app).then(function (response) {
                           $timeout(function () {
@@ -130,6 +121,12 @@ angular.module('tribe-endpoints', [
                           });
                         }
                       );
+                    };
+                    $scope.delete = () => {
+                      srv.delete($scope.applicationLink).then((response) => {
+                          systemMessagesService.info("Deleted application!");
+                          $location.path("/");
+                      });
                     };
                     $scope.showHistory = () => {
                       srv.getHistory($scope.historyLink).then((response) => {
