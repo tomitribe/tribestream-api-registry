@@ -1,3 +1,9 @@
+module _components_markdown {
+
+let hljs = require("../../../static/bower_components/highlightjs/highlight.pack.js");
+let SimpleMDE = require("../../../static/bower_components/simplemde/dist/simplemde.min.js");
+let marked = require("../../../static/bower_components/marked/marked.min.js");
+
 angular.module('website-components-markdown-service', [])
 
     .factory('tribeMarkdownService', [() => {
@@ -34,7 +40,7 @@ angular.module('website-components-markdown', [
             scope: {
                 visible: '='
             },
-            templateUrl: 'app/templates/component_markdown_help.html',
+            template: require('../templates/component_markdown_help.jade'),
             link: (scope, el) => {
                 let content = el.find('> div > div.markdown-help-content');
                 content.detach();
@@ -43,12 +49,12 @@ angular.module('website-components-markdown', [
                     console.log('event.keyCode -> ' + event.keyCode);
                     if (event.keyCode === 27 /* Escape */) {
                         $timeout(() => scope.$apply(() => {
-                            scope.visible = false;
+                            scope['visible'] = false;
                         }));
                     }
                 };
                 scope.$watch('visible', () => {
-                    if (scope.visible) {
+                    if (scope['visible']) {
                         body.addClass('noscroll');
                         body.append(content);
                         $document.on('keyup', keyPress);
@@ -74,38 +80,38 @@ angular.module('website-components-markdown', [
             scope: {
                 originalValue: '=value'
             },
-            templateUrl: 'app/templates/component_markdown.html',
+            template: require('../templates/component_markdown.jade'),
             controller: ['$scope', ($scope) => $timeout(() => {
-                $scope.helpVisible = false;
-                $scope.simplemde = null;
-                $scope.version = 0;
-                $scope.fieldDirty = false;
-                $scope.cmFocused = false;
-                $scope.sidebyside = false;
+                $scope['helpVisible'] = false;
+                $scope['simplemde'] = null;
+                $scope['version'] = 0;
+                $scope['fieldDirty'] = false;
+                $scope['cmFocused'] = false;
+                $scope['sidebyside'] = false;
                 $scope.$watch('originalValue', () => $timeout(() => $scope.$apply(() => {
-                    $scope.value = $scope.originalValue ? _.clone($scope.originalValue) : '';
+                    $scope['value'] = $scope.originalValue ? _.clone($scope.originalValue) : '';
                 })));
                 $scope.$watch('value', () => $timeout(() => $scope.$apply(() => {
-                    $scope.preview = mdService.compileMd($scope.value);
+                    $scope.preview = mdService.compileMd($scope['value']);
                 })));
                 $scope.onCommit = () =>  $timeout(() => $scope.$apply(() => {
-                    $scope.cmFocused = false;
-                    if ($scope.fieldDirty) {
-                        $scope.fieldDirty = false;
-                        $scope.originalValue = _.clone($scope.value);
+                    $scope['cmFocused'] = false;
+                    if ($scope['fieldDirty']) {
+                        $scope['fieldDirty'] = false;
+                        $scope.originalValue = _.clone($scope['value']);
                         $scope.$broadcast('fieldCommited');
                     }
                 }));
-                $scope.onCancel = () =>  $timeout(() => $scope.$apply(() => {
-                    $scope.fieldDirty = false;
-                    $scope.value = _.clone($scope.originalValue);
+                $scope['onCancel'] = () =>  $timeout(() => $scope.$apply(() => {
+                    $scope['fieldDirty'] = false;
+                    $scope['value'] = _.clone($scope.originalValue);
                     $scope.$broadcast('fieldCanceled');
                 }));
-                $scope.onChange = (newValue) =>  $timeout(() => $scope.$apply(() => {
-                    $scope.version = $scope.version + 1;
+                $scope['onChange'] = (newValue) =>  $timeout(() => $scope.$apply(() => {
+                    $scope['version'] = $scope['version'] + 1;
                     if ($scope.originalValue !== newValue) {
-                        $scope.value = newValue;
-                        $scope.fieldDirty = true;
+                        $scope['value'] = newValue;
+                        $scope['fieldDirty'] = true;
                     }
                 }));
             })],
@@ -122,10 +128,10 @@ angular.module('website-components-markdown', [
                 let deactivate = () => {
                     cancelDeactivate();
                     deactivatePromise = $timeout(() => {
-                        scope.onCommit();
+                        scope['onCommit']();
                         scope.$apply(() => {
-                            scope.sidebyside = false;
-                            scope.fullscreen = false;
+                            scope['sidebyside'] = false;
+                            scope['fullscreen'] = false;
                         });
                         el.removeClass('active');
                         if(simplemde) {
@@ -140,13 +146,13 @@ angular.module('website-components-markdown', [
                 let focusAction = (cm) => {
                     $log.debug('codemirror focus; cm.getSelection() empty? ' + !!cm.getSelection());
                     cancelDeactivate();
-                    if (!scope.cmFocused) {
+                    if (!scope['cmFocused']) {
                         cm.execCommand('selectAll');
                     }
                     $timeout(() => scope.$apply(() => {
-                        scope.cmFocused = true;
-                        scope.version = scope.version + 1;
-                        scope.fieldDirty = true;
+                        scope['cmFocused'] = true;
+                        scope['version'] = scope['version'] + 1;
+                        scope['fieldDirty'] = true;
                     }));
                 };
                 let anchorEl = el.find('div.value > textarea')[0];
@@ -206,9 +212,9 @@ angular.module('website-components-markdown', [
                         name: "side-by-side",
                         action: (editor) => $timeout(() => scope.$apply(() => {
                             cancelDeactivate();
-                            scope.sidebyside = !scope.sidebyside;
+                            scope['sidebyside'] = !scope['sidebyside'];
                             let btn = angular.element(editor.toolbarElements["side-by-side"]);
-                            if(scope.sidebyside) {
+                            if(scope['sidebyside']) {
                                 btn.addClass('active');
                             } else {
                                 btn.removeClass('active');
@@ -224,7 +230,7 @@ angular.module('website-components-markdown', [
                         name: "preview",
                         action: (editor) => $timeout(() => scope.$apply(() => {
                             cancelDeactivate();
-                            scope.sidebyside = false;
+                            scope['sidebyside'] = false;
                             angular.element(editor.toolbarElements["side-by-side"]).removeClass('active');
                             SimpleMDE.togglePreview(editor);
                             if (!editor.isPreviewActive()) {
@@ -237,9 +243,9 @@ angular.module('website-components-markdown', [
                         name: "fullscreen",
                         action: (editor) => $timeout(() => scope.$apply(() => {
                             cancelDeactivate();
-                            scope.fullscreen = !scope.fullscreen;
+                            scope['fullscreen'] = !scope['fullscreen'];
                             let btn = angular.element(editor.toolbarElements["fullscreen"]);
-                            if(scope.fullscreen) {
+                            if(scope['fullscreen']) {
                                 btn.addClass('active');
                                 body.addClass('noscroll')
                             } else {
@@ -252,14 +258,14 @@ angular.module('website-components-markdown', [
                     }, {
                         name: "guide",
                         action: (editor) => $timeout(() => scope.$apply(() => {
-                            scope.helpVisible = true;
+                            scope['helpVisible'] = true;
                         })),
                         className: "fa fa-question-circle",
                         title: "Markdown Guide"
                     }]
                 });
                 simplemde.codemirror.on('change', () => {
-                    scope.onChange(simplemde.value());
+                    scope['onChange'](simplemde.value());
                 });
                 simplemde.codemirror.on('focus', focusAction);
                 simplemde.codemirror.on('blur', () => $timeout(() => {
@@ -267,8 +273,8 @@ angular.module('website-components-markdown', [
                 }));
                 let disablePreview = () => {
                     $timeout(() => scope.$apply(() => {
-                        scope.sidebyside = false;
-                        scope.fullscreen = false;
+                        scope['sidebyside'] = false;
+                        scope['fullscreen'] = false;
                     }));
                     el.removeClass('active');
                     angular.element(simplemde.toolbarElements["side-by-side"]).removeClass('active');
@@ -279,9 +285,9 @@ angular.module('website-components-markdown', [
                 };
                 scope.$on('fieldCanceled', disablePreview);
                 scope.$watch('value', () => $timeout(() => {
-                    $log.debug(`scope.fieldDirty = ${scope.fieldDirty}; scope.value = ${scope.value}`);
-                    if (!scope.fieldDirty) {
-                        simplemde.value(scope.value ? scope.value : '');
+                    $log.debug(`scope['fieldDirty'] = ${scope['fieldDirty']}; scope.value = ${scope['value']}`);
+                    if (!scope['fieldDirty']) {
+                        simplemde.value(scope['value'] ? scope['value'] : '');
                     }
                 }));
                 scope.$on('$destroy', () => {
@@ -295,3 +301,5 @@ angular.module('website-components-markdown', [
             })
         };
     }]);
+
+}

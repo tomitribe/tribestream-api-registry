@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.tomitribe.tribestream.registryng.resources;
+package org.tomitribe.tribestream.registryng.test;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -27,9 +27,12 @@ import org.apache.catalina.realm.RealmBase;
 import org.apache.openejb.testing.ContainerProperties;
 import org.apache.openejb.testing.RandomPort;
 import org.apache.openejb.testing.WebResource;
+import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
 import org.apache.tomee.loader.TomcatHelper;
+import org.openqa.selenium.WebDriver;
 import org.tomitribe.tribestream.registryng.bootstrap.Provisioning;
 import org.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
+import org.tomitribe.tribestream.registryng.test.selenium.PhantomJsLifecycle;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
@@ -60,8 +63,9 @@ import static org.tomitribe.util.Join.join;
         @ContainerProperties.Property(name = "registryDatasource.JdbcUrl", value = "jdbc:h2:mem:registry;DB_CLOSE_ON_EXIT=FALSE"),
         @ContainerProperties.Property(name = "registryDatasource.LogSql", value = "false")
 })
-@WebResource("src/main/webapp") // should work by default but bug in tomee 7.0.1, fixed in 7.0.2
+@WebResource("target/tests-webapp") // should work by default but bug in tomee 7.0.1, fixed in 7.0.2
 @org.apache.openejb.testing.Application
+@TomEEEmbeddedSingleRunner.LifecycleTasks({PhantomJsLifecycle.Task.class, PrepareResources.class})
 public class Registry {
     public static final String TESTUSER = "utest";
     public static final String TESTPASSWORD = "ptest";
@@ -72,6 +76,16 @@ public class Registry {
     @Inject
     private Provisioning provisioning;
 
+    private PhantomJsLifecycle phantomJs;
+
+    public String root() {
+        return "http://localhost:" + port;
+    }
+
+    public WebDriver getWebDriver() { // lazy for tests not needing it
+        return PhantomJsLifecycle.SINGLETON.getDriver();
+    }
+
     public WebTarget target() {
         return target(true);
     }
@@ -81,7 +95,7 @@ public class Registry {
     }
 
     public WebTarget target(final boolean secured) {
-        return client(secured).target("http://localhost:" + port);
+        return client(secured).target(root());
     }
 
     public Client client(final boolean secured) { // TODO: close them somehow, not a big deal for tests

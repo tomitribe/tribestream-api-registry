@@ -28,19 +28,17 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.tomitribe.tribestream.registryng.cdi.Tribe;
+import org.tomitribe.tribestream.registryng.test.Registry;
+import org.tomitribe.tribestream.registryng.test.Registry;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.HistoryItem;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
 import org.tomitribe.tribestream.registryng.domain.SearchResult;
-import org.tomitribe.tribestream.registryng.entities.Endpoint;
 
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -49,11 +47,16 @@ import java.util.UUID;
 
 import static javax.ws.rs.client.Entity.entity;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.tomitribe.tribestream.registryng.test.Registry.TESTUSER;
+import org.tomitribe.tribestream.registryng.entities.Endpoint;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.io.IOException;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
-import static org.tomitribe.tribestream.registryng.resources.Registry.TESTUSER;
+import static org.tomitribe.tribestream.registryng.test.Registry.TESTUSER;
 
 @RunWith(TomEEEmbeddedSingleRunner.class)
 public class EndpointHistoryResourceTest {

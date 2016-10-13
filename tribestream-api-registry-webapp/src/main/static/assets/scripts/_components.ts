@@ -1,6 +1,9 @@
+module components {
+
+let marked = require("../../../static/bower_components/marked/marked.min.js");
+
 angular.module('website-components', [
     'ui.codemirror',
-    'hc.marked',
     'website-components-filters',
     'website-components-multiselect',
     'website-components-singleselect',
@@ -14,7 +17,7 @@ angular.module('website-components', [
             scope: {
                 value: '='
             },
-            templateUrl: 'app/templates/component_editable_button_text.html'
+            template: require('../templates/component_editable_button_text.jade')
         };
     }])
 
@@ -26,7 +29,7 @@ angular.module('website-components', [
                 title: '=',
                 emptyText: '@?'
             },
-            templateUrl: 'app/templates/component_editable_link.html',
+            template: require('../templates/component_editable_link.jade'),
             controller: ['$scope', function ($scope) {
                 if (!$scope.emptyText || $scope.emptyText.trim() === '') {
                     $scope.emptyText = 'Empty link';
@@ -74,7 +77,7 @@ angular.module('website-components', [
             scope: {
                 content: '='
             },
-            templateUrl: 'app/templates/component_editable_md.html',
+            template: require('../templates/component_editable_md.jade'),
             controller: ['$scope', '$timeout', '$element', function ($scope, $timeout, $element) {
                 $scope.editorHolder = {
                     editor: null
@@ -136,7 +139,7 @@ angular.module('website-components', [
             scope: {
                 content: '='
             },
-            templateUrl: 'app/templates/component_editable_block.html',
+            template: require('../templates/component_editable_block.jade'),
             controller: ['$scope', '$timeout', function ($scope, $timeout) {
                 $scope.editorHolder = {
                     editor: null
@@ -183,14 +186,14 @@ angular.module('website-components', [
                 value: '=',
                 adjust: '@?'
             },
-            templateUrl: 'app/templates/component_editable_number.html',
+            template: require('../templates/component_editable_number.jade'),
             link: function (scope, el, attrs, controller) {
                 var activate = function () {
                     var span = el.find('span');
                     var width = span.width();
                     el.addClass('edit');
                     var input = el.find('input');
-                    if (scope.adjust !== 'false') {
+                    if (scope['adjust'] !== 'false') {
                         input.width(width);
                     }
                     input.focus();
@@ -204,46 +207,16 @@ angular.module('website-components', [
         };
     }])
 
-    .directive('tribeEditableText', ['$timeout', '$interval', function ($timeout, $interval) {
-        return {
-            restrict: 'A',
-            scope: {
-                value: '=',
-                adjust: '@?',
-                emptyText: '@?'
-            },
-            templateUrl: 'app/templates/component_editable_text.html',
-            link: function (scope, el) {
-                $timeout(function () {
-                    var activate = function () {
-                        var span = el.find('span');
-                        var width = span.width();
-                        el.addClass('edit');
-                        var input = el.find('input');
-                        if (scope.adjust !== 'false') {
-                            input.width(width);
-                        }
-                        input.focus();
-                    };
-                    el.on('click', activate);
-                    el.find('input').on('blur', function () {
-                        el.removeClass('edit');
-                    });
-                    el.find('> div').on('focus', activate);
-                });
-            }
-        };
-    }])
-
     .directive('tribeEditableOption', ['$timeout', '$document', function ($timeout, $document) {
         return {
             restrict: 'A',
             scope: {
                 value: '=',
                 options: '=',
+                defaultText: '@?',
                 emptyText: '@?'
             },
-            templateUrl: 'app/templates/component_editable_option.html',
+            template: require('../templates/component_editable_option.jade'),
             controller: ['$scope', '$timeout', function ($scope, $timeout) {
                 $scope.visible = false;
                 if (!$scope.emptyText) {
@@ -281,7 +254,7 @@ angular.module('website-components', [
                     optionsDiv.detach();
                     el.removeClass('visible');
                     $timeout(() => scope.$apply(() => {
-                        scope.visible = false;
+                        scope['visible'] = false;
                     }));
                 };
                 el.on('mouseover', () => {
@@ -297,7 +270,7 @@ angular.module('website-components', [
                     $document.on('click', detachOptions);
                 });
                 scope.$watch('visible', () => {
-                    if (scope.visible) {
+                    if (scope['visible']) {
                         el.addClass('visible');
                         var pos = el.find('> div').offset();
                         optionsDiv.css({
@@ -335,13 +308,13 @@ angular.module('website-components', [
                 trueValue: '=?',
                 falseValue: '=?'
             },
-            templateUrl: 'app/templates/component_switch.html',
+            template: require('../templates/component_switch.jade'),
             link: function (scope, el) {
-                scope.uniqueId = _.uniqueId('tribeSwitch-');
+                scope['uniqueId'] = _.uniqueId('tribeSwitch-');
                 var updateValue = function () {
                     $timeout(function () {
                         scope.$apply(function () {
-                            scope.value = !scope.value;
+                            scope['value'] = !scope['value'];
                         });
                     });
                 };
@@ -349,12 +322,14 @@ angular.module('website-components', [
                 el.find('div[tabindex]').on('keypress', updateValue);
             },
             controller: ['$scope', function ($scope) {
-                if (_.isNull($scope.trueValue) || _.isUndefined($scope.trueValue)) {
-                    $scope.trueValue = true;
+                if (_.isNull($scope['trueValue']) || _.isUndefined($scope['trueValue'])) {
+                    $scope['trueValue'] = true;
                 }
-                if (_.isNull($scope.falseValue) || _.isUndefined($scope.falseValue)) {
-                    $scope.falseValue = false;
+                if (_.isNull($scope['falseValue']) || _.isUndefined($scope['falseValue'])) {
+                    $scope['falseValue'] = false;
                 }
             }]
         };
     }]);
+
+}

@@ -1,7 +1,4 @@
-///<reference path="../../bower_components/DefinitelyTyped/angularjs/angular.d.ts"/>
-///<reference path="../../bower_components/DefinitelyTyped/underscore/underscore.d.ts"/>
-
-module services {
+module services_browser {
     declare var Base64;
 
     // wrapper to browser features. useful in unit tests

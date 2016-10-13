@@ -227,6 +227,23 @@ describe('it tests our custom singleselect component', () => {
         });
     });
 
+    it('should show custom empty label', (done) => {
+        timeoutTryCatch(100, done, () => {
+            let scope = rootScope.$new();
+            scope.selected = null;
+            scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+            let element = angular.element('<div data-tribe-singleselect data-selected-option="selected" data-available-options="options" data-placeholder="lalala"></div>');
+            // append to body so we can click on it.
+            element.appendTo(document.find('body'));
+            compile(element)(scope);
+            timeoutTryCatch(100, done, () => {
+                expect(angular.element(element.find('span.empty')).length).to.equal(1);
+                expect(angular.element(element.find('span.empty')).html()).to.contain('lalala');
+                done();
+            });
+        });
+    });
+
     it('should not show empty label', (done) => {
         timeoutTryCatch(100, done, () => {
             let scope = rootScope.$new();
