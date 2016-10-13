@@ -68,6 +68,13 @@
     </dependency>
 
     <dependency>
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>tomcat-catalina</artifactId>
+      <version>${version.tomcat}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
       <version>${version.jackson}</version>
@@ -320,6 +327,13 @@
             <db>new://Resource?type=DataSource</db>
             <db.JdbcUrl>jdbc:h2:mem:registry</db.JdbcUrl>
             <db.JdbcDriver>org.h2.Driver</db.JdbcDriver>
+            <tribe.registry.oauth2.authorizationServerUrl>${registry.oauth2.authorizationServerUrl}</tribe.registry.oauth2.authorizationServerUrl>
+            <tribe.registry.oauth2.clientId>${registry.oauth2.clientId}</tribe.registry.oauth2.clientId>
+            <tribe.registry.oauth2.clientSecret>${registry.oauth2.clientSecret}</tribe.registry.oauth2.clientSecret>
+            <tribe.registry.oauth2.tlsProtocol>${registry.oauth2.tlsProtocol}</tribe.registry.oauth2.tlsProtocol>
+            <tribe.registry.oauth2.tlsProvider>${registry.oauth2.tlsProvider}</tribe.registry.oauth2.tlsProvider>
+            <tribe.registry.oauth2.trustStore>${registry.oauth2.tlsProvider}</tribe.registry.oauth2.trustStore>
+            <tribe.registry.oauth2.trustStoreType>${registry.oauth2.trustStoreType}</tribe.registry.oauth2.trustStoreType>
           </containerProperties>
           <users>
             <admin>admin</admin>
@@ -378,6 +392,13 @@
             <db>new://Resource?type=DataSource</db>
             <db.JdbcUrl>jdbc:h2:mem:registry</db.JdbcUrl>
             <db.JdbcDriver>org.h2.Driver</db.JdbcDriver>
+            <tribe.registry.oauth2.authorizationServerUrl>${registry.oauth2.authorizationServerUrl}</tribe.registry.oauth2.authorizationServerUrl>
+            <tribe.registry.oauth2.clientId>${registry.oauth2.clientId}</tribe.registry.oauth2.clientId>
+            <tribe.registry.oauth2.clientSecret>${registry.oauth2.clientSecret}</tribe.registry.oauth2.clientSecret>
+            <tribe.registry.oauth2.tlsProtocol>${registry.oauth2.tlsProtocol}</tribe.registry.oauth2.tlsProtocol>
+            <tribe.registry.oauth2.tlsProvider>${registry.oauth2.tlsProvider}</tribe.registry.oauth2.tlsProvider>
+            <tribe.registry.oauth2.trustStore>${registry.oauth2.tlsProvider}</tribe.registry.oauth2.trustStore>
+            <tribe.registry.oauth2.trustStoreType>${registry.oauth2.trustStoreType}</tribe.registry.oauth2.trustStoreType>
           </systemVariables>
         </configuration>
       </plugin>

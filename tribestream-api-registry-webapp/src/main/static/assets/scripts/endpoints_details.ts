@@ -1,3 +1,7 @@
+module endpointdetails {
+
+let codemirror = require("../../../static/bower_components/codemirror/lib/codemirror.js");
+
 angular.module('tribe-endpoints-details', [
     'website-services',
     'website-services-endpoints'
@@ -541,12 +545,12 @@ angular.module('tribe-endpoints-details', [
 
                     if ($scope.showDiff) {
                       $scope['diffElement'].innerHTML = ''; // reset
-                      $q.all($scope.selected.map(item => srv.getHistoricEndpoint(item).promise()))
+                      $q.all($scope.selected.map(item => srv.getHistoricItem(item).promise()))
                         .then(results => {
                           $scope.ref = results[0].data;
                           const json1 = JSON.parse($scope.ref['json']);
                           const json2 = JSON.parse(results[1]['data']['json']);
-                          $scope.mergeWidget = window['CodeMirror'].MergeView($scope['diffElement'], {
+                          $scope.mergeWidget = codemirror.MergeView($scope['diffElement'], {
                             value: JSON.stringify(json1, undefined, 2),
                             orig: JSON.stringify(json2, undefined, 2),
                             mode: 'application/json',
@@ -575,10 +579,9 @@ angular.module('tribe-endpoints-details', [
       'requestMetadata': '='
     },
     controller: [
-      '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', 'systemMessagesService', 'tribeLinkHeaderService',
-      function ($scope, srv, tribeFilterService, $timeout, $filter, $log, systemMessagesService, tribeLinkHeaderService) {
+      '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', '$location', 'systemMessagesService', 'tribeLinkHeaderService',
+      function ($scope, srv, tribeFilterService, $timeout, $filter, $log, $location, systemMessagesService, tribeLinkHeaderService) {
         $scope.updateEndpoint = e => $scope.endpoint = e;
-
         $timeout(function () {
           $scope.$apply(function () {
             $scope.history = null;
@@ -597,6 +600,7 @@ angular.module('tribe-endpoints-details', [
               if(detailsResponse.headers) {
                 let links = tribeLinkHeaderService.parseLinkHeader(detailsResponse.headers('link'));
                 $scope.historyLink = links['history'];
+                $scope.applicationLink = links['application'];
                 $scope.endpointLink = links['self'];
                 $scope.endpointsLink = null;
                 $timeout(function () {
@@ -608,7 +612,7 @@ angular.module('tribe-endpoints-details', [
                   });
                 });
               }
-              srv.getApplicationDetails($scope['applicationId']).then(function (applicationDetails) {
+              srv.getApplicationDetails($scope.applicationLink).then(function (applicationDetails) {
                 $timeout(function () {
                   $scope.$apply(function () {
                     if (!applicationDetails['data'] || !applicationDetails['data'].swagger) {
@@ -628,6 +632,7 @@ angular.module('tribe-endpoints-details', [
                   }
                   $scope.application = response['data'];
                   let links = tribeLinkHeaderService.parseLinkHeader(response.headers('link'));
+                  $scope.applicationLink = links['self'];
                   $scope.endpointLink = null;
                   $scope.endpointsLink = links['endpoints'];
                   $scope.historyLink = null;
@@ -665,6 +670,7 @@ angular.module('tribe-endpoints-details', [
                         $scope['endpoint']['httpMethod'] = saveResponse['data']['httpMethod'];
                         $scope['endpoint'].operation = saveResponse['data'].operation;
                         let links = tribeLinkHeaderService.parseLinkHeader(saveResponse.headers('link'));
+                        $scope.applicationLink = links['application'];
                         $scope.endpointLink = links['self'];
                         $scope.historyLink = links['history'];
                         $scope.endpointsLink = null;
@@ -673,6 +679,12 @@ angular.module('tribe-endpoints-details', [
                 systemMessagesService.info("Created new endpoint! " + saveResponse.status);
               }
             );
+          };
+          $scope.delete = () => {
+            srv.delete($scope.endpointLink).then((response) => {
+                systemMessagesService.info("Deleted endpoint!");
+                $location.path("/application/" + $scope.requestMetadata.applicationName);
+            });
           };
           // Triggered by the Show History button on the endpoint details page to show the revision log for that entity
           // TODO: Pagination!
@@ -728,3 +740,5 @@ angular.module('tribe-endpoints-details', [
   .run(function () {
     // placeholder
   });
+
+}

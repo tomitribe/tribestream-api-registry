@@ -7,6 +7,8 @@ require("../../../static/bower_components/marked/marked.min.js");
 require("../../../static/bower_components/angular-marked/dist/angular-marked.min.js");
 require("../../../static/bower_components/codemirror/lib/codemirror.js");
 require("../../../static/bower_components/angular-ui-codemirror/ui-codemirror.js");
+require("../../../static/bower_components/google-diff-match-patch-js/diff_match_patch.js");
+require("../../../static/bower_components/codemirror/addon/merge/merge.js");
 require("../../../static/bower_components/codemirror/mode/markdown/markdown.js");
 window['_'] = require("../../../static/bower_components/underscore/underscore-min.js");
 window['Base64'] = require("../../../static/bower_components/js-base64/base64.min.js").Base64;
@@ -26,4 +28,5 @@ require("../../../static/bower_components/codemirror/lib/codemirror.css");
 
 require("../../../static/bower_components/simplemde/dist/simplemde.min.css");
 require("../../../static/bower_components/highlightjs/styles/default.css");
+require("../../../static/bower_components/codemirror/addon/merge/merge.css");
 
