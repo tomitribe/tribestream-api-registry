@@ -53,6 +53,12 @@
       <version>1.16.10</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.geronimo.javamail</groupId>
+      <artifactId>geronimo-javamail_1.4_mail</artifactId>
+      <version>1.9.0-alpha-2</version>
+      <scope>provided</scope>
+    </dependency>
 
     <dependency>
       <groupId>org.tomitribe</groupId>
@@ -260,6 +266,18 @@
       <version>2.2.2</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.icegreen</groupId>
+      <artifactId>greenmail</artifactId>
+      <version>1.4.0</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.mail</groupId>
+          <artifactId>javax.mail</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
   </dependencies>
 
   <build>
@@ -414,6 +432,43 @@
           <installDirectory>${user.home}/.tribe/node-installation-dir</installDirectory>
           <workingDirectory>src/main/static</workingDirectory>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${version.surefire}</version>
+        <executions>
+          <execution>
+            <id>default-test</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </execution>
+          <execution>
+            <id>test-main</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <excludedGroups>org.tomitribe.tribestream.registryng.service.AlertTest</excludedGroups>
+            </configuration>
+          </execution>
+          <execution>
+            <id>test-alert</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <groups>org.tomitribe.tribestream.registryng.service.AlertTest</groups>
+              <systemPropertyVariables>
+                <tomee.application-composer.application>org.tomitribe.tribestream.registryng.service.AlertTest$App</tomee.application-composer.application>
+              </systemPropertyVariables>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

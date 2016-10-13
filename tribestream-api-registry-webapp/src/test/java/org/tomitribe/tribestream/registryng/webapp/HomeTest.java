@@ -47,7 +47,7 @@ public class HomeTest extends WebAppTesting {
     @Test
     @Retry
     public void ensureHomeListsDefaultApps() {
-        waitingDriver.until(() -> applications.size() == 3);
+        waitingDriver.until(() -> applications.size() == 3, "ensureHomeListsDefaultApps :: applications.size() == 3");
 
         final Map<String, Collection<String>> expectedApplications = new HashMap<String, Collection<String>>() {{
             put("Swagger Petstore 1.0.0(4)", new HashSet<String>() {{
