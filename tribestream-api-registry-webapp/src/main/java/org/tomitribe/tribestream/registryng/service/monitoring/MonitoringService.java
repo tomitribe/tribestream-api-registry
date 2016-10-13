@@ -22,6 +22,7 @@ import lombok.extern.java.Log;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.deltaspike.core.api.config.ConfigProperty;
+import org.tomitribe.tribestream.registryng.documentation.Description;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 import org.tomitribe.util.Duration;
 
@@ -72,6 +73,7 @@ public class MonitoringService {
     private TimerService timerService;
 
     @Inject
+    @Description("How often health checks are executed")
     @ConfigProperty(name = "tribe.registry.monitoring.period", defaultValue = "5 minutes")
     private String period;
 
@@ -179,6 +181,7 @@ public class MonitoringService {
     @ApplicationScoped
     public static class DatabaseMonitoringValidator extends MonitoringEntry {
         @Inject
+        @Description("Timeout to execute select * from OpenApiDocument (limit 1)")
         @ConfigProperty(name = "tribe.registry.monitoring.database.timeout", defaultValue = "10000")
         private Integer timeout;
 
@@ -207,14 +210,17 @@ public class MonitoringService {
     @ApplicationScoped
     public static class HTTPMonitoringValidator extends MonitoringEntry {
         @Inject
+        @Description("URL to check for a 2xx HTTP status (split by a comma)")
         @ConfigProperty(name = "tribe.registry.monitoring.http.urls", defaultValue = "http://localhost:9200")
         private String bases;
 
         @Inject
+        @Description("HTTP receive timeout")
         @ConfigProperty(name = "tribe.registry.monitoring.http.timeout.receive", defaultValue = "10000")
         private String receiveTimeout;
 
         @Inject
+        @Description("HTTP connect timeout")
         @ConfigProperty(name = "tribe.registry.monitoring.http.timeout.connect", defaultValue = "10000")
         private String connectTimeout;
 

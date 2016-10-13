@@ -38,6 +38,7 @@
     <arquillian-phantom-binary.version>2.1.1</arquillian-phantom-binary.version>
     <selenium.version>2.53.0</selenium.version>
     <h2.version>1.4.192</h2.version>
+    <deltaspike.version>1.7.1</deltaspike.version>
   </properties>
 
   <dependencies>
@@ -94,7 +95,7 @@
     <dependency>
       <groupId>org.apache.deltaspike.core</groupId>
       <artifactId>deltaspike-core-impl</artifactId>
-      <version>1.7.1</version>
+      <version>${deltaspike.version}</version>
     </dependency>
 
     <dependency>
@@ -469,6 +470,30 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.gmaven</groupId>
+        <artifactId>groovy-maven-plugin</artifactId>
+        <version>2.0</version>
+        <executions>
+          <execution>
+            <id>config-doc</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>execute</goal>
+            </goals>
+            <configuration>
+              <source>${project.basedir}/src/main/documentation/Configuration.groovy</source>
+            </configuration>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.xbean</groupId>
+            <artifactId>xbean-finder-shaded</artifactId>
+            <version>4.5</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>

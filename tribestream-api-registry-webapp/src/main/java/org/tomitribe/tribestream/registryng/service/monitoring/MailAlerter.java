@@ -20,6 +20,7 @@ package org.tomitribe.tribestream.registryng.service.monitoring;
 
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.deltaspike.core.api.config.ConfigProperty;
+import org.tomitribe.tribestream.registryng.documentation.Description;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -43,50 +44,62 @@ import java.util.Properties;
 @ApplicationScoped
 public class MailAlerter {
     @Inject
+    @Description("Is mail alerting active")
     @ConfigProperty(name = "tribe.registry.monitoring.alerter.mail.active", defaultValue = "false")
     private volatile Boolean active;
 
     @Inject
+    @Description("Mail transport")
     @ConfigProperty(name = "tribe.registry.monitoring.alerter.mail.transport", defaultValue = "smtp")
     private String transport;
 
     @Inject
+    @Description("Mail user if authentication is required")
     @ConfigProperty(name = "tribe.registry.monitoring.alerter.mail.user")
     private String user;
 
     @Inject
+    @Description("Mail password if authentication is required")
     @ConfigProperty(name = "tribe.registry.monitoring.alerter.mail.password")
     private String password;
 
     @Inject
+    @Description("Mail server host")
     @ConfigProperty(name = "tribe.registry.monitoring.alerter.mail.host")
     private String host;
 
     @Inject
+    @Description("Mail server port")
     @ConfigProperty(name = "tribe.registry.monitoring.alerter.mail.port")
     private Integer port;
 
     @Inject
+    @Description("Mail sending timeout")
     @ConfigProperty(name = "tribe.registry.monitoring.alerter.mail.timeout", defaultValue = "0")
     private Integer timeout;
 
     @Inject
+    @Description("Is tls needed")
     @ConfigProperty(name = "tribe.registry.monitoring.alerter.mail.tls", defaultValue = "false")
     private Boolean tls;
 
     @Inject
+    @Description("Is authentication required (automatic if password is provided)")
     @ConfigProperty(name = "tribe.registry.monitoring.alerter.mail.auth", defaultValue = "false")
     private Boolean auth;
 
     @Inject
+    @Description("Mail recipient for alerts")
     @ConfigProperty(name = "tribe.registry.monitoring.alerter.mail.to")
     private String to;
 
     @Inject
+    @Description("Mail from value")
     @ConfigProperty(name = "tribe.registry.monitoring.alerter.mail.from")
     private String from;
 
     @Inject
+    @Description("Subject of the mail, ${hostname} and ${date} can be used as templates")
     @ConfigProperty(name = "tribe.registry.monitoring.alerter.mail.subject", defaultValue = "[ALERT][REGISTRY][${hostname}][${date}]")
     private String subjectTemplate;
 

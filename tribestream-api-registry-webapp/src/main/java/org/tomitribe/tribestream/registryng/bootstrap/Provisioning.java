@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.models.Swagger;
 import org.apache.deltaspike.core.api.config.ConfigProperty;
 import org.tomitribe.tribestream.registryng.cdi.Tribe;
+import org.tomitribe.tribestream.registryng.documentation.Description;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 import org.tomitribe.tribestream.registryng.repository.Repository;
 import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
@@ -61,6 +62,7 @@ public class Provisioning {
     private ObjectMapper mapper;
 
     @Inject // allow to switch it off or to use an external source for testing
+    @Description("Where automatic seeding takes the swagger documents, either at classpath or a directory path")
     @ConfigProperty(name = "tribe.registry.seeding.location", defaultValue = "seed-db")
     private String location;
 
