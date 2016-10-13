@@ -146,7 +146,7 @@ public class EndpointResourceTest {
         newOperation.setSummary(newSummary);
         final EndpointWrapper endpointWrapper = new EndpointWrapper(
                 originalEndpoint.getApplicationId(), originalEndpoint.getEndpointId(), originalEndpoint.getHumanReadablePath(),
-                newVerb, newPath, newOperation);
+                newVerb, newPath, newOperation, null);
 
         Response response = registry.client().target(searchResult.getLink())
                 .request(MediaType.APPLICATION_JSON_TYPE)

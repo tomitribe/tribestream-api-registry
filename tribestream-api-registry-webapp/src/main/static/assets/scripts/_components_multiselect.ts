@@ -11,7 +11,7 @@ angular.module('website-components-multiselect', [
                 originalGetOptionText: '=getOptionText',
                 newLabel: '@?'
             },
-            templateUrl: 'app/templates/component_multiselect.html',
+            template: require('../templates/component_multiselect.jade'),
             controller: ['$log', '$scope', '$timeout', ($log, $scope, $timeout) => $timeout(() => {
                 $scope.$watch('originalGetOptionText', () => {
                     if ($scope.originalGetOptionText) {
@@ -27,53 +27,53 @@ angular.module('website-components-multiselect', [
                 });
                 $scope.$watch('originalSelectedOptions', () => $timeout(() => $scope.$apply(() => {
                     if(!$scope.originalSelectedOptions) {
-                        $scope.selectedOptions = [];
+                        $scope['selectedOptions'] = [];
                     } else {
-                        $scope.selectedOptions = _.clone($scope.originalSelectedOptions);
+                        $scope['selectedOptions'] = _.clone($scope.originalSelectedOptions);
                     }
 
                 })));
                 $scope.$watch('originalAvailableOptions', () => {
                     $scope.availableOptions = _.clone($scope.originalAvailableOptions);
                 });
-                $scope.fieldDirty = false;
-                $scope.optionsActivated = false;
-                $scope.optionsActivatedTopDown = 0;
-                $scope.optionsActivatedBottomUp = 0;
-                $scope.version = 0;
-                $scope.selectedOption = null;
-                $scope.inputText = '';
-                $scope.fieldChanged = () => $timeout(() => $scope.$apply(() => {
-                    $scope.fieldDirty = true;
-                    $scope.version = $scope.version + 1;
+                $scope['fieldDirty'] = false;
+                $scope['optionsActivated'] = false;
+                $scope['optionsActivatedTopDown'] = 0;
+                $scope['optionsActivatedBottomUp'] = 0;
+                $scope['version'] = 0;
+                $scope['selectedOption'] = null;
+                $scope['inputText'] = '';
+                $scope['fieldChanged'] = () => $timeout(() => $scope.$apply(() => {
+                    $scope['fieldDirty'] = true;
+                    $scope['version'] = $scope['version'] + 1;
                 }));
-                $scope.fieldCommitted = () => $timeout(() => $scope.$apply(() => {
-                    $scope.onCommit();
+                $scope['fieldCommitted'] = () => $timeout(() => $scope.$apply(() => {
+                    $scope['onCommit']();
                     $scope.$broadcast('fieldCommitted');
                 }));
-                $scope.onCommit = () => $timeout(() => $scope.$apply(() => {
-                    if ($scope.fieldDirty) {
-                        $scope.fieldDirty = false;
-                        $scope.optionsActivated = false;
-                        $scope.originalSelectedOptions = _.clone($scope.selectedOptions);
-                        $log.debug('field committed. values: ' + $scope.selectedOptions);
+                $scope['onCommit'] = () => $timeout(() => $scope.$apply(() => {
+                    if ($scope['fieldDirty']) {
+                        $scope['fieldDirty'] = false;
+                        $scope['optionsActivated'] = false;
+                        $scope['originalSelectedOptions'] = _.clone($scope['selectedOptions']);
+                        $log.debug('field committed. values: ' + $scope['selectedOptions']);
                     }
                 }));
-                $scope.fieldCanceled = () => {
-                    $scope.fieldDirty = false;
-                    $scope.selectedOptions = _.clone($scope.originalSelectedOptions);
+                $scope['fieldCanceled'] = () => {
+                    $scope['fieldDirty'] = false;
+                    $scope['selectedOptions'] = _.clone($scope['originalSelectedOptions']);
                     $scope.$broadcast('fieldCanceled');
                 };
                 $scope.onSelectTopDownOption = () => $timeout(() => $scope.$apply(() => {
-                    $scope.optionsActivatedTopDown = $scope.optionsActivatedTopDown + 1;
-                    $scope.optionsActivated = true;
+                    $scope['optionsActivatedTopDown'] = $scope['optionsActivatedTopDown'] + 1;
+                    $scope['optionsActivated'] = true;
                 }));
                 $scope.onSelectBottomUpOption = () => $timeout(() => $scope.$apply(() => {
-                    $scope.optionsActivatedBottomUp = $scope.optionsActivatedBottomUp + 1;
-                    $scope.optionsActivated = true;
+                    $scope['optionsActivatedBottomUp'] = $scope['optionsActivatedBottomUp'] + 1;
+                    $scope['optionsActivated'] = true;
                 }));
                 $scope.onOptionsDeactivated = () => $timeout(() => $scope.$apply(() => {
-                    $scope.optionsActivated = false;
+                    $scope['optionsActivated'] = false;
                 }));
             })],
             link: (scope, el) => $timeout(() => {
@@ -87,7 +87,7 @@ angular.module('website-components-multiselect', [
                 let deactivate = () => {
                     cancelDeactivate();
                     deactivatePromise = $timeout(() => {
-                        scope.onCommit();
+                        scope['onCommit']();
                         el.removeClass('active');
                     }, 500);
                 };
@@ -95,11 +95,11 @@ angular.module('website-components-multiselect', [
                 el.find('input').on('focus', () => {
                     cancelDeactivate();
                     el.addClass('active');
-                    $timeout(() => scope.$apply(() => scope.fieldDirty = true));
+                    $timeout(() => scope.$apply(() => scope['fieldDirty'] = true));
                 });
                 el.find('input').on('blur', deactivate);
                 scope.$on('fieldDirty', () => {
-                    if (scope.fieldDirty) {
+                    if (scope['fieldDirty']) {
                         cancelDeactivate();
                         el.addClass('active');
                     }
@@ -126,91 +126,91 @@ angular.module('website-components-multiselect', [
                 newLabel: '@?',
                 getOptionText: '='
             },
-            templateUrl: 'app/templates/component_multiselect_available.html',
+            template: require('../templates/component_multiselect_available.jade'),
             controller: ['$scope', '$timeout', ($scope, $timeout) => {
                 $scope.availableOptions = [];
-                $scope.showOptions = () => $timeout(() => $scope.$apply(() => {
-                    $scope.selectedItem = null;
+                $scope['showOptions'] = () => $timeout(() => $scope.$apply(() => {
+                    $scope['selectedItem'] = null;
                     $scope.newOpt = null;
                     $scope.availableOptions = _.clone($scope.originalAvailableOptions);
-                    for (let opt of $scope.selectedOptions) {
+                    for (let opt of $scope['selectedOptions']) {
                         $scope.availableOptions = _.without($scope.availableOptions, opt);
                     }
-                    if ($scope.inputText.trim()) {
-                        $scope.availableOptions = _.filter($scope.availableOptions, (opt) => {
-                            return opt.startsWith($scope.inputText);
+                    if ($scope['inputText'].trim()) {
+                        $scope.availableOptions = _.filter($scope.availableOptions, (opt:string) => {
+                            return opt.startsWith($scope['inputText']);
                         });
-                        $scope.selectedItem = _.find($scope.availableOptions, (opt) => opt.startsWith($scope.inputText.trim()));
-                        if (_.find($scope.availableOptions, (opt) => opt === $scope.inputText.trim())) {
+                        $scope['selectedItem'] = _.find($scope.availableOptions, (opt:string) => opt.startsWith($scope['inputText'].trim()));
+                        if (_.find($scope.availableOptions, (opt) => opt === $scope['inputText'].trim())) {
                             $scope.newOpt = null;
                         } else {
-                            $scope.newOpt = $scope.inputText.trim();
+                            $scope.newOpt = $scope['inputText'].trim();
                         }
-                        if (!$scope.selectedItem) {
-                            $scope.selectedItem = $scope.newOpt;
+                        if (!$scope['selectedItem']) {
+                            $scope['selectedItem'] = $scope.newOpt;
                         }
                     }
                 }));
-                $scope.selectedItem = null;
+                $scope['selectedItem'] = null;
                 $scope.selectAvailableItem = (item) => $timeout(() => $scope.$apply(() => {
-                    $scope.selectedItem = item;
+                    $scope['selectedItem'] = item;
                 }));
-                $scope.selectNext = () => $timeout(() => $scope.$apply(() => {
+                $scope['selectNext'] = () => $timeout(() => $scope.$apply(() => {
                     let ordered = _.sortBy($scope.availableOptions, (item) => $scope.getOptionText(item).toLowerCase());
-                    if ($scope.selectedItem) {
-                        var index = ordered.indexOf($scope.selectedItem) + 1;
+                    if ($scope['selectedItem']) {
+                        var index = ordered.indexOf($scope['selectedItem']) + 1;
                         if (index >= ordered.length) {
                             if ($scope.newOpt) {
-                                $scope.selectedItem = $scope.newOpt;
+                                $scope['selectedItem'] = $scope.newOpt;
                             } else {
-                                $scope.selectedItem = ordered[0];
+                                $scope['selectedItem'] = ordered[0];
                             }
                         } else {
-                            $scope.selectedItem = ordered[index];
+                            $scope['selectedItem'] = ordered[index];
                         }
                     } else {
-                        $scope.selectedItem = _.first(ordered);
+                        $scope['selectedItem'] = _.first(ordered);
                     }
                 }));
-                $scope.selectPrevious = () => $timeout(() => $scope.$apply(() => {
+                $scope['selectPrevious'] = () => $timeout(() => $scope.$apply(() => {
                     let ordered = _.sortBy($scope.availableOptions, (item) => $scope.getOptionText(item).toLowerCase());
-                    if ($scope.selectedItem) {
-                        if ($scope.newOpt === $scope.selectedItem && ordered.length) {
-                            $scope.selectedItem = _.last(ordered);
+                    if ($scope['selectedItem']) {
+                        if ($scope.newOpt === $scope['selectedItem'] && ordered.length) {
+                            $scope['selectedItem'] = _.last(ordered);
                         } else {
-                            var index = ordered.indexOf($scope.selectedItem) - 1;
+                            var index = ordered.indexOf($scope['selectedItem']) - 1;
                             if (index < 0) {
                                 if ($scope.newOpt) {
-                                    $scope.selectedItem = $scope.newOpt;
+                                    $scope['selectedItem'] = $scope.newOpt;
                                 } else {
-                                    $scope.selectedItem = _.last(ordered);
+                                    $scope['selectedItem'] = _.last(ordered);
                                 }
                             } else {
-                                $scope.selectedItem = ordered[index];
+                                $scope['selectedItem'] = ordered[index];
                             }
                         }
                     } else {
                         if ($scope.newOpt) {
-                            $scope.selectedItem = $scope.newOpt;
+                            $scope['selectedItem'] = $scope.newOpt;
                         } else {
-                            $scope.selectedItem = _.last(ordered);
+                            $scope['selectedItem'] = _.last(ordered);
                         }
                     }
                 }));
                 $scope.selectItem = (opt) => $timeout(() => $scope.$apply(() => {
-                    $scope.selectedOptions.push(opt);
-                    $scope.active = false;
-                    $scope.inputText = '';
+                    $scope['selectedOptions'].push(opt);
+                    $scope['active'] = false;
+                    $scope['inputText'] = '';
                 }));
                 $scope.$watch('inputText', () => {
                     $timeout(() => $scope.$apply(() => {
-                        if (!$scope.inputText) {
-                            $scope.selectedItem = null;
-                            $scope.active = false;
+                        if (!$scope['inputText']) {
+                            $scope['selectedItem'] = null;
+                            $scope['active'] = false;
                         } else {
-                            $scope.selectedItem = _.find($scope.availableOptions, (opt) => opt.startsWith($scope.inputText));
-                            $scope.active = true;
-                            $scope.showOptions();
+                            $scope['selectedItem'] = _.find($scope.availableOptions, (opt:string) => opt.startsWith($scope['inputText']));
+                            $scope['active'] = true;
+                            $scope['showOptions']();
                         }
                     }));
                 });
@@ -224,27 +224,27 @@ angular.module('website-components-multiselect', [
                     floatingBody.offset(position);
                 };
                 scope.$watch('active', () => {
-                    if (scope.active) {
+                    if (scope['active']) {
                         body.append(floatingBody);
                         adjustOffset();
-                        scope.showOptions();
+                        scope['showOptions']();
                         element.addClass('active');
                     } else {
                         $timeout(() => scope.$apply(() => {
-                            scope.selectedItem = null;
+                            scope['selectedItem'] = null;
                         }));
                         floatingBody.detach();
                         element.removeClass('active');
                     }
                 });
                 scope.$watch('activeTopDown', () => {
-                    if (scope.activeTopDown) {
-                        scope.selectNext();
+                    if (scope['activeTopDown']) {
+                        scope['selectNext']();
                     }
                 });
                 scope.$watch('activeBottomUp', () => {
-                    if (scope.activeBottomUp) {
-                        scope.selectPrevious();
+                    if (scope['activeBottomUp']) {
+                        scope['selectPrevious']();
                     }
                 });
                 scope.$watch('version', () => adjustOffset());
@@ -273,80 +273,80 @@ angular.module('website-components-multiselect', [
                 selectedOption: '=',
                 inputText: '='
             },
-            templateUrl: 'app/templates/component_multiselect_selected.html',
+            template: require('../templates/component_multiselect_selected.jade'),
             controller: ['$log', '$scope', '$timeout', ($log, $scope, $timeout) => {
-                $scope.inputText = '';
+                $scope['inputText'] = '';
                 $scope.releaseEngaged = false;
-                $scope.selectedItem = null;
+                $scope['selectedItem'] = null;
                 let selectOrDeleteLast = () => $timeout(() => $scope.$apply(() => {
-                    let ordered = _.sortBy($scope.selectedOptions, (item) => item);
-                    if ($scope.selectedItem) {
-                        var selectedIndex = ordered.indexOf($scope.selectedItem);
-                        $scope.selectedOptions = _.without($scope.selectedOptions, $scope.selectedItem);
-                        ordered = _.without(ordered, $scope.selectedItem);
+                    let ordered = _.sortBy($scope['selectedOptions'], (item) => item);
+                    if ($scope['selectedItem']) {
+                        var selectedIndex = ordered.indexOf($scope['selectedItem']);
+                        $scope['selectedOptions'] = _.without($scope['selectedOptions'], $scope['selectedItem']);
+                        ordered = _.without(ordered, $scope['selectedItem']);
                         if (ordered.length) {
                             if (selectedIndex >= ordered.length) {
                                 selectedIndex = ordered.length - 1;
                             }
-                            $scope.selectedItem = ordered[selectedIndex];
+                            $scope['selectedItem'] = ordered[selectedIndex];
                         } else {
-                            $scope.selectedItem = null;
+                            $scope['selectedItem'] = null;
                         }
                         $scope.onChange();
                     } else {
-                        $scope.selectedItem = _.last(ordered);
+                        $scope['selectedItem'] = _.last(ordered);
                     }
                 }));
-                let releaseSelection = () => $timeout(() => $scope.$apply(() => $scope.selectedItem = null));
+                let releaseSelection = () => $timeout(() => $scope.$apply(() => $scope['selectedItem'] = null));
                 let selectLeft = () => $timeout(() => $scope.$apply(() => {
-                    if (!$scope.selectedOptions.length) {
+                    if (!$scope['selectedOptions'].length) {
                         return;
                     }
-                    if (!$scope.selectedItem) {
+                    if (!$scope['selectedItem']) {
                         selectOrDeleteLast();
                     } else {
-                        let ordered = _.sortBy($scope.selectedOptions, (item) => item);
-                        var next = ordered.indexOf($scope.selectedItem) - 1;
+                        let ordered = _.sortBy($scope['selectedOptions'], (item) => item);
+                        var next = ordered.indexOf($scope['selectedItem']) - 1;
                         if (next === -1) {
                             next = ordered.length - 1;
                         }
-                        $scope.selectedItem = ordered[next];
+                        $scope['selectedItem'] = ordered[next];
                     }
                 }));
                 let selectRight = () => $timeout(() => $scope.$apply(() => {
-                    if (!$scope.selectedOptions.length) {
+                    if (!$scope['selectedOptions'].length) {
                         return;
                     }
-                    let ordered = _.sortBy($scope.selectedOptions, (item) => item);
-                    if (!$scope.selectedItem) {
-                        $scope.selectedItem = ordered[0];
+                    let ordered = _.sortBy($scope['selectedOptions'], (item) => item);
+                    if (!$scope['selectedItem']) {
+                        $scope['selectedItem'] = ordered[0];
                     } else {
-                        var next = ordered.indexOf($scope.selectedItem) + 1;
+                        var next = ordered.indexOf($scope['selectedItem']) + 1;
                         if (next === ordered.length) {
                             next = 0;
                         }
-                        $scope.selectedItem = ordered[next];
+                        $scope['selectedItem'] = ordered[next];
                     }
                 }));
                 let addItem = () => {
-                    if ($scope.selectedOption) {
-                        let existing = _.find($scope.selectedOptions, (selected) => selected === $scope.selectedOption);
+                    if ($scope['selectedOption']) {
+                        let existing = _.find($scope['selectedOptions'], (selected) => selected === $scope['selectedOption']);
                         if (!existing) {
-                            $scope.selectedOptions.push($scope.selectedOption);
+                            $scope['selectedOptions'].push($scope['selectedOption']);
                         }
                     }
-                    $scope.selectedOption = null;
-                    $scope.inputText = '';
+                    $scope['selectedOption'] = null;
+                    $scope['inputText'] = '';
                 };
                 $scope.keyEntered = (event) =>  $timeout(() => $scope.$apply(() => {
                     if (event.keyCode === 13 /* Enter */) {
-                        let isCommitChanges = !$scope.inputText && !$scope.selectedOption;
+                        let isCommitChanges = !$scope['inputText'] && !$scope['selectedOption'];
                         $log.debug('enter key detected. commit values? ' + isCommitChanges);
                         if (isCommitChanges) {
                             $scope.onOptionsDeactivated();
-                            $scope.releaseEngaged = false;
-                            $scope.selectedItem = null;
-                            $scope.onCommit();
+                            $scope['releaseEngaged'] = false;
+                            $scope['selectedItem'] = null;
+                            $scope['onCommit']();
                         } else {
                             addItem();
                             releaseSelection();
@@ -354,20 +354,20 @@ angular.module('website-components-multiselect', [
                             $scope.onChange();
                         }
                     } else if (event.keyCode === 27 /* Escape */) {
-                        let isCancelChanges = !$scope.inputText;
-                        $scope.inputText = '';
+                        let isCancelChanges = !$scope['inputText'];
+                        $scope['inputText'] = '';
                         releaseSelection();
                         $scope.onOptionsDeactivated();
                         if (isCancelChanges) {
                             $scope.onCancel();
                         }
                     } else if (event.keyCode === 8 /* Backspace */) {
-                        if (!$scope.inputText) {
+                        if (!$scope['inputText']) {
                             selectOrDeleteLast();
                         }
-                    } else if (event.keyCode === 37 /* ArrowLeft */ && !$scope.inputText) {
+                    } else if (event.keyCode === 37 /* ArrowLeft */ && !$scope['inputText']) {
                         selectLeft();
-                    } else if (event.keyCode === 39 /* ArrowRight */ && !$scope.inputText) {
+                    } else if (event.keyCode === 39 /* ArrowRight */ && !$scope['inputText']) {
                         selectRight();
                     } else if (event.keyCode === 40 /* ArrowDown */) {
                         $scope.onSelectTopDownOption();
@@ -378,13 +378,13 @@ angular.module('website-components-multiselect', [
                     }
                 }));
                 $scope.releaseItem = (item) => {
-                    $scope.selectedOptions = _.without($scope.selectedOptions, item);
+                    $scope['selectedOptions'] = _.without($scope['selectedOptions'], item);
                     $scope.onChange();
                 };
                 $scope.$on('fieldCanceled', () => $timeout(() => $scope.$apply(() => {
-                    $scope.inputText = '';
-                    $scope.releaseEngaged = false;
-                    $scope.selectedItem = null;
+                    $scope['inputText'] = '';
+                    $scope['releaseEngaged'] = false;
+                    $scope['selectedItem'] = null;
                 })));
             }]
         };

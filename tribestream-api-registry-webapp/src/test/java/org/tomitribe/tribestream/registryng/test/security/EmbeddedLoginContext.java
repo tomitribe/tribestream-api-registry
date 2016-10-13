@@ -21,11 +21,12 @@ package org.tomitribe.tribestream.registryng.test.security;
 import org.tomitribe.tribestream.registryng.security.LoginContext;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.Specializes;
 
 // in org.tomitribe.tribestream.registryng.bootstrap.Provisioning we don't have a request so auditable user
 @Specializes
-@ApplicationScoped
+@RequestScoped
 public class EmbeddedLoginContext  extends LoginContext {
     @Override
     public String getUsername() {

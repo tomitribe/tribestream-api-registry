@@ -1,6 +1,3 @@
-///<reference path="../../bower_components/DefinitelyTyped/angularjs/angular.d.ts"/>
-///<reference path="../../bower_components/DefinitelyTyped/underscore/underscore.d.ts"/>
-
 module services {
 
     angular.module('website-services', [
@@ -57,6 +54,9 @@ module services {
                         return $http.post('api/login',
                             $.param({username: credentials.username, password: credentials.password}),
                             {headers: {'Content-Type': 'application/x-www-form-urlencoded'}});
+                    },
+                    getOauth2Status: function() {
+                        return $http.get('api/security/oauth2/status');
                     },
                     setCredentials: function (username, password) {
                         var encoded = Base64.encode(username + ':' + password);

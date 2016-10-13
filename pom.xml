@@ -90,6 +90,7 @@
     <version.markdown4j>2.2-cj-1.0</version.markdown4j>
     <version.commons-io>2.4</version.commons-io>
     <version.commons-codec>1.10</version.commons-codec>
+    <version.deltaspike>1.7.1</version.deltaspike>
 
     <version.junit>4.12</version.junit>
 

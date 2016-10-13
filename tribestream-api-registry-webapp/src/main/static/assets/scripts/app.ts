@@ -1,5 +1,3 @@
-///<reference path="../../bower_components/DefinitelyTyped/angularjs/angular.d.ts"/>
-
 angular.module('tribe-app', [
     'website-services'
 ])
@@ -7,7 +5,7 @@ angular.module('tribe-app', [
     .directive('app', [function () {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/app.html',
+            template: require('../templates/app.jade'),
             transclude: true,
             scope: {}
         };
@@ -17,7 +15,7 @@ angular.module('tribe-app', [
         return {
             restrict: 'A',
             scope: {},
-            templateUrl: 'app/templates/app_footer.html',
+            template: require('../templates/app_footer.jade'),
             controller: ['$timeout', '$scope', 'tribeServerService', function ($timeout, $scope, server) {
                 $scope.now = Date.now();
                 server.getInfo().then(function (data) {
@@ -38,7 +36,7 @@ angular.module('tribe-app', [
         return {
             restrict: 'A',
             scope: {},
-            templateUrl: 'app/templates/app_header.html'
+            template: require('../templates/app_header.jade')
         };
     }])
 
