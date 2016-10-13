@@ -28,6 +28,8 @@ import org.tomitribe.tribestream.registryng.test.Registry;
 import org.tomitribe.tribestream.registryng.test.retry.Retry;
 import org.tomitribe.tribestream.registryng.test.retry.RetryRule;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.ws.rs.core.MediaType;
 
 import static org.junit.Assert.assertEquals;
@@ -41,12 +43,17 @@ public class RegistryResourceTest {
     @Rule
     public final TestRule rule = outerRule(new TomEEEmbeddedSingleRunner.Rule(this)).around(new RetryRule(() -> registry));
 
+    @PersistenceContext
+    private EntityManager em;
+
     @Test
     public void drillDown() {
+        final int max = em.createQuery("select count(e) from Endpoint e", Number.class).getSingleResult().intValue();
+
         final SearchPage root = registry.target().path("api/registry")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(SearchPage.class);
-        assertEquals(11, root.getTotal());
+        assertEquals(max, root.getTotal());
 
         final SearchPage withTag = registry.target().path("api/registry")
                 .queryParam("tag", "partners")

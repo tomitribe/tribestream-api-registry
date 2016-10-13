@@ -221,14 +221,13 @@ public class ApplicationResourceTest {
 
     @Test
     public void shouldDeleteApplication() throws Exception {
-        final List<ApplicationWrapper> apps = loadAllApplications();
-
         final SearchResult searchResult = registry.withRetries(() -> {
             final List<SearchResult> searchResults = new ArrayList<>(getSearchPage().getResults());
             final SearchResult result = searchResults.get(0);
             assertNotNull(loadApplication(result.getApplicationId()));
             return result;
         });
+        final List<ApplicationWrapper> apps = loadAllApplications();
 
         Response response = registry.target().path("api/application/{applicationId}")
                 .resolveTemplate("applicationId", searchResult.getApplicationId())
