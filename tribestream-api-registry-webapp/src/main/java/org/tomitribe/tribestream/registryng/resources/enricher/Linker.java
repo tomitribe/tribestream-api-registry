@@ -18,11 +18,14 @@
  */
 package org.tomitribe.tribestream.registryng.resources.enricher;
 
+import org.apache.deltaspike.core.api.config.ConfigProperty;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.ws.rs.core.Link;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,21 +34,29 @@ import static javax.ws.rs.core.Link.fromUriBuilder;
 
 @ApplicationScoped
 public class Linker {
+
+    @Inject
+    @ConfigProperty(name = "tribe.registry.base")
+    private String baseUrl;
+
     public Link[] buildEndpointLinks(final UriInfo uriInfo, final String applicationId, final String endpointId) {
+
+        final UriBuilder base = getBase(uriInfo);
+
         return new Link[]{
-                fromUriBuilder(uriInfo.getBaseUriBuilder()
+                fromUriBuilder(getBase(uriInfo)
                         .path("application/{applicationId}/endpoint/{endpointId}")
                         .resolveTemplate("applicationId", applicationId)
                         .resolveTemplate("endpointId", endpointId))
                         .rel("self")
                         .build(),
-                fromUriBuilder(uriInfo.getBaseUriBuilder()
+                fromUriBuilder(getBase(uriInfo)
                         .path("history/application/{applicationId}/endpoint/{endpointId}")
                         .resolveTemplate("applicationId", applicationId)
                         .resolveTemplate("endpointId", endpointId))
                         .rel("history")
                         .build(),
-                fromUriBuilder(uriInfo.getBaseUriBuilder()
+                fromUriBuilder(getBase(uriInfo)
                         .path("application/{applicationId}")
                         .resolveTemplate("applicationId", applicationId))
                         .rel("application")
@@ -54,28 +65,31 @@ public class Linker {
     }
 
     public Link[] buildApplicationLinks(final UriInfo uriInfo, final OpenApiDocument application) {
+
+        final UriBuilder base = getBase(uriInfo);
+
         final List<Link> result = new ArrayList<>(2 + application.getEndpoints().size());
         result.add(
-                fromUriBuilder(uriInfo.getBaseUriBuilder()
+                fromUriBuilder(getBase(uriInfo)
                         .path("application/{applicationId}")
                         .resolveTemplate("applicationId", application.getId()))
                         .rel("self")
                         .build());
         result.add(
-                fromUriBuilder(uriInfo.getBaseUriBuilder()
+                fromUriBuilder(getBase(uriInfo)
                         .path("history/application/{applicationId}")
                         .resolveTemplate("applicationId", application.getId()))
                         .rel("history")
                         .build());
         result.add(
-                fromUriBuilder(uriInfo.getBaseUriBuilder()
+                fromUriBuilder(getBase(uriInfo)
                         .path("application/{applicationId}/endpoint")
                         .resolveTemplate("applicationId", application.getId()))
                         .rel("endpoints")
                         .build());
         for (Endpoint endpoint : application.getEndpoints()) {
             result.add(
-                    fromUriBuilder(uriInfo.getBaseUriBuilder()
+                    fromUriBuilder(getBase(uriInfo)
                             .path("application/{applicationId}/endpoint/{endpointId}")
                             .resolveTemplate("applicationId", application.getId())
                             .resolveTemplate("endpointId", endpoint.getId()))
@@ -84,5 +98,9 @@ public class Linker {
         }
 
         return result.toArray(new Link[result.size()]);
+    }
+
+    private UriBuilder getBase(UriInfo uriInfo) {
+        return baseUrl == null ? uriInfo.getBaseUriBuilder() : UriBuilder.fromUri(baseUrl);
     }
 }
