@@ -1,3 +1,7 @@
+module endpointdetails {
+
+let codemirror = require("../../../static/bower_components/codemirror/lib/codemirror.js");
+
 angular.module('tribe-endpoints-details', [
     'website-services',
     'website-services-endpoints'
@@ -541,12 +545,12 @@ angular.module('tribe-endpoints-details', [
 
                     if ($scope.showDiff) {
                       $scope['diffElement'].innerHTML = ''; // reset
-                      $q.all($scope.selected.map(item => srv.getHistoricEndpoint(item).promise()))
+                      $q.all($scope.selected.map(item => srv.getHistoricItem(item).promise()))
                         .then(results => {
                           $scope.ref = results[0].data;
                           const json1 = JSON.parse($scope.ref['json']);
                           const json2 = JSON.parse(results[1]['data']['json']);
-                          $scope.mergeWidget = window['CodeMirror'].MergeView($scope['diffElement'], {
+                          $scope.mergeWidget = codemirror.MergeView($scope['diffElement'], {
                             value: JSON.stringify(json1, undefined, 2),
                             orig: JSON.stringify(json2, undefined, 2),
                             mode: 'application/json',
@@ -728,3 +732,5 @@ angular.module('tribe-endpoints-details', [
   .run(function () {
     // placeholder
   });
+
+}
