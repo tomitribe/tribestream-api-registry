@@ -61,4 +61,27 @@ public class RegistryResourceTest {
                 .get(SearchPage.class);
         assertEquals(1, withTagAndCategory.getTotal());
     }
+
+    @Test
+    public void searchQuery() {
+        // no query param
+        final SearchPage root = registry.target().path("api/registry")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(SearchPage.class);
+        assertEquals(11, root.getTotal());
+
+        // wildcard = no filter
+        final SearchPage wildcard = registry.target().path("api/registry")
+                .queryParam("query", "*")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(SearchPage.class);
+        assertEquals(11, wildcard.getTotal());
+
+        // custom query_string
+        final SearchPage query = registry.target().path("api/registry")
+                .queryParam("query", "partners")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(SearchPage.class);
+        assertEquals(query.toString(), 2, query.getTotal());
+    }
 }
