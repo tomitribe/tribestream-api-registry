@@ -69,7 +69,7 @@ public class EndpointResource {
 
         final EndpointWrapper endpointWrapper = new EndpointWrapper(
                 applicationId, endpointId, endpoint.getHumanReadablePath(),
-                endpoint.getVerb(), endpoint.getPath(), endpoint.getOperation());
+                endpoint.getVerb(), endpoint.getPath(), endpoint.getOperation(), null);
 
         return Response.ok()
                 .links(linker.buildEndpointLinks(uriInfo, applicationId, endpoint.getId()))
@@ -119,7 +119,7 @@ public class EndpointResource {
         return Response.status(Response.Status.CREATED)
                 .entity(new EndpointWrapper(
                         newDocument.getApplication().getId(), newDocument.getId(), newDocument.getHumanReadablePath(),
-                        newDocument.getVerb(), newDocument.getPath(), newDocument.getOperation()))
+                        newDocument.getVerb(), newDocument.getPath(), newDocument.getOperation(), null))
                 .links(linker.buildEndpointLinks(uriInfo, applicationId, newDocument.getId()))
                 .build();
 
@@ -150,7 +150,7 @@ public class EndpointResource {
 
         final EndpointWrapper newEndpointWrapper = new EndpointWrapper(
                 applicationId, endpointId, updatedDocument.getHumanReadablePath(),
-                updatedDocument.getVerb(), updatedDocument.getPath(), updatedDocument.getOperation());
+                updatedDocument.getVerb(), updatedDocument.getPath(), updatedDocument.getOperation(), null);
 
         return Response.ok()
                 .links(linker.buildEndpointLinks(uriInfo, applicationId, endpointId))

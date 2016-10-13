@@ -12,6 +12,7 @@
 hs_err_pid*
 bower_components
 node_modules
+typings
 *.iml
 .idea
 target

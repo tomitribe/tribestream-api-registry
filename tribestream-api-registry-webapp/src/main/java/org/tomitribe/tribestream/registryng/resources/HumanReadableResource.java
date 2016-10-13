@@ -59,7 +59,7 @@ public class HumanReadableResource {
                                                  @PathParam("path") final String path,
                                                  @Context final UriInfo info) {
         return ofNullable(repository.findEndpointFromHumanReadableMeta(appName, method, path, version))
-                .map(e -> new EndpointWrapper(e.getApplication().getId(), e.getId(), e.getHumanReadablePath(), e.getVerb(), e.getPath(), e.getOperation()))
+                .map(e -> new EndpointWrapper(e.getApplication().getId(), e.getId(), e.getHumanReadablePath(), e.getVerb(), e.getPath(), e.getOperation(), null/*dont load it*/))
                 .map(w -> Response.ok(w).links(linker.buildEndpointLinks(info, w.getApplicationId(), w.getEndpointId())).build())
                 .orElseGet(() -> Response.status(Response.Status.NOT_FOUND).build());
     }

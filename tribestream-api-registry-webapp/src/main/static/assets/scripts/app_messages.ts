@@ -1,5 +1,3 @@
-///<reference path="../../bower_components/DefinitelyTyped/angularjs/angular.d.ts"/>
-
 angular.module('website-messages', [
         'website-services',
         'tribe-alerts'
@@ -21,7 +19,7 @@ angular.module('website-messages', [
                 var appConfirmationMessageYes = getMessage('appConfirmationMessageYes', 'yes');
                 var appConfirmationMessageNo = getMessage('appConfirmationMessageNo', 'no');
                 var html = $compile(['<i, data-app-ng-click-confirm-el ',
-                    'data-action="' + attrs.appNgClickConfirm + '" ',
+                    'data-action="' + attrs['appNgClickConfirm'] + '" ',
                     'data-title="' + appConfirmationTitle + '" ',
                     'data-message="' + appConfirmationMessage + '" ',
                     'data-yes="' + appConfirmationMessageYes + '" ',
@@ -41,12 +39,12 @@ angular.module('website-messages', [
     .directive('appNgClickConfirmEl', [function () {
         return {
             restrict: 'A',
-            templateUrl: 'app/templates/component_confirmation_popup.html',
+            template: require('../templates/component_confirmation_popup.jade'),
             controller: ['$timeout', '$element', '$scope', '$parse', function ($timeout, $element, $scope, $parse) {
                 $scope.yesClick = function () {
                     $timeout(function () {
                         $element.detach();
-                        var fn = $parse($scope.action, null, true);
+                        var fn = $parse($scope['action'], null, true);
                         var callback = function () {
                             fn($scope, {$event: event});
                         };
@@ -58,11 +56,11 @@ angular.module('website-messages', [
                 };
             }],
             link: function (scope, el, attrs) {
-                scope.action = attrs.action;
-                scope.title = attrs.title;
-                scope.message = attrs.message;
-                scope.yes = attrs.yes;
-                scope.no = attrs.no;
+                scope['action'] = attrs['action'];
+                scope['title'] = attrs['title'];
+                scope['message'] = attrs['message'];
+                scope['yes'] = attrs['yes'];
+                scope['no'] = attrs['no'];
             }
         };
     }])
@@ -71,7 +69,7 @@ angular.module('website-messages', [
         return {
             restrict: 'A',
             scope: true,
-            templateUrl: 'app/templates/app_closable_messages.html',
+            template: require('../templates/app_closable_messages.jade'),
             controller: ['$scope', '$timeout', 'systemMessagesService',
                 function ($scope, $timeout, systemMessagesService) {
                     $scope.messages = systemMessagesService.getMessages();
@@ -84,17 +82,17 @@ angular.module('website-messages', [
                         });
                     };
                     systemMessagesService.addListener(me);
-                    me.disconnectListener = function () {
+                    me['disconnectListener'] = function () {
                         systemMessagesService.removeListener(me);
                     };
-                    me.setMessageRead = function (msg) {
-                        systemMessagesService.setMessageRead(msg);
+                    me['setMessageRead'] = function (msg) {
+                        systemMessagesService['setMessageRead'](msg);
                     }
                 }
             ],
             link: function (scope, el, attrs, controller) {
                 el.on('$destroy', function () {
-                    controller.disconnectListener();
+                    controller['disconnectListener']();
                 });
             }
         };
@@ -111,12 +109,12 @@ angular.module('website-messages', [
                 var removeTimer;
                 var setTimer = function () {
                     // remove element after X seconds
-                    var timeoutValue = scope.message.msgType === 'error' ? 10000 : 2000;
-                    if (scope.message.msgTimeout) {
-                        timeoutValue = scope.message.msgTimeout;
+                    var timeoutValue = scope['message']['msgType'] === 'error' ? 10000 : 2000;
+                    if (scope['message']['msgTimeout']) {
+                        timeoutValue = scope['message']['msgTimeout'];
                     }
                     removeTimer = $timeout(function () {
-                        controller.setMessageRead(scope.message);
+                        controller['setMessageRead'](scope['message']);
                     }, timeoutValue);
                 };
                 setTimer();
@@ -130,7 +128,7 @@ angular.module('website-messages', [
                     setTimer();
                 });
                 el.on('click', function () {
-                    controller.setMessageRead(scope.message);
+                    controller['setMessageRead'](scope['message']);
                 });
             }
         };

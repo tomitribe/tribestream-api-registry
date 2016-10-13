@@ -11,6 +11,7 @@ div
             div
               a(x-ng-href="endpoint/{{humanReadableName}}") 
                 span Create Endpoint
+      i.fa.fa-trash(x-ng-if="applicationLink", x-ng-click="delete()")
     article
       div
         h1

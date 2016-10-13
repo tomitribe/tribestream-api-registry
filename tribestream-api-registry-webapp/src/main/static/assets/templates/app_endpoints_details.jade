@@ -7,6 +7,7 @@ div
     i.fa.fa-chevron-right
     span(x-ng-if="historyItem") Revision {{historyItem.revisionId}} by {{historyItem.username}} created on {{historyItem.timestamp | date:'medium'}}
     .actions
+      i.fa.fa-trash(x-ng-if="endpointLink", x-ng-click="delete()")
       i(data-tribe-editable-option, data-empty-text="Actions", data-value="action", data-options="['Copy...', 'Release...', 'Export...', 'Share link...']")
   div
     div
@@ -17,7 +18,7 @@ div
         div(data-app-endpoints-details-response-request)
         div(data-app-endpoints-details-history)
         div
-          button.orange(x-ng-if="endpointLink" x-ng-click="save()") Save
-          button.orange(x-ng-if="endpointsLink" x-ng-click="create()") Create
-          button.orange(x-ng-if="historyLink" x-ng-click="showHistory()") Show History
+          button.orange(x-ng-if="endpointLink", x-ng-click="save()") Save
+          button.orange(x-ng-if="endpointsLink", x-ng-click="create()") Create
+          button.orange(x-ng-if="historyLink", x-ng-click="showHistory()") Show History
     div(data-app-footer)

@@ -9,7 +9,7 @@ angular.module('website-components-field-actions', [])
                 active: '=',
                 version: '='
             },
-            templateUrl: 'app/templates/component_field_actions.html',
+            template: require('../templates/component_field_actions.jade'),
             controller: ['$scope', ($scope) => {
                 $scope.confirm = () => $scope.onConfirm();
                 $scope.cancel = () => $scope.onCancel();
@@ -26,7 +26,7 @@ angular.module('website-components-field-actions', [])
                     }
                 };
                 scope.$watch('active', () => {
-                    if (scope.active) {
+                    if (scope['active']) {
                         body.append(floatingBody);
                         adjustOffset();
                     } else {
