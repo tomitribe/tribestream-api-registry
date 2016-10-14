@@ -42,6 +42,9 @@ import javax.ejb.TransactionManagementType;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.ws.rs.ProcessingException;
@@ -49,6 +52,10 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -227,6 +234,11 @@ public class MonitoringService {
         private String bases;
 
         @Inject
+        @Description("Should HTTP validator ignore invalid certificates (or self signed ones)")
+        @ConfigProperty(name = "tribe.registry.monitoring.http.ssl-skip", defaultValue = "false")
+        private Boolean forceSslAccept;
+
+        @Inject
         @Description("HTTP receive timeout")
         @ConfigProperty(name = "tribe.registry.monitoring.http.timeout.receive", defaultValue = "10000")
         private String receiveTimeout;
@@ -238,7 +250,37 @@ public class MonitoringService {
 
         @Override
         public Validation valid() {
-            final Client client = ClientBuilder.newClient()
+            final ClientBuilder clientBuilder = ClientBuilder.newBuilder();
+            if (forceSslAccept) {
+                final SSLContext sslContext;
+                try {
+                    sslContext = SSLContext.getInstance("SSL");
+                    sslContext.init(null, new TrustManager[]{new X509TrustManager() {
+                        @Override
+                        public void checkClientTrusted(final X509Certificate[] x509Certificates, final String s) throws CertificateException {
+                            // no-op
+                        }
+
+                        @Override
+                        public void checkServerTrusted(final X509Certificate[] x509Certificates, final String s) throws CertificateException {
+                            // no-op
+                        }
+
+                        @Override
+                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                            return null;
+                        }
+
+                    }}, new java.security.SecureRandom());
+                } catch (final NoSuchAlgorithmException | KeyManagementException e) {
+                    throw new IllegalStateException(e);
+                }
+
+                clientBuilder
+                        .hostnameVerifier((s, session) -> true)
+                        .sslContext(sslContext);
+            }
+            final Client client = clientBuilder.build()
                     .property("http.connection.timeout", connectTimeout)
                     .property("http.receive.timeout", receiveTimeout)
                     .property("jersey.config.client.connectTimeout", connectTimeout)
