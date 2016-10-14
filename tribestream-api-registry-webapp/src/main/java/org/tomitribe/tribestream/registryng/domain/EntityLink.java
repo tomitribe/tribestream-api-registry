@@ -18,34 +18,14 @@
  */
 package org.tomitribe.tribestream.registryng.domain;
 
-import io.swagger.models.Operation;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Locale;
-
-import static java.util.Optional.ofNullable;
-
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
-public class EndpointWrapper {
-    private String applicationId;
-    private String endpointId;
-    private String httpMethod;
-    private String path;
-    private Operation operation;
-    private String humanReadablePath;
-    private String json;
-
-    public EndpointWrapper(final String appId, final String endpointId, final String pathId,
-                           final String httpMethod, final String path, final Operation operation,
-                           final String json) {
-        this.applicationId = appId;
-        this.endpointId = endpointId;
-        this.humanReadablePath = pathId;
-        this.httpMethod = ofNullable(httpMethod).map(s -> s.toLowerCase(Locale.ENGLISH)).orElse("-" /*can be null theorically*/);
-        this.path = path;
-        this.operation = operation;
-        this.json = json;
-    }
+public class EntityLink {
+    private String rel;
+    private String href;
 }

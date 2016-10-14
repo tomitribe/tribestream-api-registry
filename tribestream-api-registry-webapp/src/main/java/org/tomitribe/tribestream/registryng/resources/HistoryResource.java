@@ -18,10 +18,14 @@
  */
 package org.tomitribe.tribestream.registryng.resources;
 
+import io.swagger.models.Operation;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
+import org.tomitribe.tribestream.registryng.domain.EntityLink;
 import org.tomitribe.tribestream.registryng.domain.HistoryItem;
+import org.tomitribe.tribestream.registryng.domain.HistoryPage;
+import org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.entities.HistoryEntry;
 import org.tomitribe.tribestream.registryng.entities.OpenAPIDocumentSerializer;
@@ -45,6 +49,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
@@ -57,6 +62,7 @@ public class HistoryResource {
     private final Repository repository;
     private final OpenAPIDocumentSerializer documentSerializer;
     private final ApplicationProcessor processor;
+    private final TribestreamOpenAPIExtension extensions;
 
     @GET
     @Path("/{applicationId}")
@@ -79,55 +85,57 @@ public class HistoryResource {
                 .path("history/application/{applicationId}")
                 .resolveTemplate("applicationId", applicationId);
 
-        return Response.ok(result)
-                .links(buildPaginationLinks(
+        return Response.ok(new HistoryPage(result, Stream.of(
+                buildPaginationLinks(
                         historyApplicationBaseUriBuilder,
                         repository.getNumberOfRevisions(OpenApiDocument.class, applicationId),
                         page,
-                        perPage))
-                .links(buildRevisionLinks(
+                        perPage),
+                buildRevisionLinks(
                         historyApplicationBaseUriBuilder,
-                        result))
-                .links(buildCurrentApplicationLink(uriInfo, applicationId))
+                        result),
+                new EntityLink[]{buildCurrentApplicationLink(uriInfo, applicationId)}
+        )
+                .flatMap(Stream::of)
+                .toArray(EntityLink[]::new)))
                 .build();
     }
 
-    private Link buildCurrentApplicationLink(final UriInfo uriInfo, final String applicationId) {
-        return Link.fromUriBuilder(uriInfo.getBaseUriBuilder()
+    private EntityLink buildCurrentApplicationLink(final UriInfo uriInfo, final String applicationId) {
+        final Link link = Link.fromUriBuilder(uriInfo.getBaseUriBuilder()
                 .path("application/{applicationId}")
                 .resolveTemplate("applicationId", applicationId))
                 .rel("application")
                 .build();
+        return new EntityLink(link.getRel(), link.getUri().toASCIIString());
     }
 
-    private Link buildCurrentEndpointLink(final UriInfo uriInfo, final String applicationId, final String endpointId) {
-        return Link.fromUriBuilder(uriInfo.getBaseUriBuilder()
+    private EntityLink buildCurrentEndpointLink(final UriInfo uriInfo, final String applicationId, final String endpointId) {
+        final Link link = Link.fromUriBuilder(uriInfo.getBaseUriBuilder()
                 .path("application/{applicationId}/endpoint/{endpointId}")
                 .resolveTemplate("applicationId", applicationId)
                 .resolveTemplate("endpointId", endpointId))
                 .rel("application")
                 .build();
+        return new EntityLink(link.getRel(), link.getUri().toASCIIString());
     }
 
-    private Link[] buildRevisionLinks(final UriBuilder baseUriBuilder, List<HistoryItem> historyItems) {
-        List<Link> result =
-                historyItems.stream()
-                        .map((HistoryItem historyItem) ->
-                            Link.fromUriBuilder(baseUriBuilder.clone()
-                                    .path("/{revisionId}")
-                                    .queryParam("per_page", "1")
-                                    .queryParam("page", "1")
-                                    .resolveTemplate("revisionId", historyItem.getRevisionId()))
-                                    .rel("revision " + historyItem.getRevisionId()).build()
-                        )
-                        .collect(toList());
-
-        return result.toArray(new Link[result.size()]);
+    private EntityLink[] buildRevisionLinks(final UriBuilder baseUriBuilder, List<HistoryItem> historyItems) {
+        return historyItems.stream()
+                .map((HistoryItem historyItem) ->
+                        Link.fromUriBuilder(baseUriBuilder.clone()
+                                .path("/{revisionId}")
+                                .queryParam("per_page", "1")
+                                .queryParam("page", "1")
+                                .resolveTemplate("revisionId", historyItem.getRevisionId()))
+                                .rel("revision " + historyItem.getRevisionId()).build()
+                )
+                .map(link -> new EntityLink(link.getRel(), link.getUri().toASCIIString()))
+                .toArray(EntityLink[]::new);
     }
 
 
-    private Link[] buildPaginationLinks(final UriBuilder pageUriBuilder, final int numberOfRevisions, final int currentPage, final int currentPageSize) {
-
+    private EntityLink[] buildPaginationLinks(final UriBuilder pageUriBuilder, final int numberOfRevisions, final int currentPage, final int currentPageSize) {
         List<Link> result = new ArrayList<>();
 
         result.add(createLink(pageUriBuilder, currentPage, currentPageSize, "self"));
@@ -141,7 +149,9 @@ public class HistoryResource {
         if (currentPage > 1) {
             result.add(createLink(pageUriBuilder, currentPage - 1, currentPageSize, "previous"));
         }
-        return result.toArray(new Link[result.size()]);
+        return result.stream()
+                .map(link -> new EntityLink(link.getRel(), link.getUri().toASCIIString()))
+                .toArray(EntityLink[]::new);
     }
 
     @GET
@@ -166,15 +176,17 @@ public class HistoryResource {
                 .resolveTemplate("applicationId", applicationId)
                 .resolveTemplate("endpointId", endpointId);
 
-        return Response.ok(result)
-                .links(buildPaginationLinks(
+        return Response.ok(new HistoryPage(result, Stream.of(
+                buildPaginationLinks(
                         endpointHistoryBaseUriBuilder,
                         repository.getNumberOfRevisions(Endpoint.class, endpointId),
                         page,
-                        perPage))
-                .links(buildRevisionLinks(
+                        perPage),
+                buildRevisionLinks(
                         endpointHistoryBaseUriBuilder,
-                        result))
+                        result)
+        ).flatMap(Stream::of)
+                .toArray(EntityLink[]::new)))
                 .build();
     }
 
@@ -194,8 +206,7 @@ public class HistoryResource {
         documentSerializer.postLoad(application);
 
 
-        return Response.ok(processor.toWrapper(application))
-                .links(buildCurrentApplicationLink(uriInfo, applicationId))
+        return Response.ok(processor.toWrapper(application, new EntityLink[]{buildCurrentApplicationLink(uriInfo, applicationId)}))
                 //.links(buildEndpointLinks(uriInfo, application)) TODO: What links for historic instances?
                 .build();
     }
@@ -216,13 +227,14 @@ public class HistoryResource {
 
         documentSerializer.postLoad(endpoint);
 
+        final Operation operation = endpoint.getOperation();
+        extensions.setLinks(operation, new EntityLink[]{buildCurrentEndpointLink(uriInfo, applicationId, endpointId)});
         final EndpointWrapper endpointWrapper = new EndpointWrapper(
                 applicationId, endpointId, endpoint.getHumanReadablePath(),
-                endpoint.getVerb(), endpoint.getPath(), endpoint.getOperation(),
+                endpoint.getVerb(), endpoint.getPath(), operation,
                 endpoint.getDocument());
 
         return Response.ok(endpointWrapper)
-                .links(buildCurrentEndpointLink(uriInfo, applicationId, endpointId))
                 //.links(buildEndpointLinks(uriInfo, application)) TODO: What links for historic instances?
                 .build();
     }
