@@ -90,7 +90,8 @@ public class AlertTest {
             @ContainerProperties.Property(name = "tribe.registry.monitoring.alerter.mail.to", value = "target@mock.com"),
             @ContainerProperties.Property(name = "tribe.registry.monitoring.alerter.mail.from", value = "no-reply@mock.com"),
             @ContainerProperties.Property(name = "tribe.registry.monitoring.alerter.mail.host", value = "localhost"),
-            @ContainerProperties.Property(name = "tribe.registry.monitoring.alerter.mail.port", value = "${test.mail.port}")
+            @ContainerProperties.Property(name = "tribe.registry.monitoring.alerter.mail.port", value = "${test.mail.port}"),
+            @ContainerProperties.Property(name = "tribe.registry.monitoring.startup-silent-period", value = "0")
     })
     @TomEEEmbeddedSingleRunner.LifecycleTasks(LoggingSetup.class)
     public static class App {
