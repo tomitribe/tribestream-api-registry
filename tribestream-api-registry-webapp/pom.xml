@@ -39,6 +39,15 @@
     <selenium.version>2.53.0</selenium.version>
     <h2.version>1.4.192</h2.version>
     <deltaspike.version>1.7.1</deltaspike.version>
+
+    <!-- by default oauth2 is disabled for local runtimes -->
+    <registry.oauth2.authorizationServerUrl>org.apache.deltaspike.NullValueMarker</registry.oauth2.authorizationServerUrl>
+    <registry.oauth2.clientId>org.apache.deltaspike.NullValueMarker</registry.oauth2.clientId>
+    <registry.oauth2.clientSecret>org.apache.deltaspike.NullValueMarker</registry.oauth2.clientSecret>
+    <registry.oauth2.tlsProtocol>org.apache.deltaspike.NullValueMarker</registry.oauth2.tlsProtocol>
+    <registry.oauth2.tlsProvider>org.apache.deltaspike.NullValueMarker</registry.oauth2.tlsProvider>
+    <registry.oauth2.trustStore>org.apache.deltaspike.NullValueMarker</registry.oauth2.trustStore>
+    <registry.oauth2.trustStoreType>org.apache.deltaspike.NullValueMarker</registry.oauth2.trustStoreType>
   </properties>
 
   <dependencies>
@@ -332,7 +341,7 @@
             <tribe.registry.oauth2.clientSecret>${registry.oauth2.clientSecret}</tribe.registry.oauth2.clientSecret>
             <tribe.registry.oauth2.tlsProtocol>${registry.oauth2.tlsProtocol}</tribe.registry.oauth2.tlsProtocol>
             <tribe.registry.oauth2.tlsProvider>${registry.oauth2.tlsProvider}</tribe.registry.oauth2.tlsProvider>
-            <tribe.registry.oauth2.trustStore>${registry.oauth2.tlsProvider}</tribe.registry.oauth2.trustStore>
+            <tribe.registry.oauth2.trustStore>${registry.oauth2.trustStore}</tribe.registry.oauth2.trustStore>
             <tribe.registry.oauth2.trustStoreType>${registry.oauth2.trustStoreType}</tribe.registry.oauth2.trustStoreType>
           </containerProperties>
           <users>

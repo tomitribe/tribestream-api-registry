@@ -18,9 +18,11 @@
  */
 package org.tomitribe.tribestream.registryng.resources;
 
+import io.swagger.models.Operation;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
+import org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension;
 import org.tomitribe.tribestream.registryng.repository.Repository;
 import org.tomitribe.tribestream.registryng.resources.enricher.Linker;
 import org.tomitribe.tribestream.registryng.resources.processor.ApplicationProcessor;
@@ -50,6 +52,7 @@ public class HumanReadableResource {
     private final Repository repository;
     private final Linker linker;
     private final ApplicationProcessor processor;
+    private final TribestreamOpenAPIExtension extensions;
 
     @GET
     @Path("endpoint/{applicationName}/{method}/{path: .+}")
@@ -60,7 +63,12 @@ public class HumanReadableResource {
                                                  @Context final UriInfo info) {
         return ofNullable(repository.findEndpointFromHumanReadableMeta(appName, method, path, version))
                 .map(e -> new EndpointWrapper(e.getApplication().getId(), e.getId(), e.getHumanReadablePath(), e.getVerb(), e.getPath(), e.getOperation(), null/*dont load it*/))
-                .map(w -> Response.ok(w).links(linker.buildEndpointLinks(info, w.getApplicationId(), w.getEndpointId())).build())
+                .map(w -> {
+                    final Operation operation = w.getOperation();
+                    extensions.setLinks(operation, linker.buildEndpointLinks(info, w.getApplicationId(), w.getEndpointId()));
+                    return w;
+                })
+                .map(w -> Response.ok(w).build())
                 .orElseGet(() -> Response.status(Response.Status.NOT_FOUND).build());
     }
 
@@ -70,7 +78,7 @@ public class HumanReadableResource {
                                                     @PathParam("applicationName") final String appName,
                                                     @Context final UriInfo info) {
         return ofNullable(repository.findApplicationFromHumanReadableMetadata(appName, version))
-                .map(d -> Response.ok(processor.toWrapper(d)).links(linker.buildApplicationLinks(info, d)).build())
+                .map(d -> Response.ok(processor.toWrapper(d, linker.buildApplicationLinks(info, d))).build())
                 .orElseGet(() -> Response.status(Response.Status.NOT_FOUND).build());
     }
 }
