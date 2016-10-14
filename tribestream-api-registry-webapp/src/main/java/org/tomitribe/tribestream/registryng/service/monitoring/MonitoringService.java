@@ -78,6 +78,11 @@ public class MonitoringService {
     private String period;
 
     @Inject
+    @Description("How often health checks are executed")
+    @ConfigProperty(name = "tribe.registry.monitoring.startup-silent-period", defaultValue = "5 minutes")
+    private String startupSilentPeriod;
+
+    @Inject
     private HTTPMonitoringValidator httpValidator;
 
     @Inject
@@ -85,6 +90,8 @@ public class MonitoringService {
 
     @Inject
     private Event<Alert> alert;
+
+    private long startedAt;
 
     private Timer timer;
     private long periodMs;
@@ -95,6 +102,8 @@ public class MonitoringService {
 
     @PostConstruct
     private void boot() {
+        startedAt = System.currentTimeMillis();
+
         if ("skip".equals(period)) {
             log.info("Monitoring is disabled");
             return;
@@ -153,6 +162,9 @@ public class MonitoringService {
     }
 
     private void onError(final Collection<ValidationWrapper> messages) {
+        if (System.currentTimeMillis() - startedAt < new Duration(startupSilentPeriod, TimeUnit.MILLISECONDS).getTime()) {
+            return;
+        }
         alert.fire(new Alert(messages));
     }
 
