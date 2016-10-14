@@ -29,7 +29,8 @@ import org.junit.runner.RunWith;
 import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
-import org.tomitribe.tribestream.registryng.domain.SearchResult;
+import org.tomitribe.tribestream.registryng.domain.search.EndpointSearchResult;
+import org.tomitribe.tribestream.registryng.domain.search.SearchResult;
 import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 import org.tomitribe.tribestream.registryng.test.Registry;
 
@@ -37,13 +38,13 @@ import javax.inject.Inject;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -69,10 +70,10 @@ public class EndpointResourceTest {
 
         // Given: A random endpoint that I can also find via the search API
 
-        final SearchResult result = registry.withRetries(() -> {
-            final List<SearchResult> endpointSearchResults = new ArrayList<>(getSearchPage().getResults());
+        final EndpointSearchResult result = registry.withRetries(() -> {
+            final List<EndpointSearchResult> endpointSearchResults = getSearchPage().getResults().stream().map(SearchResult::getEndpoints).flatMap(List::stream).collect(toList());
 
-            SearchResult searchResult = endpointSearchResults.get(random.nextInt(endpointSearchResults.size()));
+            EndpointSearchResult searchResult = endpointSearchResults.get(random.nextInt(endpointSearchResults.size()));
 
             String endpointUrl = searchResult.getLink();
 
@@ -112,8 +113,8 @@ public class EndpointResourceTest {
 
             // And: When I get the search page it does not contain this endpoint
             assertFalse(
-                    getSearchPage().getResults().stream()
-                            .filter((SearchResult sr) -> result.getLink().equals(sr.getLink()))
+                    getSearchPage().getResults().stream().map(SearchResult::getEndpoints).flatMap(List::stream)
+                            .filter((EndpointSearchResult sr) -> result.getLink().equals(sr.getLink()))
                             .findFirst()
                             .isPresent());
         });
@@ -123,9 +124,9 @@ public class EndpointResourceTest {
     public void shouldUpdatePathAndVerbOfEndpoint() throws Exception {
 
         // Given: A random endpoint that I can also find via the search API
-        final SearchResult searchResult = registry.withRetries(() -> {
-            final List<SearchResult> endpointSearchResults = new ArrayList<>(getSearchPage().getResults());
-            final SearchResult result = endpointSearchResults.get(random.nextInt(endpointSearchResults.size()));
+        final EndpointSearchResult searchResult = registry.withRetries(() -> {
+            final List<EndpointSearchResult> endpointSearchResults = getSearchPage().getResults().stream().map(SearchResult::getEndpoints).flatMap(List::stream).collect(toList());
+            final EndpointSearchResult result = endpointSearchResults.get(random.nextInt(endpointSearchResults.size()));
             assertNotNull(loadApplication(result.getApplicationId()));
             return result;
         });
@@ -171,8 +172,8 @@ public class EndpointResourceTest {
             assertEquals(newSummary, updatedApplication.getSwagger().getPaths().get(newPath).getPatch().getSummary());
 
             // And: The searchpage also has the new properties
-            Optional<SearchResult> updatedEndpointSearchResult = getSearchPage().getResults().stream()
-                    .filter((SearchResult sr) -> sr.getLink().equals(searchResult.getLink()))
+            Optional<EndpointSearchResult> updatedEndpointSearchResult = getSearchPage().getResults().stream().map(SearchResult::getEndpoints).flatMap(List::stream)
+                    .filter((EndpointSearchResult sr) -> sr.getLink().equals(searchResult.getLink()))
                     .findFirst();
 
             assertTrue(updatedEndpointSearchResult.isPresent());
@@ -187,8 +188,8 @@ public class EndpointResourceTest {
 
         // Given: A new endpoint that I want to add to a random application
         final String applicationId = registry.withRetries(() -> {
-            final List<SearchResult> searchResults = new ArrayList<>(getSearchPage().getResults());
-            final SearchResult result = searchResults.get(0);
+            final List<EndpointSearchResult> searchResults = getSearchPage().getResults().stream().map(SearchResult::getEndpoints).flatMap(List::stream).collect(toList());
+            final EndpointSearchResult result = searchResults.get(0);
             assertNotNull(loadApplication(result.getApplicationId()));
             return result.getApplicationId();
         });
@@ -225,8 +226,8 @@ public class EndpointResourceTest {
             assertEquals(newSummary, updatedApplication.getSwagger().getPaths().get(newPath).getHead().getSummary());
 
             // And: The searchpage also has the new properties
-            Optional<SearchResult> updatedEndpointSearchResult = getSearchPage().getResults().stream()
-                    .filter((SearchResult searchResult) -> "head".equalsIgnoreCase(searchResult.getHttpMethod()) && newPath.equals(searchResult.getPath()))
+            Optional<EndpointSearchResult> updatedEndpointSearchResult = getSearchPage().getResults().stream().map(SearchResult::getEndpoints).flatMap(List::stream)
+                    .filter((EndpointSearchResult searchResult) -> "head".equalsIgnoreCase(searchResult.getHttpMethod()) && newPath.equals(searchResult.getPath()))
                     .findFirst();
 
             assertTrue(updatedEndpointSearchResult.isPresent());

@@ -32,8 +32,9 @@ import org.tomitribe.tribestream.registryng.cdi.Tribe;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.HistoryPage;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
-import org.tomitribe.tribestream.registryng.domain.SearchResult;
+import org.tomitribe.tribestream.registryng.domain.search.EndpointSearchResult;
 import org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension;
+import org.tomitribe.tribestream.registryng.domain.search.SearchResult;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.test.Registry;
 import org.tomitribe.tribestream.registryng.test.retry.Retry;
@@ -45,13 +46,15 @@ import javax.persistence.PersistenceContext;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import static java.lang.Math.abs;
+import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.client.Entity.entity;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -86,8 +89,8 @@ public class EndpointHistoryResourceTest {
     @Retry
     public void shouldLoadEndpointHistory() {
         // Given: A random application
-        Collection<SearchResult> searchResults = getSearchPage().getResults();
-        final SearchResult searchResult = new ArrayList<>(searchResults).get(random.nextInt(searchResults.size()));
+        List<EndpointSearchResult> searchResults = getSearchPage().getResults().stream().map(SearchResult::getEndpoints).flatMap(List::stream).collect(toList());
+        final EndpointSearchResult searchResult = searchResults.get(random.nextInt(searchResults.size()));
 
         final String applicationId = searchResult.getApplicationId();
         final String endpointId = searchResult.getEndpointId();
@@ -122,8 +125,8 @@ public class EndpointHistoryResourceTest {
     public void shouldAddRevisionOnUpdate() {
         // Given: A random application with a history
         final Response endpointResponse = registry.withRetries(() -> {
-            Collection<SearchResult> searchResults = getSearchPage().getResults();
-            final SearchResult searchResult = new ArrayList<>(searchResults).get(random.nextInt(searchResults.size()));
+            List<EndpointSearchResult> searchResults = getSearchPage().getResults().stream().map(SearchResult::getEndpoints).flatMap(List::stream).collect(toList());
+            final EndpointSearchResult searchResult = searchResults.get(random.nextInt(searchResults.size()));
 
             final String applicationId = searchResult.getApplicationId();
             final String endpointId = searchResult.getEndpointId();
@@ -179,9 +182,9 @@ public class EndpointHistoryResourceTest {
     @Test
     public void loadRevisionHasPayload() {
         // Given: A random application
-        final SearchResult searchResult = registry.withRetries(() -> {
-            Collection<SearchResult> searchResults = getSearchPage().getResults();
-            final SearchResult result = new ArrayList<>(searchResults).get(random.nextInt(searchResults.size()));
+        final EndpointSearchResult searchResult = registry.withRetries(() -> {
+            List<EndpointSearchResult> searchResults = getSearchPage().getResults().stream().map(SearchResult::getEndpoints).flatMap(List::stream).collect(toList());
+            final EndpointSearchResult result = searchResults.get(random.nextInt(searchResults.size()));
             assertNotNull("endpoint exists", em.find(Endpoint.class, result.getEndpointId()));
             return result;
         });

@@ -30,8 +30,9 @@ import org.tomitribe.tribestream.registryng.cdi.Tribe;
 import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.domain.HistoryPage;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
-import org.tomitribe.tribestream.registryng.domain.SearchResult;
 import org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension;
+import org.tomitribe.tribestream.registryng.domain.search.ApplicationSearchResult;
+import org.tomitribe.tribestream.registryng.domain.search.SearchResult;
 import org.tomitribe.tribestream.registryng.test.Registry;
 import org.tomitribe.tribestream.registryng.test.retry.Retry;
 import org.tomitribe.tribestream.registryng.test.retry.RetryRule;
@@ -41,6 +42,7 @@ import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -77,11 +79,8 @@ public class ApplicationHistoryResourceTest {
     @Retry
     public void shouldLoadApplicationHistory() {
         // Given: A random application
-        Collection<SearchResult> searchResults = getSearchPage().getResults();
-        final String applicationId = searchResults.stream()
-                .map(SearchResult::getApplicationId)
-                .collect(toList())
-                .get(abs(random.nextInt(searchResults.size())));
+        List<ApplicationSearchResult> searchResults = getSearchPage().getResults().stream().map(SearchResult::getApplication).collect(toList());
+        final String applicationId = searchResults.get(abs(random.nextInt(searchResults.size()))).getApplicationId();
 
         Response applicationResponse = loadApplicationResponse(applicationId);
         final ApplicationWrapper wrapper = applicationResponse.readEntity(ApplicationWrapper.class);
@@ -112,11 +111,8 @@ public class ApplicationHistoryResourceTest {
     public void shouldAddRevisionOnUpdate() {
         // Given: A random application with a history
         final Response applicationResponse = registry.withRetries(() -> {
-            final Collection<SearchResult> searchResults = getSearchPage().getResults();
-            final String applicationId = searchResults.stream()
-                    .map(SearchResult::getApplicationId)
-                    .collect(toList())
-                    .get(abs(random.nextInt(searchResults.size())));
+            List<ApplicationSearchResult> searchResults = getSearchPage().getResults().stream().map(SearchResult::getApplication).collect(toList());
+            final String applicationId = searchResults.get(abs(random.nextInt(searchResults.size()))).getApplicationId();
             return loadApplicationResponse(applicationId);
         });
         final ApplicationWrapper applicationWrapper;
