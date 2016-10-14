@@ -168,7 +168,7 @@ angular.module('website-components-markdown', [
                     status: false,
                     spellChecker: false,
                     previewRender: mdService.compileMd,
-                    //autoDownloadFontAwesome: false,
+                    autoDownloadFontAwesome: false,
                     toolbar: [{
                         name: "bold",
                         action: (editor) => actionClick(editor, SimpleMDE.toggleBold),
