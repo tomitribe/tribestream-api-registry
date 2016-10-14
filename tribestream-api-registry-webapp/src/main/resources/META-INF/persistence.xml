@@ -33,9 +33,6 @@
     <class>org.tomitribe.tribestream.registryng.entities.Endpoint</class>
     <class>org.tomitribe.tribestream.registryng.entities.Revision</class>
 
-    <class>org.tomitribe.tribestream.registryng.lucene.File$IndexId</class>
-    <class>org.tomitribe.tribestream.registryng.lucene.File</class>
-
     <class>org.tomitribe.tribestream.registryng.entities.AccessToken</class>
 
     <exclude-unlisted-classes>true</exclude-unlisted-classes>

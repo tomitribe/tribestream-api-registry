@@ -97,8 +97,7 @@ public class SearchEngine {
                     .filter(q -> !q.isEmpty() && !"*".equals(q) /*default*/)
                     .ifPresent(q -> must.add(jsonFactory.createObjectBuilder()
                             .add("query_string", jsonFactory.createObjectBuilder()
-                                    .add("query", q)))
-                            .build());
+                                    .add("query", q))));
 
             addDrillDown(request.getCategories(), must, "category");
             addDrillDown(request.getTags(), must, "tag");
@@ -240,7 +239,8 @@ public class SearchEngine {
     }
 
     private void addDrillDown(final List<String> values, final JsonArrayBuilder builder, final String... names) {
-        ofNullable(values).filter(c -> !c.isEmpty())
+        ofNullable(values)
+                .filter(c -> !c.isEmpty())
                 .ifPresent(c -> c.forEach(it -> builder.add(jsonFactory.createObjectBuilder()
                         .add("term", names.length == 1 ?
                                 jsonFactory.createObjectBuilder().add(names[0], it) :

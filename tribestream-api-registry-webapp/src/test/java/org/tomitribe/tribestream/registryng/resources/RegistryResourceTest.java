@@ -49,7 +49,6 @@ public class RegistryResourceTest {
     @Test
     public void drillDown() {
         final int max = em.createQuery("select count(e) from Endpoint e", Number.class).getSingleResult().intValue();
-
         final SearchPage root = registry.target().path("api/registry")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(SearchPage.class);
@@ -67,5 +66,30 @@ public class RegistryResourceTest {
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(SearchPage.class);
         assertEquals(1, withTagAndCategory.getTotal());
+    }
+
+    @Test
+    public void searchQuery() {
+        final int max = em.createQuery("select count(e) from Endpoint e", Number.class).getSingleResult().intValue();
+
+        // no query param
+        final SearchPage root = registry.target().path("api/registry")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(SearchPage.class);
+        assertEquals(max, root.getTotal());
+
+        // wildcard = no filter
+        final SearchPage wildcard = registry.target().path("api/registry")
+                .queryParam("query", "*")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(SearchPage.class);
+        assertEquals(max, wildcard.getTotal());
+
+        // custom query_string
+        final SearchPage query = registry.target().path("api/registry")
+                .queryParam("query", "partners")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(SearchPage.class);
+        assertEquals(query.toString(), 2, query.getTotal());
     }
 }
