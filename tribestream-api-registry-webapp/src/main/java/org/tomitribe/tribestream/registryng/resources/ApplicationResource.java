@@ -64,7 +64,7 @@ public class ApplicationResource {
     @Path("/")
     public Response getAllApplications(@Context UriInfo uriInfo) {
         return Response.status(Response.Status.OK)
-                .entity(repository.findAllApplicationsWithEndpoints().stream().map(processor::toWrapper).collect(toList()))
+                .entity(repository.findAllApplicationsWithEndpoints().stream().map(p -> processor.toWrapper(p, null)).collect(toList()))
                 .build();
     }
 
@@ -78,7 +78,7 @@ public class ApplicationResource {
         if (application == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        return Response.ok(processor.toWrapper(application)).links(linker.buildApplicationLinks(uriInfo, application)).build();
+        return Response.ok(processor.toWrapper(application, linker.buildApplicationLinks(uriInfo, application))).build();
     }
 
 
@@ -92,8 +92,7 @@ public class ApplicationResource {
         final OpenApiDocument document = repository.insert(swagger);
         final OpenApiDocument newDocument = repository.findByApplicationIdWithEndpoints(document.getId());
         return Response.status(Response.Status.CREATED)
-                .entity(processor.toWrapper(newDocument))
-                .links(linker.buildApplicationLinks(uriInfo, newDocument))
+                .entity(processor.toWrapper(newDocument, linker.buildApplicationLinks(uriInfo, newDocument)))
                 .build();
     }
 
@@ -141,8 +140,7 @@ public class ApplicationResource {
         // TODO: dont update/find
         final OpenApiDocument updatedDocument = repository.findByApplicationIdWithEndpoints(applicationId);
         return Response.status(Response.Status.OK)
-                .links(linker.buildApplicationLinks(uriInfo, updatedDocument))
-                .entity(processor.toWrapper(updatedDocument))
+                .entity(processor.toWrapper(updatedDocument, linker.buildApplicationLinks(uriInfo, updatedDocument)))
                 .build();
     }
 
@@ -198,6 +196,9 @@ public class ApplicationResource {
             target.setTags(source.getTags());
         }
         if (source.getVendorExtensions() != null) {
+            if (target.getVendorExtensions() == null) { // force map init
+                target.vendorExtension("skip", "force-init");
+            }
             target.getVendorExtensions().clear();
             target.getVendorExtensions().putAll(source.getVendorExtensions());
         }
