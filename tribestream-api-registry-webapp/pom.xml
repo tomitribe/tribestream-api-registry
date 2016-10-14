@@ -138,6 +138,18 @@
           <groupId>javax.validation</groupId>
           <artifactId>validation-api</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.datatype</groupId>
+          <artifactId>jackson-datatype-joda</artifactId>
+        </exclusion>
+        <exclusion> <!-- or add it with an impl -->
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -149,6 +161,10 @@
         <exclusion>
           <groupId>javax.validation</groupId>
           <artifactId>validation-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -180,21 +196,6 @@
       <groupId>org.commonjava.googlecode.markdown4j</groupId>
       <artifactId>markdown4j</artifactId>
       <version>${version.markdown4j}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.lucene</groupId>
-      <artifactId>lucene-queryparser</artifactId>
-      <version>${version.lucene}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.lucene</groupId>
-      <artifactId>lucene-analyzers-common</artifactId>
-      <version>${version.lucene}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.lucene</groupId>
-      <artifactId>lucene-facet</artifactId>
-      <version>${version.lucene}</version>
     </dependency>
 
     <dependency>
