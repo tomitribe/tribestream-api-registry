@@ -38,6 +38,7 @@
     <arquillian-phantom-binary.version>2.1.1</arquillian-phantom-binary.version>
     <selenium.version>2.53.0</selenium.version>
     <h2.version>1.4.192</h2.version>
+    <deltaspike.version>1.7.1</deltaspike.version>
   </properties>
 
   <dependencies>
@@ -51,6 +52,12 @@
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <version>1.16.10</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geronimo.javamail</groupId>
+      <artifactId>geronimo-javamail_1.4_mail</artifactId>
+      <version>1.9.0-alpha-2</version>
       <scope>provided</scope>
     </dependency>
 
@@ -94,14 +101,8 @@
 
     <dependency>
       <groupId>org.apache.deltaspike.core</groupId>
-      <artifactId>deltaspike-core-api</artifactId>
-      <version>${version.deltaspike}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.deltaspike.core</groupId>
       <artifactId>deltaspike-core-impl</artifactId>
-      <version>${version.deltaspike}</version>
+      <version>${deltaspike.version}</version>
     </dependency>
 
     <dependency>
@@ -273,6 +274,18 @@
       <version>2.2.2</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.icegreen</groupId>
+      <artifactId>greenmail</artifactId>
+      <version>1.4.0</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.mail</groupId>
+          <artifactId>javax.mail</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
   </dependencies>
 
   <build>
@@ -314,7 +327,13 @@
             <db>new://Resource?type=DataSource</db>
             <db.JdbcUrl>jdbc:h2:mem:registry</db.JdbcUrl>
             <db.JdbcDriver>org.h2.Driver</db.JdbcDriver>
-            <registry.oauth2.authorizationServerUrl>${registry.oauth2.gatewayUrl}</registry.oauth2.authorizationServerUrl>
+            <tribe.registry.oauth2.authorizationServerUrl>${registry.oauth2.authorizationServerUrl}</tribe.registry.oauth2.authorizationServerUrl>
+            <tribe.registry.oauth2.clientId>${registry.oauth2.clientId}</tribe.registry.oauth2.clientId>
+            <tribe.registry.oauth2.clientSecret>${registry.oauth2.clientSecret}</tribe.registry.oauth2.clientSecret>
+            <tribe.registry.oauth2.tlsProtocol>${registry.oauth2.tlsProtocol}</tribe.registry.oauth2.tlsProtocol>
+            <tribe.registry.oauth2.tlsProvider>${registry.oauth2.tlsProvider}</tribe.registry.oauth2.tlsProvider>
+            <tribe.registry.oauth2.trustStore>${registry.oauth2.tlsProvider}</tribe.registry.oauth2.trustStore>
+            <tribe.registry.oauth2.trustStoreType>${registry.oauth2.trustStoreType}</tribe.registry.oauth2.trustStoreType>
           </containerProperties>
           <users>
             <admin>admin</admin>
@@ -373,13 +392,13 @@
             <db>new://Resource?type=DataSource</db>
             <db.JdbcUrl>jdbc:h2:mem:registry</db.JdbcUrl>
             <db.JdbcDriver>org.h2.Driver</db.JdbcDriver>
-            <registry.oauth2.authorizationServerUrl>${registry.oauth2.authorizationServerUrl}</registry.oauth2.authorizationServerUrl>
-            <registry.oauth2.clientId>${registry.oauth2.clientId}</registry.oauth2.clientId>
-            <registry.oauth2.clientSecret>${registry.oauth2.clientSecret}</registry.oauth2.clientSecret>
-            <registry.oauth2.tlsProtocol>${registry.oauth2.tlsProtocol}</registry.oauth2.tlsProtocol>
-            <registry.oauth2.tlsProvider>${registry.oauth2.tlsProvider}</registry.oauth2.tlsProvider>
-            <registry.oauth2.trustStore>${registry.oauth2.tlsProvider}</registry.oauth2.trustStore>
-            <registry.oauth2.trustStoreType>${registry.oauth2.trustStoreType}</registry.oauth2.trustStoreType>
+            <tribe.registry.oauth2.authorizationServerUrl>${registry.oauth2.authorizationServerUrl}</tribe.registry.oauth2.authorizationServerUrl>
+            <tribe.registry.oauth2.clientId>${registry.oauth2.clientId}</tribe.registry.oauth2.clientId>
+            <tribe.registry.oauth2.clientSecret>${registry.oauth2.clientSecret}</tribe.registry.oauth2.clientSecret>
+            <tribe.registry.oauth2.tlsProtocol>${registry.oauth2.tlsProtocol}</tribe.registry.oauth2.tlsProtocol>
+            <tribe.registry.oauth2.tlsProvider>${registry.oauth2.tlsProvider}</tribe.registry.oauth2.tlsProvider>
+            <tribe.registry.oauth2.trustStore>${registry.oauth2.tlsProvider}</tribe.registry.oauth2.trustStore>
+            <tribe.registry.oauth2.trustStoreType>${registry.oauth2.trustStoreType}</tribe.registry.oauth2.trustStoreType>
           </systemVariables>
         </configuration>
       </plugin>
@@ -445,6 +464,67 @@
           <installDirectory>${user.home}/.tribe/node-installation-dir</installDirectory>
           <workingDirectory>src/main/static</workingDirectory>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${version.surefire}</version>
+        <executions>
+          <execution>
+            <id>default-test</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </execution>
+          <execution>
+            <id>test-main</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <excludedGroups>org.tomitribe.tribestream.registryng.service.AlertTest</excludedGroups>
+            </configuration>
+          </execution>
+          <execution>
+            <id>test-alert</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <groups>org.tomitribe.tribestream.registryng.service.AlertTest</groups>
+              <systemPropertyVariables>
+                <tomee.application-composer.application>org.tomitribe.tribestream.registryng.service.AlertTest$App</tomee.application-composer.application>
+              </systemPropertyVariables>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.gmaven</groupId>
+        <artifactId>groovy-maven-plugin</artifactId>
+        <version>2.0</version>
+        <executions>
+          <execution>
+            <id>config-doc</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>execute</goal>
+            </goals>
+            <configuration>
+              <source>${project.basedir}/src/main/documentation/Configuration.groovy</source>
+            </configuration>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.xbean</groupId>
+            <artifactId>xbean-finder-shaded</artifactId>
+            <version>4.5</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>

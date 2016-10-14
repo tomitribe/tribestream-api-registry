@@ -20,6 +20,7 @@ package org.tomitribe.tribestream.registryng.elasticsearch;
 
 import lombok.extern.java.Log;
 import org.apache.deltaspike.core.api.config.ConfigProperty;
+import org.tomitribe.tribestream.registryng.documentation.Description;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -43,26 +44,32 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 @ApplicationScoped
 public class ElasticsearchClient {
     @Inject
+    @Description("Elasticsearch base URL")
     @ConfigProperty(name = "tribe.registry.elasticsearch.base", defaultValue = "http://localhost:9200")
     private String base;
 
     @Inject
+    @Description("Elasticsearch registry index")
     @ConfigProperty(name = "tribe.registry.elasticsearch.index", defaultValue = "tribestream-api-registry")
     private String index;
 
     @Inject
+    @Description("Elasticsearch endpoint type")
     @ConfigProperty(name = "tribe.registry.elasticsearch.type.endpoint", defaultValue = "endpoint")
     private String endpointType;
 
     @Inject
+    @Description("Elasticsearch JAX-RS client features, can be used to activate authentication or debugging using LoggingFeature for instance")
     @ConfigProperty(name = "tribe.registry.elasticsearch.features")
     private String features;
 
     @Inject
+    @Description("Elasticsearch client receive timeout")
     @ConfigProperty(name = "tribe.registry.elasticsearch.timeout.receive", defaultValue = "30000")
     private String receiveTimeout;
 
     @Inject
+    @Description("Elasticsearch client connect timeout")
     @ConfigProperty(name = "tribe.registry.elasticsearch.timeout.connect", defaultValue = "30000")
     private String connectTimeout;
 

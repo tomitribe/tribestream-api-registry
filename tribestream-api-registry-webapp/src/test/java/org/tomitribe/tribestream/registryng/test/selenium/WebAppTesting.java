@@ -18,6 +18,7 @@
  */
 package org.tomitribe.tribestream.registryng.test.selenium;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import lombok.experimental.Delegate;
 import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
@@ -180,11 +181,16 @@ public abstract class WebAppTesting implements WebDriver, JavascriptExecutor {
             super(driver, timeOutInSeconds);
         }
 
-        public void until(final Supplier<Boolean> isTrue) {
-            super.until(new Predicate<WebDriver>() {
+        public void until(final Supplier<Boolean> isTrue, final String debug) {
+            super.until(new Function<WebDriver, Boolean>() {
                 @Override
-                public boolean apply(final WebDriver webDriver) {
+                public Boolean apply(final WebDriver webDriver) {
                     return isTrue.get();
+                }
+
+                @Override
+                public String toString() {
+                    return debug;
                 }
             });
         }
