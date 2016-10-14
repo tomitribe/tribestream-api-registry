@@ -18,6 +18,7 @@
  */
 package org.tomitribe.tribestream.registryng.test.selenium;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import lombok.experimental.Delegate;
 import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
@@ -33,6 +34,7 @@ import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.tomitribe.tribestream.registryng.test.Registry;
+import org.tomitribe.tribestream.registryng.test.retry.RetryRule;
 import org.w3c.tidy.Tidy;
 
 import java.io.StringReader;
@@ -47,7 +49,7 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.visibilityOf;
 
 // integrates FluentLenium with our webdriver in a smooth way for end tests
 public abstract class WebAppTesting implements WebDriver, JavascriptExecutor {
-    /* needs 7.0.2 to work, workaround is to capture it in the child ATM
+    /* needs 7.0.2 to work, workaround is to capture it in the child ATM -> findRegistry()
     @Application
     private Registry registry;
      */
@@ -78,6 +80,7 @@ public abstract class WebAppTesting implements WebDriver, JavascriptExecutor {
 
     @Rule // dump the dom on error, will avoid some round trips
     public final TestRule debugRule = outerRule(new TomEEEmbeddedSingleRunner.Rule(this))
+            .around(new RetryRule(this::findRegistry))
             .around(new TestRule() {
                 @Override
                 public Statement apply(final Statement base, final Description description) {
@@ -178,11 +181,16 @@ public abstract class WebAppTesting implements WebDriver, JavascriptExecutor {
             super(driver, timeOutInSeconds);
         }
 
-        public void until(final Supplier<Boolean> isTrue) {
-            super.until(new Predicate<WebDriver>() {
+        public void until(final Supplier<Boolean> isTrue, final String debug) {
+            super.until(new Function<WebDriver, Boolean>() {
                 @Override
-                public boolean apply(final WebDriver webDriver) {
+                public Boolean apply(final WebDriver webDriver) {
                     return isTrue.get();
+                }
+
+                @Override
+                public String toString() {
+                    return debug;
                 }
             });
         }

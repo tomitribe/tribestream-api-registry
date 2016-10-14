@@ -16,29 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.tomitribe.tribestream.registryng.service;
+package org.tomitribe.tribestream.registryng.service.monitoring;
 
-import java.util.stream.Stream;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
-import static java.util.stream.Collectors.joining;
+import static java.util.Optional.ofNullable;
 
-public final class PathTransformUtil {
-
-    private PathTransformUtil() {
-
+@Data
+@AllArgsConstructor
+public class Validation {
+    public enum State {
+        OK, KO // we don't have any fallback in our impl so no DEGRADED state yet
     }
 
-    public static String bracesToColon(String openApiTemplate) { // TODO: what's wrong with openApiTemplate.replaceAll("\\{(\\w+)\\}", ":$1")
-        // The root path is the most simple case
-        if (openApiTemplate.equals("/")) {
-            return openApiTemplate;
-        }
+    private State state;
+    private String description;
 
-        return Stream.of(openApiTemplate.split("/"))
-                .map(part ->
-                    part.startsWith("{") && part.endsWith("}")
-                            ? ":" + part.substring(1, part.length() - 1)
-                            : part)
-                .collect(joining("/"));
+    public String text() {
+        return state.name() + " (" + ofNullable(description).orElse("-") + ")";
     }
 }

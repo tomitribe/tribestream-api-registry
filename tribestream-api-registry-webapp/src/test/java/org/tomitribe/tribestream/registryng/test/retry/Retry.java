@@ -16,30 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.tomitribe.tribestream.registryng.domain;
+package org.tomitribe.tribestream.registryng.test.retry;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-import java.util.Set;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class SearchResult {
-    private String applicationId;
-    private String endpointId;
-    private String applicationName;
-    private String endpointName;
-    private String application;
-    private String applicationVersion;
-    private String httpMethod;
-    private String path;
-    private String description;
-    private Set<String> categories;
-    private Set<String> tags;
-    private Set<String> roles;
-    private double score;
-    private String link;
+@Target({METHOD, TYPE})
+@Retention(RUNTIME)
+public @interface Retry {
+    boolean active() default true;
 }

@@ -25,6 +25,13 @@ $ cd tribestream-api-registry-webapp
 $ mvn frontend:npm@dev
 ----
 
+Note that you need elasticsearch, to run it:
+
+[source]
+----
+cd tribestream-api-registry-webapp && mvn elasticsearch:run
+----
+
 == API
 
 The client uses these endpoints:

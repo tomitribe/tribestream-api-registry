@@ -16,30 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.tomitribe.tribestream.registryng.domain;
+package org.tomitribe.tribestream.registryng.service.monitoring;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.util.Set;
+import java.util.Collection;
+
+import static java.util.stream.Collectors.joining;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class SearchResult {
-    private String applicationId;
-    private String endpointId;
-    private String applicationName;
-    private String endpointName;
-    private String application;
-    private String applicationVersion;
-    private String httpMethod;
-    private String path;
-    private String description;
-    private Set<String> categories;
-    private Set<String> tags;
-    private Set<String> roles;
-    private double score;
-    private String link;
+public class Alert {
+    private final Collection<ValidationWrapper> validations;
+
+    public String text() {
+        return validations.stream().map(v -> v.getName() + ": " + v.getValidation().text()).collect(joining("\n"));
+    }
 }

@@ -53,7 +53,7 @@ public class RegistryResource {
                                     @QueryParam("role") final List<String> roles,
                                     @QueryParam("app") final List<String> apps,
                                     @QueryParam("page") @DefaultValue("0") final int page,
-                                    @QueryParam("count") @DefaultValue("1000") final int count) {
+                                    @QueryParam("count") @DefaultValue("100") final int count) {
         final SearchPage searchPage = searchEngine.search(new SearchRequest(query, tags, categories, roles, apps, page, count));
         searchPage.getResults().forEach(searchResult -> searchResult.setLink(
                 uriInfo.getBaseUriBuilder()

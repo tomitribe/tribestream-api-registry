@@ -18,35 +18,34 @@
  */
 package org.tomitribe.tribestream.registryng.resources;
 
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
+import org.tomitribe.tribestream.registryng.service.monitoring.MonitoringService;
+import org.tomitribe.tribestream.registryng.service.monitoring.Validation;
+import org.tomitribe.tribestream.registryng.service.monitoring.ValidationWrapper;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
-import javax.ws.rs.HEAD;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import java.util.Collection;
 
-@Path("search")
+@Path("health")
 @ApplicationScoped
 @Produces(MediaType.APPLICATION_JSON)
-@NoArgsConstructor(force = true)
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
-public class SearchResource {
-    private final SearchEngine engine;
-
-    @HEAD
-    @Path("reindex")
-    public void reindex() {
-        engine.resetIndex();
-    }
+public class HealthResource {
+    @Inject
+    private MonitoringService service;
 
     @GET
-    @Path("pending")
-    public int pendingTasks() {
-        return engine.pendingTasks();
+    public Collection<ValidationWrapper> health(@QueryParam("fail-status-on-ko") @DefaultValue("-1") final int status) {
+        final Collection<ValidationWrapper> wrappers = service.currentHealth();
+        if (status > 0 && wrappers.stream().filter(w -> w.getValidation().getState() == Validation.State.KO).findAny().isPresent()) {
+            throw new WebApplicationException(status);
+        }
+        return wrappers;
     }
 }

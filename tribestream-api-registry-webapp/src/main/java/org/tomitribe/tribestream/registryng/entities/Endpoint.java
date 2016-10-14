@@ -101,6 +101,9 @@ public class Endpoint extends AbstractEntity {
     @Lob
     private String document;
 
+    @Column(name = "EXTERNAL_INDEX_ID")
+    private String elasticsearchId;
+
     @Column(name = "HUMAN_READABLE_PATH", nullable = false)
     private String humanReadablePath; // stored in case we make it editable
 

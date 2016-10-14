@@ -26,12 +26,12 @@ import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.tomitribe.tribestream.registryng.test.Registry;
 import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
 import org.tomitribe.tribestream.registryng.domain.SearchResult;
 import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
+import org.tomitribe.tribestream.registryng.test.Registry;
 
 import javax.inject.Inject;
 import javax.ws.rs.client.Entity;
@@ -69,67 +69,71 @@ public class EndpointResourceTest {
 
         // Given: A random endpoint that I can also find via the search API
 
-        final List<SearchResult> endpointSearchResults = new ArrayList<>(getSearchPage().getResults());
+        final SearchResult result = registry.withRetries(() -> {
+            final List<SearchResult> endpointSearchResults = new ArrayList<>(getSearchPage().getResults());
 
-        SearchResult searchResult = endpointSearchResults.get(random.nextInt(endpointSearchResults.size()));
+            SearchResult searchResult = endpointSearchResults.get(random.nextInt(endpointSearchResults.size()));
 
-        String endpointUrl = searchResult.getLink();
+            String endpointUrl = searchResult.getLink();
 
-        Response originalEndpointResponse = registry.client().target(endpointUrl)
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .get();
+            Response originalEndpointResponse = registry.client().target(endpointUrl)
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .get();
 
-        assertEquals(Response.Status.OK.getStatusCode(), originalEndpointResponse.getStatus());
+            assertEquals(Response.Status.OK.getStatusCode(), originalEndpointResponse.getStatus());
+
+            return searchResult;
+        });
 
         // When: I send a DELETE to the endpoint URL
-        final Response response = registry.client().target(endpointUrl)
+        final Response response = registry.client().target(result.getLink())
                 .request(MediaType.APPLICATION_JSON_TYPE)
-                .buildDelete()
-                .invoke();
+                .delete();
 
         // Then: I get a HTTP 200
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         // And: I get a 404 when getting the endpoint
-        assertEquals(
-                Response.Status.NOT_FOUND.getStatusCode(),
-                registry.client().target(endpointUrl)
-                        .request(MediaType.APPLICATION_JSON_TYPE)
-                        .buildGet()
-                        .invoke()
-                        .getStatus());
+        registry.withRetries(() -> {
+            assertEquals(
+                    Response.Status.NOT_FOUND.getStatusCode(),
+                    registry.client().target(result.getLink())
+                            .request(MediaType.APPLICATION_JSON_TYPE)
+                            .get()
+                            .getStatus());
 
-        // And: When I reload the application it doesn't contain the endpoint
-        final ApplicationWrapper updatedApplication = loadApplication(searchResult.getApplicationId());
-        final HttpMethod httpMethod = HttpMethod.valueOf(searchResult.getHttpMethod().toUpperCase());
-        final String path = searchResult.getPath();
-        assertTrue(
-                updatedApplication.getSwagger().getPaths().get(path) == null
-                        || updatedApplication.getSwagger().getPaths().get(path).getOperationMap().get(httpMethod) == null);
+            // And: When I reload the application it doesn't contain the endpoint
+            final ApplicationWrapper updatedApplication = loadApplication(result.getApplicationId());
+            final HttpMethod httpMethod = HttpMethod.valueOf(result.getHttpMethod().toUpperCase());
+            final String path = result.getPath();
+            assertTrue(
+                    updatedApplication.getSwagger().getPaths().get(path) == null
+                            || updatedApplication.getSwagger().getPaths().get(path).getOperationMap().get(httpMethod) == null);
 
-        // And: When I get the search page it does not contain this endpoint
-        assertFalse(
-                getSearchPage().getResults().stream()
-                    .filter((SearchResult sr) -> endpointUrl.equals(sr.getLink()))
-                    .findFirst()
-                    .isPresent()
-        );
+            // And: When I get the search page it does not contain this endpoint
+            assertFalse(
+                    getSearchPage().getResults().stream()
+                            .filter((SearchResult sr) -> result.getLink().equals(sr.getLink()))
+                            .findFirst()
+                            .isPresent());
+        });
     }
 
     @Test
     public void shouldUpdatePathAndVerbOfEndpoint() throws Exception {
 
         // Given: A random endpoint that I can also find via the search API
-        final List<SearchResult> endpointSearchResults = new ArrayList<>(getSearchPage().getResults());
-
-        final SearchResult searchResult = endpointSearchResults.get(random.nextInt(endpointSearchResults.size()));
-
-        final String endpointUrl = searchResult.getLink();
+        final SearchResult searchResult = registry.withRetries(() -> {
+            final List<SearchResult> endpointSearchResults = new ArrayList<>(getSearchPage().getResults());
+            final SearchResult result = endpointSearchResults.get(random.nextInt(endpointSearchResults.size()));
+            assertNotNull(loadApplication(result.getApplicationId()));
+            return result;
+        });
 
         final ApplicationWrapper applicationWrapper = loadApplication(searchResult.getApplicationId());
         assertNotNull(applicationWrapper);
 
-        final EndpointWrapper originalEndpoint = registry.client().target(endpointUrl)
+        final EndpointWrapper originalEndpoint = registry.client().target(searchResult.getLink())
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(EndpointWrapper.class);
         assertNotNull(originalEndpoint);
@@ -144,48 +148,50 @@ public class EndpointResourceTest {
                 originalEndpoint.getApplicationId(), originalEndpoint.getEndpointId(), originalEndpoint.getHumanReadablePath(),
                 newVerb, newPath, newOperation, null);
 
-        Response response = registry.client().target(endpointUrl)
+        Response response = registry.client().target(searchResult.getLink())
                 .request(MediaType.APPLICATION_JSON_TYPE)
-                .buildPut(Entity.entity(endpointWrapper, MediaType.APPLICATION_JSON_TYPE))
-                .invoke();
+                .put(Entity.entity(endpointWrapper, MediaType.APPLICATION_JSON_TYPE));
 
         // Then: I get a HTTP 200
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
-        // And: When I refetch the endpoint it has the new path and verb
-        EndpointWrapper updatedEndpoint = registry.client().target(endpointUrl)
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .get(EndpointWrapper.class);
-        assertEquals(newVerb, updatedEndpoint.getHttpMethod());
-        assertEquals(newPath, updatedEndpoint.getPath());
-        assertEquals(newSummary, updatedEndpoint.getOperation().getSummary());
+        registry.withRetries(() -> {
+            // And: When I refetch the endpoint it has the new path and verb
+            EndpointWrapper updatedEndpoint = registry.client().target(searchResult.getLink())
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .get(EndpointWrapper.class);
+            assertEquals(newVerb, updatedEndpoint.getHttpMethod());
+            assertEquals(newPath, updatedEndpoint.getPath());
+            assertEquals(newSummary, updatedEndpoint.getOperation().getSummary());
 
-        // And: When I refetch the application it also contains the stub for the new endpoint
-        ApplicationWrapper updatedApplication = loadApplication(searchResult.getApplicationId());
-        assertNotNull(updatedApplication.getSwagger().getPaths().get(newPath));
-        assertNotNull(updatedApplication.getSwagger().getPaths().get(newPath).getPatch());
-        assertEquals(newSummary, updatedApplication.getSwagger().getPaths().get(newPath).getPatch().getSummary());
+            // And: When I refetch the application it also contains the stub for the new endpoint
+            ApplicationWrapper updatedApplication = loadApplication(searchResult.getApplicationId());
+            assertNotNull(updatedApplication.getSwagger().getPaths().get(newPath));
+            assertNotNull(updatedApplication.getSwagger().getPaths().get(newPath).getPatch());
+            assertEquals(newSummary, updatedApplication.getSwagger().getPaths().get(newPath).getPatch().getSummary());
 
-        engine.waitForWrites();
+            // And: The searchpage also has the new properties
+            Optional<SearchResult> updatedEndpointSearchResult = getSearchPage().getResults().stream()
+                    .filter((SearchResult sr) -> sr.getLink().equals(searchResult.getLink()))
+                    .findFirst();
 
-        // And: The searchpage also has the new properties
-        Optional<SearchResult> updatedEndpointSearchResult = getSearchPage().getResults().stream()
-                .filter((SearchResult sr) -> sr.getLink().equals(searchResult.getLink()))
-                .findFirst();
-
-        assertTrue(updatedEndpointSearchResult.isPresent());
-        assertEquals(newPath, updatedEndpointSearchResult.get().getPath());
-        assertEquals(newVerb, updatedEndpointSearchResult.get().getHttpMethod());
-        assertEquals(newSummary, updatedEndpointSearchResult.get().getDescription());
+            assertTrue(updatedEndpointSearchResult.isPresent());
+            assertEquals(newPath, updatedEndpointSearchResult.get().getPath());
+            assertEquals(newVerb, updatedEndpointSearchResult.get().getHttpMethod());
+            assertEquals(newSummary, updatedEndpointSearchResult.get().getDescription());
+        });
     }
 
     @Test
     public void shouldCreateEndpoint() throws Exception {
 
         // Given: A new endpoint that I want to add to a random application
-        final List<SearchResult> searchResults = new ArrayList<>(getSearchPage().getResults());
-        final String applicationId = searchResults.get(0).getApplicationId();
-        ApplicationWrapper applicationWrapper = loadApplication(applicationId);
+        final String applicationId = registry.withRetries(() -> {
+            final List<SearchResult> searchResults = new ArrayList<>(getSearchPage().getResults());
+            final SearchResult result = searchResults.get(0);
+            assertNotNull(loadApplication(result.getApplicationId()));
+            return result.getApplicationId();
+        });
 
         final String newPath = "/" + UUID.randomUUID().toString();
         final String newDescription = UUID.randomUUID().toString();
@@ -205,35 +211,34 @@ public class EndpointResourceTest {
         Response response = registry.target().path("api/application/{applicationId}/endpoint")
                 .resolveTemplate("applicationId", applicationId)
                 .request(MediaType.APPLICATION_JSON_TYPE)
-                .buildPost(Entity.entity(newEndpoint, MediaType.APPLICATION_JSON_TYPE))
-                .invoke();
+                .post(Entity.entity(newEndpoint, MediaType.APPLICATION_JSON_TYPE));
 
         // Then: I get a HTTP 201
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
         // And: When I refetch the application it has the new path and verb
-        final ApplicationWrapper updatedApplication = loadApplication(applicationId);
-        assertNotNull(updatedApplication.getSwagger().getPath(newPath));
-        assertNotNull(updatedApplication.getSwagger().getPath(newPath).getHead());
+        registry.withRetries(() -> {
+            final ApplicationWrapper updatedApplication = loadApplication(applicationId);
+            assertNotNull(updatedApplication.getSwagger().getPath(newPath));
+            assertNotNull(updatedApplication.getSwagger().getPath(newPath).getHead());
 
-        assertEquals(newSummary, updatedApplication.getSwagger().getPaths().get(newPath).getHead().getSummary());
+            assertEquals(newSummary, updatedApplication.getSwagger().getPaths().get(newPath).getHead().getSummary());
 
-        engine.waitForWrites();
+            // And: The searchpage also has the new properties
+            Optional<SearchResult> updatedEndpointSearchResult = getSearchPage().getResults().stream()
+                    .filter((SearchResult searchResult) -> "head".equalsIgnoreCase(searchResult.getHttpMethod()) && newPath.equals(searchResult.getPath()))
+                    .findFirst();
 
-        // And: The searchpage also has the new properties
-        Optional<SearchResult> updatedEndpointSearchResult = getSearchPage().getResults().stream()
-                .filter((SearchResult searchResult) -> "head".equalsIgnoreCase(searchResult.getHttpMethod()) && newPath.equals(searchResult.getPath()))
-                .findFirst();
-
-        assertTrue(updatedEndpointSearchResult.isPresent());
-        assertEquals(newSummary, updatedEndpointSearchResult.get().getDescription());
+            assertTrue(updatedEndpointSearchResult.isPresent());
+            assertEquals(newSummary, updatedEndpointSearchResult.get().getDescription());
+        });
     }
 
 
     private SearchPage getSearchPage() {
         return registry.target().path("api/registry")
-                    .request(MediaType.APPLICATION_JSON_TYPE)
-                    .get(SearchPage.class);
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(SearchPage.class);
     }
 
     private ApplicationWrapper loadApplication(final String applicationId) {

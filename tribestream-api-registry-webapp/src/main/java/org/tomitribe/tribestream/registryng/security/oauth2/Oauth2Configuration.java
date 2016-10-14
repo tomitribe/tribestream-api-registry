@@ -20,6 +20,7 @@ package org.tomitribe.tribestream.registryng.security.oauth2;
 
 import lombok.Getter;
 import org.apache.deltaspike.core.api.config.ConfigProperty;
+import org.tomitribe.tribestream.registryng.documentation.Description;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -29,31 +30,38 @@ import javax.inject.Inject;
 public class Oauth2Configuration {
 
     @Inject
-    @ConfigProperty(name = "registry.oauth2.authorizationServerUrl")
+    @Description("OAuth2 endpoint")
+    @ConfigProperty(name = "tribe.registry.oauth2.authorizationServerUrl")
     private String authServerUrl;
 
     @Inject
-    @ConfigProperty(name = "registry.oauth2.clientId")
+    @Description("OAuth2 client id if used")
+    @ConfigProperty(name = "tribe.registry.oauth2.clientId")
     private String clientId;
 
     @Inject
-    @ConfigProperty(name = "registry.oauth2.clientSecret")
+    @Description("OAuth2 client secret if client id is set")
+    @ConfigProperty(name = "tribe.registry.oauth2.clientSecret")
     private String clientSecret;
 
     @Inject
-    @ConfigProperty(name = "registry.oauth2.tlsProtocol", defaultValue = "TLSv1.2")
+    @Description("OAuth2 HTTP TLS protocol supported")
+    @ConfigProperty(name = "tribe.registry.oauth2.tlsProtocol", defaultValue = "TLSv1.2")
     private String tlsProtocol;
 
     @Inject
-    @ConfigProperty(name = "registry.oauth2.tlsProvider")
+    @Description("OAuth2 HTTP TLS provider")
+    @ConfigProperty(name = "tribe.registry.oauth2.tlsProvider")
     private String tlsProvider;
 
     @Inject
-    @ConfigProperty(name = "registry.oauth2.trustStore")
+    @Description("OAuth2 truststore")
+    @ConfigProperty(name = "tribe.registry.oauth2.trustStore")
     private String trustStoreFileName;
 
     @Inject
-    @ConfigProperty(name = "registry.oauth2.trustStoreType")
+    @Description("OAuth2 truststore type")
+    @ConfigProperty(name = "tribe.registry.oauth2.trustStoreType")
     private String trustStoreType;
 
 }

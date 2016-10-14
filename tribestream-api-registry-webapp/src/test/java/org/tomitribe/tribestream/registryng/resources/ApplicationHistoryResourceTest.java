@@ -23,16 +23,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.openejb.testing.Application;
 import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.rules.TestRule;
 import org.tomitribe.tribestream.registryng.cdi.Tribe;
-import org.tomitribe.tribestream.registryng.test.Registry;
 import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.domain.HistoryItem;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
 import org.tomitribe.tribestream.registryng.domain.SearchResult;
+import org.tomitribe.tribestream.registryng.test.Registry;
+import org.tomitribe.tribestream.registryng.test.retry.Retry;
+import org.tomitribe.tribestream.registryng.test.retry.RetryRule;
 
 import javax.inject.Inject;
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -47,9 +51,9 @@ import static javax.ws.rs.client.Entity.entity;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.rules.RuleChain.outerRule;
 import static org.tomitribe.tribestream.registryng.test.Registry.TESTUSER;
 
-@RunWith(TomEEEmbeddedSingleRunner.class)
 public class ApplicationHistoryResourceTest {
     @Inject
     @Tribe
@@ -60,12 +64,16 @@ public class ApplicationHistoryResourceTest {
 
     private Random random = new Random(System.currentTimeMillis());
 
+    @Rule
+    public final TestRule rule = outerRule(new TomEEEmbeddedSingleRunner.Rule(this)).around(new RetryRule(() -> registry));
+
     @After
     public void reset() {
         registry.restoreData();
     }
 
     @Test
+    @Retry
     public void shouldLoadApplicationHistory() {
         // Given: A random application
         Collection<SearchResult> searchResults = getSearchPage().getResults();
@@ -74,7 +82,7 @@ public class ApplicationHistoryResourceTest {
                 .collect(toList())
                 .get(abs(random.nextInt(searchResults.size())));
 
-        Response applicationResponse= loadApplicationResponse(applicationId);
+        Response applicationResponse = loadApplicationResponse(applicationId);
 
         // When: I get the history link
         Response historyResponse = registry.client().target(applicationResponse.getLink("history"))
@@ -83,7 +91,8 @@ public class ApplicationHistoryResourceTest {
 
         assertEquals(200, historyResponse.getStatus());
 
-        List<HistoryItem> historyItems = historyResponse.readEntity(new GenericType<List<HistoryItem>>() {});
+        List<HistoryItem> historyItems = historyResponse.readEntity(new GenericType<List<HistoryItem>>() {
+        });
 
         // Then: I get at least one result
         assertNotNull(historyItems);
@@ -101,18 +110,25 @@ public class ApplicationHistoryResourceTest {
     @Test
     public void shouldAddRevisionOnUpdate() {
         // Given: A random application with a history
-        final Collection<SearchResult> searchResults = getSearchPage().getResults();
-        final String applicationId = searchResults.stream()
-                .map(SearchResult::getApplicationId)
-                .collect(toList())
-                .get(abs(random.nextInt(searchResults.size())));
-
-        final Response applicationResponse = loadApplicationResponse(applicationId);
-        final ApplicationWrapper applicationWrapper = applicationResponse.readEntity(ApplicationWrapper.class);
+        final Response applicationResponse = registry.withRetries(() -> {
+            final Collection<SearchResult> searchResults = getSearchPage().getResults();
+            final String applicationId = searchResults.stream()
+                    .map(SearchResult::getApplicationId)
+                    .collect(toList())
+                    .get(abs(random.nextInt(searchResults.size())));
+            return loadApplicationResponse(applicationId);
+        });
+        final ApplicationWrapper applicationWrapper;
+        try {
+            applicationWrapper = applicationResponse.readEntity(ApplicationWrapper.class);
+        } catch (final ProcessingException pe) {
+            throw new IllegalStateException("'" + applicationResponse.readEntity(String.class) + "'");
+        }
 
         final List<HistoryItem> historyItems = registry.client().target(applicationResponse.getLink("history"))
                 .request(MediaType.APPLICATION_JSON_TYPE)
-                .get(new GenericType<List<HistoryItem>>() {});
+                .get(new GenericType<List<HistoryItem>>() {
+                });
 
         final String oldDescription = applicationWrapper.getSwagger().getInfo().getDescription();
         final String newDescription = UUID.randomUUID().toString();
@@ -130,7 +146,8 @@ public class ApplicationHistoryResourceTest {
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get();
 
-        final List<HistoryItem> newHistoryItems = newHistoryResponse.readEntity(new GenericType<List<HistoryItem>>() {});
+        final List<HistoryItem> newHistoryItems = newHistoryResponse.readEntity(new GenericType<List<HistoryItem>>() {
+        });
 
         assertEquals(historyItems.size() + 1, newHistoryItems.size());
 
