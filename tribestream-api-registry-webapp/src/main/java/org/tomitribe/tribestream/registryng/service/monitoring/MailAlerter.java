@@ -113,6 +113,10 @@ public class MailAlerter {
             return;
         }
 
+        if (password != null && password.startsWith("cipher:")) {
+
+        }
+
         try {
             hostname = InetAddress.getLocalHost().getHostName();
         } catch (final UnknownHostException e) {
