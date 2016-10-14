@@ -18,14 +18,11 @@
  */
 package org.tomitribe.tribestream.registryng.domain;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.models.Operation;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 import static java.util.Optional.ofNullable;
 
@@ -39,9 +36,6 @@ public class EndpointWrapper {
     private Operation operation;
     private String humanReadablePath;
     private String json;
-
-    @JsonProperty("_links")
-    private Map<String, String> links = new HashMap<>();
 
     public EndpointWrapper(final String appId, final String endpointId, final String pathId,
                            final String httpMethod, final String path, final Operation operation,

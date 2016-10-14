@@ -10,24 +10,9 @@ module services_endpoints {
         .factory('tribeLinkHeaderService', [
             function() {
                 return {
-                    parseLinkHeader: function (linkHeader) {
-                        if (!linkHeader) {
-                            return {};
-                        }
-                        // Split parts by comma
-                        let parts = linkHeader.split(',');
-                        let links = {};
-                        // Parse each part into a named link
-                        _.each(parts, function (p: string) {
-                            let section = p.split(';');
-                            if (section.length != 2) {
-                              throw new Error("section could not be split on ';'");
-                            }
-                            var url = section[0].replace(/<(.*)>/, '$1').trim();
-                            var name = section[1].replace(/rel="(.*)"/, '$1').trim();
-                            links[name] = url;
-                        });
-                        return links;
+                    /*index links for an easier access*/
+                    parseLinkHeader: function (values) {
+                        return !values ? {} : values.reduce((m, l) => {m[l['rel']] = l['href']; return m;}, {});
                     }
                 };
             }

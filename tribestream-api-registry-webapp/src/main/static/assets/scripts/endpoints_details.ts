@@ -597,8 +597,8 @@ angular.module('tribe-endpoints-details', [
             .then(function (detailsResponse) {
               $scope['applicationId'] = detailsResponse['data']['applicationId'];
               $scope['endpointId'] = detailsResponse['data']['endpointId'];
-              if(detailsResponse.headers) {
-                let links = tribeLinkHeaderService.parseLinkHeader(detailsResponse.headers('link'));
+              if(detailsResponse['data']) {
+                let links = tribeLinkHeaderService.parseLinkHeader(detailsResponse['data']['operation']['x-tribestream-api-registry']['links']);
                 $scope.historyLink = links['history'];
                 $scope.applicationLink = links['application'];
                 $scope.endpointLink = links['self'];
@@ -631,7 +631,7 @@ angular.module('tribe-endpoints-details', [
                     $log.error("Got no application details!");
                   }
                   $scope.application = response['data'];
-                  let links = tribeLinkHeaderService.parseLinkHeader(response.headers('link'));
+                  let links = tribeLinkHeaderService.parseLinkHeader(response['data']['swagger']['x-tribestream-api-registry']['links']);
                   $scope.applicationLink = links['self'];
                   $scope.endpointLink = null;
                   $scope.endpointsLink = links['endpoints'];
@@ -669,7 +669,7 @@ angular.module('tribe-endpoints-details', [
                         $scope['endpoint'].path = saveResponse['data'].path;
                         $scope['endpoint']['httpMethod'] = saveResponse['data']['httpMethod'];
                         $scope['endpoint'].operation = saveResponse['data'].operation;
-                        let links = tribeLinkHeaderService.parseLinkHeader(saveResponse.headers('link'));
+                        let links = tribeLinkHeaderService.parseLinkHeader(saveResponse['data']['operation']['x-tribestream-api-registry']['links']);
                         $scope.applicationLink = links['application'];
                         $scope.endpointLink = links['self'];
                         $scope.historyLink = links['history'];
@@ -691,15 +691,15 @@ angular.module('tribe-endpoints-details', [
           $scope.showHistory = function() {
             srv.getHistory($scope.historyLink).then(function(response) {
 
-              let links = tribeLinkHeaderService.parseLinkHeader(response.headers('link'));
-              for (let entry of response['data']) {
+              let links = tribeLinkHeaderService.parseLinkHeader(response['data']['links']);
+              for (let entry of response['data']['items']) {
                 entry.link = links["revision " + entry.revisionId];
                 entry.$ui = {selected: false};
               }
 
               $timeout(function () {
                 $scope.$apply(function () {
-                  $scope.history = response['data'];
+                  $scope.history = response['data']['items'];
                 });
               });
             });
