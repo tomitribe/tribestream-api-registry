@@ -9,12 +9,6 @@ Tribestream API Registry
 To build and run the registry in its own TomEE instance:
 
 ----
-$ mvn clean package tomee:run -pl :tribestream-api-registry-webapp
-----
-
-or to use tomee embedded:
-
-----
 $ mvn clean compile tomee-embedded:run -pl :tribestream-api-registry-webapp
 ----
 

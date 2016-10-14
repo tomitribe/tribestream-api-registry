@@ -40,7 +40,7 @@
     <h2.version>1.4.192</h2.version>
     <deltaspike.version>1.7.1</deltaspike.version>
 
-    <!-- by default oauth2 is disabled for local runtimes -->
+    <frontend.docbase>${project.build.directory}/${project.build.finalName}</frontend.docbase>
     <registry.oauth2.authorizationServerUrl>org.apache.deltaspike.NullValueMarker</registry.oauth2.authorizationServerUrl>
     <registry.oauth2.clientId>org.apache.deltaspike.NullValueMarker</registry.oauth2.clientId>
     <registry.oauth2.clientSecret>org.apache.deltaspike.NullValueMarker</registry.oauth2.clientSecret>
@@ -343,6 +343,8 @@
             <tribe.registry.oauth2.tlsProvider>${registry.oauth2.tlsProvider}</tribe.registry.oauth2.tlsProvider>
             <tribe.registry.oauth2.trustStore>${registry.oauth2.trustStore}</tribe.registry.oauth2.trustStore>
             <tribe.registry.oauth2.trustStoreType>${registry.oauth2.trustStoreType}</tribe.registry.oauth2.trustStoreType>
+            <tribe.registry.seeding.script>${project.basedir}/src/dev/elasticsearch.js</tribe.registry.seeding.script>
+            <m2.dir>${settings.localRepository}</m2.dir>
           </containerProperties>
           <users>
             <admin>admin</admin>
@@ -378,6 +380,7 @@
         </dependencies>
       </plugin>
 
+      <!-- use tomee embedded
       <plugin>
         <groupId>org.apache.tomee.maven</groupId>
         <artifactId>tomee-maven-plugin</artifactId>
@@ -396,7 +399,6 @@
           <systemVariables>
             <org.apache.openejb.cxf.bus.features>org.apache.cxf.feature.LoggingFeature</org.apache.openejb.cxf.bus.features>
             <openejb.deploymentId.format>{appId}/{ejbJarId}/{ejbName}</openejb.deploymentId.format>
-            <!--<tribe.registry.guest.enabled>false</tribe.registry.guest.enabled>-->
             <openapirepo.dir>${project.basedir}/target/test-classes</openapirepo.dir>
             <db>new://Resource?type=DataSource</db>
             <db.JdbcUrl>jdbc:h2:mem:registry</db.JdbcUrl>
@@ -411,6 +413,7 @@
           </systemVariables>
         </configuration>
       </plugin>
+      -->
 
       <plugin>
         <groupId>com.github.eirslett</groupId>
@@ -472,6 +475,9 @@
         <configuration>
           <installDirectory>${user.home}/.tribe/node-installation-dir</installDirectory>
           <workingDirectory>src/main/static</workingDirectory>
+          <environmentVariables>
+            <DOC_BASE>${frontend.docbase}</DOC_BASE>
+          </environmentVariables>
         </configuration>
       </plugin>
       <plugin>
