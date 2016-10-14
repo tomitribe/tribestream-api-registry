@@ -28,7 +28,6 @@ import org.tomitribe.tribestream.registryng.repository.Repository;
 import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 
 import javax.annotation.PostConstruct;
-import javax.ejb.DependsOn;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.inject.Inject;
@@ -47,7 +46,6 @@ import static java.util.Optional.ofNullable;
  */
 @Singleton
 @Startup
-@DependsOn("SearchEngine")
 public class Provisioning {
 
     private static final Logger LOGGER = Logger.getLogger(Provisioning.class.getName());
@@ -127,6 +125,5 @@ public class Provisioning {
         final List<OpenApiDocument> apps = repository.findAllApplicationsWithEndpoints();
         apps.forEach(d -> repository.deleteApplication(d.getId()));
         seedDatabase();
-        searchEngine.waitForWrites();
     }
 }

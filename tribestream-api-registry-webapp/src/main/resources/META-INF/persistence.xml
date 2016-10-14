@@ -24,33 +24,30 @@
                 http://java.sun.com/xml/ns/persistence
                 http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
              version="2.0">
-    <persistence-unit name="registry-ng">
-        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <jta-data-source>registryDatasource</jta-data-source>
-        <non-jta-data-source>registryDatasourceUnmanaged</non-jta-data-source>
+  <persistence-unit name="registry-ng">
+    <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+    <jta-data-source>registryDatasource</jta-data-source>
+    <non-jta-data-source>registryDatasourceUnmanaged</non-jta-data-source>
 
-        <class>org.tomitribe.tribestream.registryng.entities.OpenApiDocument</class>
-        <class>org.tomitribe.tribestream.registryng.entities.Endpoint</class>
-        <class>org.tomitribe.tribestream.registryng.entities.Revision</class>
+    <class>org.tomitribe.tribestream.registryng.entities.OpenApiDocument</class>
+    <class>org.tomitribe.tribestream.registryng.entities.Endpoint</class>
+    <class>org.tomitribe.tribestream.registryng.entities.Revision</class>
 
-        <class>org.tomitribe.tribestream.registryng.lucene.File$IndexId</class>
-        <class>org.tomitribe.tribestream.registryng.lucene.File</class>
+    <class>org.tomitribe.tribestream.registryng.entities.AccessToken</class>
 
-        <class>org.tomitribe.tribestream.registryng.entities.AccessToken</class>
+    <exclude-unlisted-classes>true</exclude-unlisted-classes>
 
-        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+    <validation-mode>NONE</validation-mode>
 
-        <validation-mode>NONE</validation-mode>
+    <properties>
+      <property name="hibernate.order_updates" value="false"/>
+      <property name="hibernate.hbm2ddl.auto" value="update"/>
+      <property name="org.hibernate.envers.store_data_at_delete" value="true"/>
 
-        <properties>
-            <property name="hibernate.order_updates" value="false"/>
-            <property name="hibernate.hbm2ddl.auto" value="update"/>
-            <property name="org.hibernate.envers.store_data_at_delete" value="true"/>
+      <!-- there is a chicken egg problem between JPA and CDI and eagerness of hibernate makes it "in use" so this is a workaround for that -->
+      <property name="tomee.jpa.factory.lazy" value="true" />
 
-            <!-- there is a chicken egg problem between JPA and CDI and eagerness of hibernate makes it "in use" so this is a workaround for that -->
-            <property name="tomee.jpa.factory.lazy" value="true" />
-
-            <property name="show_sql" value="true"/>
-        </properties>
-    </persistence-unit>
+      <property name="show_sql" value="true"/>
+    </properties>
+  </persistence-unit>
 </persistence>

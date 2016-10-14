@@ -16,29 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.tomitribe.tribestream.registryng.service;
+package org.tomitribe.tribestream.registryng.test.retry;
 
-import java.util.stream.Stream;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-import static java.util.stream.Collectors.joining;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-public final class PathTransformUtil {
-
-    private PathTransformUtil() {
-
-    }
-
-    public static String bracesToColon(String openApiTemplate) { // TODO: what's wrong with openApiTemplate.replaceAll("\\{(\\w+)\\}", ":$1")
-        // The root path is the most simple case
-        if (openApiTemplate.equals("/")) {
-            return openApiTemplate;
-        }
-
-        return Stream.of(openApiTemplate.split("/"))
-                .map(part ->
-                    part.startsWith("{") && part.endsWith("}")
-                            ? ":" + part.substring(1, part.length() - 1)
-                            : part)
-                .collect(joining("/"));
-    }
+@Target({METHOD, TYPE})
+@Retention(RUNTIME)
+public @interface Retry {
+    boolean active() default true;
 }

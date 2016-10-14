@@ -33,6 +33,7 @@ import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.tomitribe.tribestream.registryng.test.Registry;
+import org.tomitribe.tribestream.registryng.test.retry.RetryRule;
 import org.w3c.tidy.Tidy;
 
 import java.io.StringReader;
@@ -47,7 +48,7 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.visibilityOf;
 
 // integrates FluentLenium with our webdriver in a smooth way for end tests
 public abstract class WebAppTesting implements WebDriver, JavascriptExecutor {
-    /* needs 7.0.2 to work, workaround is to capture it in the child ATM
+    /* needs 7.0.2 to work, workaround is to capture it in the child ATM -> findRegistry()
     @Application
     private Registry registry;
      */
@@ -78,6 +79,7 @@ public abstract class WebAppTesting implements WebDriver, JavascriptExecutor {
 
     @Rule // dump the dom on error, will avoid some round trips
     public final TestRule debugRule = outerRule(new TomEEEmbeddedSingleRunner.Rule(this))
+            .around(new RetryRule(this::findRegistry))
             .around(new TestRule() {
                 @Override
                 public Statement apply(final Statement base, final Description description) {

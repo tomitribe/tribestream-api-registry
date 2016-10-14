@@ -16,30 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.tomitribe.tribestream.registryng.domain;
+package org.tomitribe.tribestream.registryng.test.logging;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
 
-import java.util.Set;
+import java.io.Closeable;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class SearchResult {
-    private String applicationId;
-    private String endpointId;
-    private String applicationName;
-    private String endpointName;
-    private String application;
-    private String applicationVersion;
-    private String httpMethod;
-    private String path;
-    private String description;
-    private Set<String> categories;
-    private Set<String> tags;
-    private Set<String> roles;
-    private double score;
-    private String link;
+public class LoggingSetup implements TomEEEmbeddedSingleRunner.LifecycleTask {
+    @Override
+    public Closeable beforeContainerStartup() {
+        System.setProperty("java.util.logging.SimpleFormatter.format", "[TOMEE  SERVER][%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS,%1$tL][%4$5s][%3$25s] %5$s%6$s%n");
+        return () -> {
+        };
+    }
 }

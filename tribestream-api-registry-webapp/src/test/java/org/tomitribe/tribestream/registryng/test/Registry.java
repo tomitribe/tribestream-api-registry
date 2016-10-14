@@ -32,6 +32,8 @@ import org.apache.tomee.loader.TomcatHelper;
 import org.openqa.selenium.WebDriver;
 import org.tomitribe.tribestream.registryng.bootstrap.Provisioning;
 import org.tomitribe.tribestream.registryng.service.serialization.CustomJacksonJaxbJsonProvider;
+import org.tomitribe.tribestream.registryng.test.elasticsearch.Elasticsearch;
+import org.tomitribe.tribestream.registryng.test.logging.LoggingSetup;
 import org.tomitribe.tribestream.registryng.test.selenium.PhantomJsLifecycle;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -44,12 +46,22 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.security.Principal;
+import java.util.function.Supplier;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 
+import static java.lang.Thread.sleep;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.joining;
 import static javax.xml.bind.DatatypeConverter.printBase64Binary;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.tomitribe.util.Join.join;
 
 /**
@@ -61,11 +73,15 @@ import static org.tomitribe.util.Join.join;
         @ContainerProperties.Property(name = "registryDatasource", value = "new://Resource?type=DataSource"),
         @ContainerProperties.Property(name = "registryDatasource.JdbcDriver", value = "org.h2.Driver"),
         @ContainerProperties.Property(name = "registryDatasource.JdbcUrl", value = "jdbc:h2:mem:registry;DB_CLOSE_ON_EXIT=FALSE"),
-        @ContainerProperties.Property(name = "registryDatasource.LogSql", value = "false")
+        @ContainerProperties.Property(name = "tribe.registry.elasticsearch.base", value = "http://localhost:${test.elasticsearch.port}")
+        /* can help for debugging (dumps sql queries and ES client HTTP requests
+        ,@ContainerProperties.Property(name = "registryDatasource.LogSql", value = "true"),
+        @ContainerProperties.Property(name = "tribe.registry.elasticsearch.features", value = "org.apache.cxf.feature.LoggingFeature")
+        */
 })
-@WebResource("target/tests-webapp") // should work by default but bug in tomee 7.0.1, fixed in 7.0.2
+@WebResource("target/tests-webapp")
 @org.apache.openejb.testing.Application
-@TomEEEmbeddedSingleRunner.LifecycleTasks({PhantomJsLifecycle.Task.class, PrepareResources.class})
+@TomEEEmbeddedSingleRunner.LifecycleTasks({LoggingSetup.class, PrepareResources.class, Elasticsearch.class, PhantomJsLifecycle.Task.class})
 public class Registry {
     public static final String TESTUSER = "utest";
     public static final String TESTPASSWORD = "ptest";
@@ -77,6 +93,52 @@ public class Registry {
     private Provisioning provisioning;
 
     private PhantomJsLifecycle phantomJs;
+
+    public void withRetries(final Runnable task, final String... description) {
+        withRetries(() -> {
+            task.run();
+            return null;
+        });
+    }
+
+    public <T> T withRetries(final Supplier<T> task, final String... description) {
+        Throwable lastErr = null;
+        final int max = Integer.getInteger("test.registry.retries", 60);
+        final Client client = ClientBuilder.newClient();
+        try {
+            for (int i = 0; i < max; i++) {
+                assertEquals(
+                        Response.Status.OK.getStatusCode(),
+                        client.target("http://localhost:" + System.getProperty("test.elasticsearch.port"))
+                                .path("_refresh")
+                                .request(MediaType.APPLICATION_JSON_TYPE)
+                                .get()
+                                .getStatus());
+                try {
+                    return task.get();
+                } catch (final Throwable error) {
+                    lastErr = error;
+                    if (i % 3 == 0) {
+                        Logger.getLogger(Registry.class.getName()).info("Retry cause (" + (i + 1) + "/" + max + ")"
+                                + ofNullable(description).filter(d -> d.length >= 1).map(d -> Stream.of(d).collect(joining(" "))).orElse("")
+                                + ": " + error.getMessage());
+                    }
+                    try {
+                        sleep(1000);
+                    } catch (final InterruptedException e) {
+                        Thread.interrupted();
+                        fail("quitting");
+                    }
+                }
+            }
+        } finally {
+            client.close();
+        }
+        if (RuntimeException.class.isInstance(lastErr)) {
+            throw RuntimeException.class.cast(lastErr);
+        }
+        throw new IllegalStateException(lastErr);
+    }
 
     public String root() {
         return "http://localhost:" + port;

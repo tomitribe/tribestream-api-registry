@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.tomitribe.tribestream.registryng.test.Registry;
+import org.tomitribe.tribestream.registryng.test.retry.Retry;
 import org.tomitribe.tribestream.registryng.test.selenium.WebAppTesting;
 
 import java.util.Collection;
@@ -44,6 +45,7 @@ public class HomeTest extends WebAppTesting {
     private List<WebElement> applications;
 
     @Test
+    @Retry
     public void ensureHomeListsDefaultApps() {
         waitingDriver.until(() -> applications.size() == 3);
 

@@ -267,6 +267,12 @@
       <version>r938</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.jboss.shrinkwrap.resolver</groupId>
+      <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+      <version>2.2.2</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -292,6 +298,11 @@
           <context>/registry</context>
           <classpathAsWar>true</classpathAsWar>
           <singleClassLoader>true</singleClassLoader>
+          <webResourceCached>false</webResourceCached>
+          <docBase>${project.build.directory}/${project.build.finalName}</docBase>
+          <modules>
+            <module>${project.build.directory}/${project.build.finalName}/WEB-INF/classes</module>
+          </modules>
           <containerProperties>
             <org.apache.openejb.cxf.bus.features>org.apache.cxf.feature.LoggingFeature</org.apache.openejb.cxf.bus.features>
             <openejb.deploymentId.format>{appId}/{ejbJarId}/{ejbName}</openejb.deploymentId.format>
@@ -317,6 +328,24 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>${h2.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>com.github.alexcojocaru</groupId>
+        <artifactId>elasticsearch-maven-plugin</artifactId>
+        <version>2.0</version>
+        <configuration>
+          <clusterName>registry-local</clusterName>
+          <tcpPort>9300</tcpPort>
+          <httpPort>9200</httpPort>
+          <scriptFile>${project.basedir}/src/main/elasticsearch/provisionning.script</scriptFile>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>2.4.1</version>
           </dependency>
         </dependencies>
       </plugin>

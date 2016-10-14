@@ -284,7 +284,7 @@ public class Repository {
 
                     em.persist(endpoint);
                     em.flush();
-                    searchEngine.indexEndpoint(endpoint, true);
+                    searchEngine.indexEndpoint(endpoint);
                 }
             }
         }
@@ -312,7 +312,7 @@ public class Repository {
         update(application);
 
         em.flush();
-        searchEngine.indexEndpoint(endpoint, true);
+        searchEngine.indexEndpoint(endpoint);
 
         return endpoint;
     }
@@ -352,7 +352,7 @@ public class Repository {
         if (endpoint.getOperation() != null) {
             endpoint.setDocument(convertToJson(endpoint.getOperation()));
         }
-        searchEngine.indexEndpoint(endpoint, false);
+        searchEngine.indexEndpoint(endpoint);
         return em.merge(endpoint);
     }
 
