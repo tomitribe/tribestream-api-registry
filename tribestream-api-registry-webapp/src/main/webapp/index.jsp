@@ -9,6 +9,7 @@
                 var hrefArr = hrefStr.split('/');
                 hrefArr.shift(); // remove protocol
                 hrefArr.shift(); // remove "//"
+                hrefArr.shift(); // remove host and port (if any)
                 return hrefArr;
             };
             var getNext = function(list) {
@@ -33,23 +34,24 @@
             };
             var baseUrl = (function() {
                 var docHref = getCleanDocLocation();
-                if('<%=request.getRequestURL()%>' === docHref) {
+                var remoteHref = getHrefList('<%=request.getRequestURL()%>');
+                var localHref = getHrefList(docHref);
+                if('<%=request.getRequestURL()%>' === docHref || remoteHref.join('/') === localHref.join('/')) {
                     var ctxPath = '<%=request.getContextPath()%>/';
                     return ctxPath === '/' ? '/' : ctxPath;
                 }
-                var remoteHref = getHrefList('<%=request.getRequestURL()%>');
-                var localHref = getHrefList(docHref);
                 var result = [];
                 while(remoteHref.length) {
                     var lastRemote = getNext(remoteHref);
                     var lastLocal = getNext(localHref);
-                    if(lastRemote !== lastLocal) {
-                        localHref.push(lastLocal);
+                    if(lastRemote !== lastLocal && lastLocal) {
+                        result.push(lastLocal);
                         break;
                     }
 
                 }
-                return document.location.protocol + '//' + localHref.join('/') + '/';
+                result.unshift(document.location.host);
+                return document.location.protocol + '//' + result.join('/') + '/';
             }());
             document.open();
             document.write("<base href='" + baseUrl + "' />");
