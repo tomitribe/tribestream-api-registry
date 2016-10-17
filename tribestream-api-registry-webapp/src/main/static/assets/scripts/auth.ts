@@ -33,12 +33,12 @@ angular
         return {
             restrict: 'A',
             scope: true,
-            controller: ['$scope', '$location', '$timeout', 'tribeAuthorizationService', '$sessionStorage', 'systemMessagesService', 'tribeHeaderProviderSelector', 'currentAuthProvider',
+            controller: ['$scope', '$location', '$timeout', 'tribeAuthorizationService', '$localStorage', 'systemMessagesService', 'tribeHeaderProviderSelector', 'currentAuthProvider',
                 function ($scope,
                           $location,
                           $timeout,
                           authorization,
-                          $sessionStorage,
+                          $localStorage,
                           systemMessagesService,
                           tribeHeaderProviderSelector,
                           currentAuthProvider) {
@@ -79,7 +79,7 @@ angular
                         headerProvider.login($scope.username, $scope.password)
                           .then(
                               function() {
-                                  $sessionStorage.tribe.user = {name: $scope.username};
+                                  $localStorage.tribe.user = {name: $scope.username};
                                   currentAuthProvider.set(headerProvider);
                                   // TODO: Sometimes redirects to the login page, that's stupid
                                   redirect();
