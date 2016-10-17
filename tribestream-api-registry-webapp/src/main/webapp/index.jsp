@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html id="ng-app" data-ng-app="tribe-main"><%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html id="ng-app" data-ng-app="tribe-main">
+<%@ page contentType="text/html;charset=UTF-8" language="java" session="false" %>
 <head>
     <title>tribestream registry</title>
     <script type="text/javascript">
