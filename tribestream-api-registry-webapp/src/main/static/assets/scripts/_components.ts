@@ -17,7 +17,8 @@ angular.module('website-components', [
             scope: {
                 callback: '=',
                 message: '@',
-                icon: '@'
+                icon: '@',
+                label: '@?'
             },
             template: require('../templates/component_confirm_btn.jade'),
             link: function (scope, el) {

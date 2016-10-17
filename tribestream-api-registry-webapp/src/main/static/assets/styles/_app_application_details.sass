@@ -2,9 +2,49 @@
 
 div[data-app-application-details]
   div.header
+    border-bottom: solid #efefef 1px
+    padding: 20px
     display: flex
+    justify-content: space-between
+    align-items: center
+    .breadcrumb
+      *
+        margin: 0 10px 0 0
+        color: #c1c2c4
+      i.fa-home, span, a
+        font-size: 12px
+      i.fa-chevron-right
+        font-size: 10px
+      a i.fa-home, a
+        color: $tomitribe-orange
+      span, a
+        font-weight: 700 !important
+        white-space: nowrap
+      a
+        text-decoration: none
+        &:hover
+          text-decoration: underline
     .buttons
       display: flex
+      > div
+        display: flex
+        align-items: center
+        margin-left: 20px
+        background-color: #f0f0f0
+        padding: 5px 15px
+        $color: #464748
+        border: solid $color 1px
+        border-radius: 3px
+        > *, > a > span, > div .trigger > *
+          color: $color
+          text-decoration: none
+        > span, > a, > div .trigger > span, > div .trigger >  a
+          font-weight: 700
+        > i, > div .trigger > i
+          margin-right: 5px
+          font-size: 13px
+        &:hover
+          cursor: pointer
   article.content
     padding: 10px 40px 0 40px
     > div:first-of-type
