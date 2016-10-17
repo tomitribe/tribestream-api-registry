@@ -23,10 +23,14 @@
                 return last;
             };
             var getCleanDocLocation = function() {
-                if(!document.location.hash) {
-                    return document.location.href;
+                var result = document.location.href;
+                if(document.location.hash) {
+                    result =  result.substring(0, result.length - document.location.hash.length);
                 }
-                return document.location.href.substring(0, document.location.href.length - document.location.hash.length);
+                if(document.location.search) {
+                    result =  result.substring(0, result.length - document.location.search.length);
+                }
+                return result;
             };
             var baseUrl = (function() {
                 var docHref = getCleanDocLocation();
@@ -36,8 +40,6 @@
                     var ctxPath = '<%=request.getContextPath()%>/';
                     return ctxPath === '/' ? '/' : ctxPath;
                 }
-                window.console.log(remoteHref);
-                window.console.log(localHref);
                 var result = [];
                 while(remoteHref.length) {
                     var lastRemote = getNext(remoteHref);
@@ -48,7 +50,6 @@
                     }
 
                 }
-                window.console.log(result);
                 result.unshift(document.location.host);
                 return document.location.protocol + '//' + result.join('/') + '/';
             }());
