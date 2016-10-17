@@ -38,7 +38,7 @@ angular.module('website-components-singleselect', [
                 } else {
                     $scope.editable = $scope.editable === 'true';
                 }
-                $scope['activeBottomUp'] = null;
+                $scope['selectedItem'] = null;
                 $scope['inputText'] = null;
                 $scope['fieldDirty'] = false;
                 $scope['optionsActivated'] = false;
@@ -54,10 +54,10 @@ angular.module('website-components-singleselect', [
                         });
                         if (existing) {
                             $scope['inputText'] = $scope.getOptionText(_.clone(existing));
-                            $scope['activeBottomUp'] = _.clone(existing);
+                            $scope['selectedItem'] = _.clone(existing);
                         } else {
-                            $scope['inputText'] = _.clone($scope['originalSelectedOption']);
-                            $scope['activeBottomUp'] = _.clone($scope['originalSelectedOption']);
+                            $scope['inputText'] = _.clone($scope.originalSelectedOption);
+                            $scope['selectedItem'] = _.clone($scope.originalSelectedOption);
                         }
                     });
                 });
@@ -74,15 +74,15 @@ angular.module('website-components-singleselect', [
                         return availValue === $scope['originalSelectedOption'];
                     });
                     $scope['inputText'] = $scope.getOptionText(existing);
-                    $scope['activeBottomUp'] = _.clone(existing);
+                    $scope['selectedItem'] = _.clone(existing);
                     $scope.$broadcast('fieldCanceled');
                 }));
                 $scope['onCommit'] = (revertIfNoMatch) => $timeout(() => $scope.$apply(() => {
-                    if ($scope['activeBottomUp']) {
+                    if ($scope['selectedItem']) {
                         $scope['fieldDirty'] = false;
                         $scope['optionsActivated'] = false;
-                        $scope['originalSelectedOption'] = $scope.getOptionValue($scope['activeBottomUp']);
-                        $scope['inputText'] = $scope.getOptionText($scope['activeBottomUp']);
+                        $scope['originalSelectedOption'] = $scope.getOptionValue($scope['selectedItem']);
+                        $scope['inputText'] = $scope.getOptionText($scope['selectedItem']);
                         $scope['activeBottomUp'] = _.clone($scope['originalSelectedOption']);
                         $scope.$broadcast('fieldCommitted');
                     } else if(revertIfNoMatch) {
@@ -93,7 +93,7 @@ angular.module('website-components-singleselect', [
                             return availValue === $scope['originalSelectedOption'];
                         });
                         $scope['inputText'] = $scope.getOptionText(existing);
-                        $scope['activeBottomUp'] = _.clone(existing);
+                        $scope['selectedItem'] = _.clone(existing);
                     }
                 }));
                 $scope['onSelectTopDownOption'] = () => $timeout(() => $scope.$apply(() => {
@@ -169,72 +169,72 @@ angular.module('website-components-singleselect', [
             template: require('../templates/component_singleselect_available.jade'),
             controller: ['$scope', '$timeout', ($scope, $timeout) => {
                 $scope['showOptions'] = () => $timeout(() => $scope.$apply(() => {
-                    $scope['activeBottomUp'] = null;
+                    $scope['selectedItem'] = null;
                     $scope.newOpt = null;
                     $scope.availableOptions = _.clone($scope.originalAvailableOptions);
                     let text = $scope['inputText'] ? $scope['inputText'].trim() : '';
                     $scope.availableOptions = _.sortBy(_.filter($scope.availableOptions, (opt) => {
                         return $scope.getOptionText(opt).startsWith(text);
                     }), (item) => $scope.getOptionText(item));
-                    $scope['activeBottomUp'] = _.find($scope.availableOptions, (opt) => $scope.getOptionText(opt).startsWith(text));
+                    $scope['selectedItem'] = _.find($scope.availableOptions, (opt) => $scope.getOptionText(opt).startsWith(text));
                     if ($scope.editable) {
                         if (_.find($scope.availableOptions, (opt) => $scope.getOptionText(opt) === text)) {
                             $scope.newOpt = null;
                         } else {
                             $scope.newOpt = text;
                         }
-                        if (!$scope['activeBottomUp']) {
-                            $scope['activeBottomUp'] = $scope.newOpt;
+                        if (!$scope['selectedItem']) {
+                            $scope['selectedItem'] = $scope.newOpt;
                         }
                     }
                 }));
                 $scope.selectAvailableItem = (item) => $timeout(() => $scope.$apply(() => {
-                    $scope['activeBottomUp'] = item;
+                    $scope['selectedItem'] = item;
                 }));
                 $scope.selectNext = () => $timeout(() => $scope.$apply(() => {
                     let ordered = _.sortBy($scope.availableOptions, (item) => $scope.getOptionText(item).toLowerCase());
-                    if ($scope['activeBottomUp']) {
-                        var index = ordered.indexOf($scope['activeBottomUp']) + 1;
+                    if ($scope['selectedItem']) {
+                        var index = ordered.indexOf($scope['selectedItem']) + 1;
                         if (index >= ordered.length) {
                             if ($scope.newOpt) {
-                                $scope['activeBottomUp'] = $scope.newOpt;
+                                $scope['selectedItem'] = $scope.newOpt;
                             } else {
-                                $scope['activeBottomUp'] = ordered[0];
+                                $scope['selectedItem'] = ordered[0];
                             }
                         } else {
-                            $scope['activeBottomUp'] = ordered[index];
+                            $scope['selectedItem'] = ordered[index];
                         }
                     } else {
-                        $scope['activeBottomUp'] = _.first(ordered);
+                        $scope['selectedItem'] = _.first(ordered);
                     }
                 }));
                 $scope['selectPrevious'] = () => $timeout(() => $scope.$apply(() => {
                     let ordered = _.sortBy($scope.availableOptions, (item) => $scope.getOptionText(item).toLowerCase());
-                    if ($scope['activeBottomUp']) {
-                        if ($scope.newOpt === $scope['activeBottomUp'] && ordered.length) {
-                            $scope['activeBottomUp'] = _.last(ordered);
+                    if ($scope['selectedItem']) {
+                        if ($scope.newOpt === $scope['selectedItem'] && ordered.length) {
+                            $scope['selectedItem'] = _.last(ordered);
                         } else {
-                            var index = ordered.indexOf($scope['activeBottomUp']) - 1;
+                            var index = ordered.indexOf($scope['selectedItem']) - 1;
                             if (index < 0) {
                                 if ($scope.newOpt) {
-                                    $scope['activeBottomUp'] = $scope.newOpt;
+                                    $scope['selectedItem'] = $scope.newOpt;
                                 } else {
-                                    $scope['activeBottomUp'] = _.last(ordered);
+                                    $scope['selectedItem'] = _.last(ordered);
                                 }
                             } else {
-                                $scope['activeBottomUp'] = ordered[index];
+                                $scope['selectedItem'] = ordered[index];
                             }
                         }
                     } else {
                         if ($scope.newOpt) {
-                            $scope['activeBottomUp'] = $scope.newOpt;
+                            $scope['selectedItem'] = $scope.newOpt;
                         } else {
-                            $scope['activeBottomUp'] = _.last(ordered);
+                            $scope['selectedItem'] = _.last(ordered);
                         }
                     }
                 }));
                 $scope.selectItem = (opt) => {
-                    $scope.selectedOption = opt;
+                    $scope.selectedItem = opt;
                     $scope['active'] = false;
                     $scope['inputText'] = $scope.getOptionText(opt);
                 };
