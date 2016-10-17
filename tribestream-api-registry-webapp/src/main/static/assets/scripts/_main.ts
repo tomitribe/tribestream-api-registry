@@ -122,7 +122,7 @@ angular.module('tribe-main', [
         function ($q, $window, $location, currentAuthProvider) {
             return {
                 'request': function(config) {
-                    if (currentAuthProvider.isActive()) {
+                    if (config.url != 'api/security/oauth2' && currentAuthProvider.isActive()) {
                         return currentAuthProvider.get().getAuthorizationHeader().then(function(token) {
                             config.headers['Authorization'] = token;
                             return config;
