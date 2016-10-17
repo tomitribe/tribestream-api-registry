@@ -7,7 +7,7 @@ div
     i.fa.fa-chevron-right
     span(x-ng-if="historyItem") Revision {{historyItem.revisionId}} by {{historyItem.username}} created on {{historyItem.timestamp | date:'medium'}}
     .actions
-      i.fa.fa-trash(x-ng-if="endpointLink", x-ng-click="delete()")
+      div(data-tribe-confirm-btn, data-callback="delete", data-icon="trash", data-message="Are you sure you want to delete this endpoint?", x-ng-if="endpointLink")
       i(data-tribe-editable-option, data-empty-text="Actions", data-value="action", data-options="['Copy...', 'Release...', 'Export...', 'Share link...']")
   div
     div
