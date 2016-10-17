@@ -136,7 +136,8 @@ public class ElasticsearchClient {
 
     public JsonObject search(final JsonObject query, final long from, final long size) {
         try {
-            WebTarget target = client.target(base).path("_search");
+            WebTarget target = client.target(base).path("{index}/_search")
+                    .resolveTemplate("index", index);
             if (from >= 0) {
                 target = target.queryParam("from", from);
             }

@@ -31,8 +31,10 @@ import org.junit.runner.RunWith;
 import org.tomitribe.tribestream.registryng.cdi.Tribe;
 import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
+import org.tomitribe.tribestream.registryng.domain.EntityLink;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
 import org.tomitribe.tribestream.registryng.domain.SearchResult;
+import org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension;
 import org.tomitribe.tribestream.registryng.entities.Normalizer;
 import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 import org.tomitribe.tribestream.registryng.test.Registry;
@@ -45,7 +47,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
@@ -119,12 +123,12 @@ public class ApplicationResourceTest {
             assertEquals("Show API version details", applicationWrapper.getSwagger().getPaths().get("/v2").getGet().getSummary());
 
             // And: The response contains links for self, history and the two endpoints
-            assertEquals(response.getLinks().toString(), 5, response.getLinks().size());
-            assertNotNull(response.getLink("self"));
-            assertNotNull(response.getLink("history"));
-            assertNotNull(response.getLink("endpoints"));
-            assertNotNull(response.getLink("GET /"));
-            assertNotNull(response.getLink("GET /v2"));
+            assertEquals(applicationWrapper.toString(), 5, getLinks(applicationWrapper).size());
+            assertNotNull(getLink(applicationWrapper, "self"));
+            assertNotNull(getLink(applicationWrapper, "history"));
+            assertNotNull(getLink(applicationWrapper, "endpoints"));
+            assertNotNull(getLink(applicationWrapper, "GET /"));
+            assertNotNull(getLink(applicationWrapper, "GET /v2"));
 
             registry.withRetries(() -> {
                 EndpointWrapper endpoint = getSearchPage().getResults().stream()
@@ -169,12 +173,12 @@ public class ApplicationResourceTest {
         final ApplicationWrapper createRequest = new ApplicationWrapper(createSwagger, null);
         final Response newApplicationWrapperResponse = registry.target().path("api/application")
                 .request(MediaType.APPLICATION_JSON_TYPE)
-                .buildPost(Entity.entity(createRequest, MediaType.APPLICATION_JSON_TYPE))
-                .invoke();
-
-        assertNotNull(newApplicationWrapperResponse.getLink("self"));
+                .post(Entity.entity(createRequest, MediaType.APPLICATION_JSON_TYPE));
 
         ApplicationWrapper newApplicationWrapper = newApplicationWrapperResponse.readEntity(ApplicationWrapper.class);
+
+        assertNotNull(getLink(newApplicationWrapper, "self"));
+
         assertNotNull(newApplicationWrapper);
         assertEquals("Test-API", newApplicationWrapper.getHumanReadableName());
 
@@ -201,7 +205,7 @@ public class ApplicationResourceTest {
         final Swagger updateSwagger = objectMapper.readValue(updateDocument, Swagger.class);
         final ApplicationWrapper updateRequest = new ApplicationWrapper(updateSwagger, null);
 
-        final ApplicationWrapper updatedApplicationWrapper = registry.client().target(newApplicationWrapperResponse.getLink("self"))
+        final ApplicationWrapper updatedApplicationWrapper = registry.client().target(getLink(newApplicationWrapper, "self"))
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .put(Entity.entity(updateRequest, MediaType.APPLICATION_JSON_TYPE), ApplicationWrapper.class);
 
@@ -308,5 +312,18 @@ public class ApplicationResourceTest {
         return registry.target().path("api/registry")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(SearchPage.class);
+    }
+
+    private Collection<EntityLink> getLinks(final ApplicationWrapper applicationWrapper) {
+        return ((Collection<Map<String, String>>)Map.class.cast(applicationWrapper.getSwagger().getVendorExtensions().get(TribestreamOpenAPIExtension.VENDOR_EXTENSION_KEY))
+                .get(TribestreamOpenAPIExtension.LINKS)).stream()
+                .map(m -> new EntityLink(m.get("rel"), m.get("href")))
+                .collect(toList());
+    }
+
+    private String getLink(final ApplicationWrapper applicationWrapper, final String name) {
+        return getLinks(applicationWrapper).stream()
+                .filter(s -> name.equals(s.getRel()))
+                .findFirst().get().getHref();
     }
 }

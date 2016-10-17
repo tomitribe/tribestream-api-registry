@@ -23,6 +23,7 @@ import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -31,10 +32,10 @@ import javax.persistence.NamedQuery;
 @Getter
 @Setter
 @NamedQueries({
-        @NamedQuery(name = AccessToken.Queries.DELETE_EXPIRED_TOKENS, query = "DELETE AccessToken t WHERE t.expiryTimestamp < :now")
+        @NamedQuery(name = AccessToken.Queries.DELETE_EXPIRED_TOKENS, query = "DELETE AccessToken t WHERE t.expiryTimestamp < :now"),
+        @NamedQuery(name = AccessToken.Queries.FIND_BY_TOKEN, query = "SELECT t from AccessToken t WHERE t.accessToken = :token")
 })
 public class AccessToken {
-
     // Are 8k sufficient for a token?
     private static final int MAX_ACCESS_TOKEN_LENGTH = 8192;
 
@@ -42,9 +43,13 @@ public class AccessToken {
 
     public interface Queries {
         String DELETE_EXPIRED_TOKENS = "AccessToken.deleteExpiredTokens";
+        String FIND_BY_TOKEN = "AccessToken.findByToken";
     }
 
     @Id
+    @GeneratedValue
+    private long id;
+
     @Column(length = MAX_ACCESS_TOKEN_LENGTH)
     private String accessToken;
 

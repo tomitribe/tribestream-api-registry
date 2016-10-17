@@ -16,25 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.tomitribe.tribestream.registryng.security.oauth2;
+package org.tomitribe.tribestream.registryng.cdi;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
+import org.apache.deltaspike.core.api.config.ConfigResolver;
+import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-@Data
-public class AccessTokenResponse {
-    @JsonProperty("scope")
-    private String scope;
+import static org.junit.Assert.assertEquals;
 
-    @JsonProperty("access_token")
-    private String accessToken;
-
-    @JsonProperty("refresh_token")
-    private String refreshToken;
-
-    @JsonProperty("token_type")
-    private String tokenType;
-
-    @JsonProperty("expires_in")
-    private int expiresIn = 120;
+@RunWith(TomEEEmbeddedSingleRunner.class) // cause our cdi ext will setup the deciphering
+public class ConfigSetupExtensionTest {
+    @Test
+    public void decipher() {
+        assertEquals("foo", ConfigResolver.getPropertyValue("test_value"));
+    }
 }

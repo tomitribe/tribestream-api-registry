@@ -47,7 +47,7 @@ angular.module('tribe-endpoints', [
                                   $scope.swagger = data.swagger;
                                   $scope.humanReadableName = data.humanReadableName;
                                   let endpoints = []
-                                  let links = tribeLinkHeaderService.parseLinkHeader(response.headers('link'));
+                                  let links = tribeLinkHeaderService.parseLinkHeader(response['data']['swagger']['x-tribestream-api-registry']['links']);
                                   $scope.applicationLink = links['self'];
                                   $scope.applicationsLink = null;
                                   $scope.historyLink = links['history'];
@@ -112,7 +112,7 @@ angular.module('tribe-endpoints', [
                             $scope.$apply(() => {
                               $scope.swagger = saveResponse.data.swagger;
                               $scope.humanReadableName = saveResponse.data.humanReadableName;
-                              let links = tribeLinkHeaderService.parseLinkHeader(saveResponse.headers('link'));
+                              let links = tribeLinkHeaderService.parseLinkHeader(saveResponse['data']['swagger']['x-tribestream-api-registry']['links']);
                               $scope.applicationLink = links['self'];
                               $scope.applicationsLink = null;
                               $scope.historyLink = links['history'];
@@ -130,14 +130,14 @@ angular.module('tribe-endpoints', [
                     };
                     $scope.showHistory = () => {
                       srv.getHistory($scope.historyLink).then((response) => {
-                        let links = tribeLinkHeaderService.parseLinkHeader(response.headers('link'));
-                        for (let entry of response.data) {
+                        let links = tribeLinkHeaderService.parseLinkHeader(response['data']['links']);
+                        for (let entry of response['data']['items']) {
                           entry.link = links["revision " + entry.revisionId];
                         }
 
                         $timeout(function () {
                           $scope.$apply(function () {
-                            $scope.history = response.data;
+                            $scope.history = response['data']['items'];
                           });
                         });
                       });
