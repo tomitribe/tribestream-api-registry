@@ -52,7 +52,7 @@ angular
                     };
                     var redirect = function() {
                         var path = authorization.targetPath;
-                        if (path && path != "/login") {
+                        if (path && path !== "/login") {
                             // in case we have a saved target url, use it instead of "/"
                             delete authorization.targetPath;
                             $location.path(path);
