@@ -1,18 +1,23 @@
 div
   div
-    div
-      a(href=".")
-        i.fa.fa-home
-      i.fa.fa-chevron-right
-      a(x-ng-href="application/{{applicationName}}?version={{swagger.info.version}}") {{swagger.info.title}} {{swagger.info.version}}
-      i(data-app-application-header-create-btn, x-ng-if="endpointsLink")
-        div
-          .button-face
-            div
-              a(x-ng-href="endpoint/{{humanReadableName}}") 
-                span Create Endpoint
-      div(data-tribe-confirm-btn, data-callback="delete", data-icon="trash", data-message="Are you sure you want to delete this application?", x-ng-if="applicationLink")
-    article
+    .header
+      .breadcrumb
+        a(href=".")
+          i.fa.fa-home
+        i.fa.fa-chevron-right
+        a(x-ng-href="application/{{applicationName}}?version={{swagger.info.version}}") {{swagger.info.title}} {{swagger.info.version}}
+      .buttons
+        .save(x-ng-if="applicationLink" x-ng-click="save()")
+          span Save
+        .create-application(x-ng-if="applicationsLink" x-ng-click="create()")
+          span Create Application
+        .create-endpoint
+          a(x-ng-href="endpoint/{{humanReadableName}}")
+            span Create Endpoint
+        .history(x-ng-if="historyLink" x-ng-click="showHistory()")
+          span Show History
+        .delete(data-tribe-confirm-btn, data-callback="delete", data-icon="trash", data-message="Are you sure you want to delete this application?", x-ng-if="applicationLink")
+    article.content
       div
         h1
           div(data-tribe-text, data-value="swagger.info.title", data-placeholder="Application Name")
@@ -35,8 +40,4 @@ div
                 span {{endpoint.path | pathencode}}
                 span {{endpoint.summary}}
       div(data-app-application-details-history)
-      div
-        button.orange(x-ng-if="applicationLink" x-ng-click="save()") Save
-        button.orange(x-ng-if="applicationsLink" x-ng-click="create()") Create
-        button.orange(x-ng-if="historyLink" x-ng-click="showHistory()") Show History
   div(data-app-footer)
