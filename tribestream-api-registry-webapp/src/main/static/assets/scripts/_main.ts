@@ -118,11 +118,11 @@ angular.module('tribe-main', [
     ])
 
     // should never be used cause we force the user to being logged to use the console
-    .factory('httpInterceptor', ['$q', '$window', '$location', '$sessionStorage', 'currentAuthProvider',
-        function ($q, $window, $location, $sessionStorage, currentAuthProvider) {
+    .factory('httpInterceptor', ['$q', '$window', '$location', 'currentAuthProvider',
+        function ($q, $window, $location, currentAuthProvider) {
             return {
                 'request': function(config) {
-                    if (config.url != 'api/security/oauth2' && currentAuthProvider.isActive()) {
+                    if (currentAuthProvider.isActive()) {
                         return currentAuthProvider.get().getAuthorizationHeader().then(function(token) {
                             config.headers['Authorization'] = token;
                             return config;
@@ -144,20 +144,22 @@ angular.module('tribe-main', [
         $rootScope.baseFullPath = angular.element('head base').first().attr('href');
     }])
 
-    .run(['tribeAuthorizationService', '$sessionStorage', function (Authorization, $sessionStorage) {
-        if ($sessionStorage.tribe == null) {
-            $sessionStorage.tribe = {};
-        } else {
-            Authorization.restoreSession();
+    .run(['tribeAuthorizationService', 'currentAuthProvider', function (Authorization, currentProvider) {
+        const provider = Authorization.initContext();
+        if (provider) {
+            currentProvider.set(provider);
         }
     }])
 
-    .run(['tribeAuthorizationService', '$sessionStorage', '$location', function (Authorization, $sessionStorage, $location) {
+    .run(['tribeAuthorizationService', '$location', function (Authorization, $location) {
         // redirect to login in case the session storage is empty.
-        if (!$sessionStorage.tribe.isConnected) {
+        if (!Authorization.isConnected()) {
             // save target path to be used once we successfuly log in.
             Authorization.targetPath = $location.path();
             $location.path("/login");
+
+        } else if ($location.path() == "/login") {
+            $location.path("/");
         }
     }])
 
