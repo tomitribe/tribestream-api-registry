@@ -57,6 +57,16 @@ angular.module('tribe-main', [
                 .when('/showcase', {
                     template: require('../templates/page_components.jade'),
                     controller: ['$scope', ($scope) => {
+                        $scope.valueA = `
+value a
+value a
+value a
+                        `;
+                        $scope.valueB = `
+value a
+value b
+value a
+                        `;
                         $scope.toUppercase = (item) => {
                             if (!item) {
                                 return null;

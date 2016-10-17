@@ -9,14 +9,17 @@ module _components_diff {
                 restrict: 'A',
                 scope: {
                     valueA: '=',
-                    valueB: '='
+                    valueB: '=',
+                    mode: '@?'
                 },
                 template: require('../templates/component_diff.jade'),
                 controller: ['$scope', ($scope) => {
                     $scope['loaded'] = false;
+                    if(!$scope['mode']) {
+                        $scope['mode'] = 'application/json';
+                    }
                 }],
                 link: (scope, el) => $timeout(() => {
-
                     let checkLoaded = () => {
                         if (!scope['valueA']) {
                             return;
@@ -33,9 +36,9 @@ module _components_diff {
                             return;
                         }
                         codemirror.MergeView(el.find('> div')[0], {
-                            value: JSON.stringify(scope['valueA'], undefined, 2),
-                            orig: JSON.stringify(scope['valueB'], undefined, 2),
-                            mode: 'application/json',
+                            value: scope['valueA'],
+                            orig: scope['valueB'],
+                            mode: scope['mode'],
                             connect: 'align',
                             lineNumbers: true,
                             highlightDifferences: true,

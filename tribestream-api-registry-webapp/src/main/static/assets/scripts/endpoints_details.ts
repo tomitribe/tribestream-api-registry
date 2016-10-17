@@ -546,8 +546,8 @@ angular.module('tribe-endpoints-details', [
                         .then(results => {
                           $scope.ref = results[0].data;
                           $timeout(() => $scope.$apply(() => {
-                              $scope['valueA'] = JSON.parse($scope.ref['json']);
-                              $scope['valueB'] = JSON.parse(results[1]['data']['json']);
+                              $scope['valueA'] = JSON.stringify(JSON.parse($scope.ref['json']), undefined, 2);
+                              $scope['valueB'] = JSON.stringify(JSON.parse(results[1]['data']['json']), undefined, 2);
                           }));
                         });
                     }
