@@ -158,7 +158,7 @@ angular.module('tribe-main', [
             Authorization.targetPath = $location.path();
             $location.path("/login");
 
-        } else if ($location.path() == "/login") {
+        } else if ($location.path() === "/login") {
             $location.path("/");
         }
     }])
