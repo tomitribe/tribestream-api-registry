@@ -9,6 +9,7 @@
                 var hrefArr = hrefStr.split('/');
                 hrefArr.shift(); // remove protocol
                 hrefArr.shift(); // remove "//"
+                hrefArr.shift(); // remove host and port (if any)
                 return hrefArr;
             };
             var getNext = function(list) {
@@ -22,34 +23,34 @@
                 return last;
             };
             var getCleanDocLocation = function() {
-                var result = document.location.href;
-                if(document.location.hash) {
-                    result =  result.substring(0, result.length - document.location.hash.length);
+                if(!document.location.hash) {
+                    return document.location.href;
                 }
-                if(document.location.search) {
-                    result =  result.substring(0, result.length - document.location.search.length);
-                }
-                return result;
+                return document.location.href.substring(0, document.location.href.length - document.location.hash.length);
             };
             var baseUrl = (function() {
                 var docHref = getCleanDocLocation();
-                if('<%=request.getRequestURL()%>' === docHref) {
+                var remoteHref = getHrefList('<%=request.getRequestURL()%>');
+                var localHref = getHrefList(docHref);
+                if('<%=request.getRequestURL()%>' === docHref || remoteHref.join('/') === localHref.join('/')) {
                     var ctxPath = '<%=request.getContextPath()%>/';
                     return ctxPath === '/' ? '/' : ctxPath;
                 }
-                var remoteHref = getHrefList('<%=request.getRequestURL()%>');
-                var localHref = getHrefList(docHref);
+                window.console.log(remoteHref);
+                window.console.log(localHref);
                 var result = [];
                 while(remoteHref.length) {
                     var lastRemote = getNext(remoteHref);
                     var lastLocal = getNext(localHref);
-                    if(lastRemote !== lastLocal) {
-                        localHref.push(lastLocal);
+                    if(lastRemote !== lastLocal && lastLocal) {
+                        result.push(lastLocal);
                         break;
                     }
 
                 }
-                return document.location.protocol + '//' + localHref.join('/') + '/';
+                window.console.log(result);
+                result.unshift(document.location.host);
+                return document.location.protocol + '//' + result.join('/') + '/';
             }());
             document.open();
             document.write("<base href='" + baseUrl + "' />");
