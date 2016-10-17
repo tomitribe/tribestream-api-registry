@@ -13,6 +13,7 @@ hs_err_pid*
 bower_components
 node_modules
 typings
+npm-debug.log
 *.iml
 .idea
 target
