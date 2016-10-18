@@ -45,23 +45,22 @@ module services {
                     },
                     setCredentials: function (username, providerState) {
                         $localStorage.tribe.security = providerState;
-                        $localStorage.tribe.username = username == null ? "Guest" : username;
+                        $localStorage.tribe.username = username;
                     },
                     getCredentials: function () {
                         return $localStorage.tribe.username;
                     },
                     restoreSession: function () {
                         var providerState = $localStorage.tribe.security;
-                        if (providerState != null) {
-                            var provider = tribeHeaderProviderSelector
-                                .select($localStorage.tribe.security.type);
-                            provider
-                                .fromState($localStorage.tribe.security);
+                        if (!providerState) {
+                            var provider = tribeHeaderProviderSelector.select($localStorage.tribe.security.type);
+                            provider.fromState($localStorage.tribe.security);
                             return provider;
                         }
+                        return undefined;
                     },
                     initContext: function () {
-                        if ($localStorage.tribe == null) {
+                        if ($localStorage.tribe === null) {
                             $localStorage.tribe = {};
                             return undefined;
                         } else {

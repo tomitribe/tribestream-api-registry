@@ -33,12 +33,11 @@ angular
         return {
             restrict: 'A',
             scope: true,
-            controller: ['$scope', '$location', '$timeout', 'tribeAuthorizationService', '$localStorage', 'systemMessagesService', 'tribeHeaderProviderSelector', 'currentAuthProvider',
+            controller: ['$scope', '$location', '$timeout', 'tribeAuthorizationService', 'systemMessagesService', 'tribeHeaderProviderSelector', 'currentAuthProvider',
                 function ($scope,
                           $location,
                           $timeout,
                           authorization,
-                          $localStorage,
                           systemMessagesService,
                           tribeHeaderProviderSelector,
                           currentAuthProvider) {
