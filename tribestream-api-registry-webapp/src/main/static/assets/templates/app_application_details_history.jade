@@ -6,7 +6,6 @@ div
         th Revision
         th Timestamp
         th Username
-        th Comment
         th
     tbody
       tr(x-ng-repeat="historyItem in history")
@@ -16,7 +15,5 @@ div
           span {{historyItem.timestamp | date:'medium'}}
         td
           span {{historyItem.username}}
-        td
-          span {{historyItem.usercomment}}
         td
           i.fa.fa-history(x-ng-click="showHistoricApplication(historyItem)")
