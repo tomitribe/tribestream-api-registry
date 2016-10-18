@@ -226,6 +226,13 @@ public class Repository {
         }
     }
 
+    public List<OpenApiDocument> findAllApplicationsMetadata() {
+        List<OpenApiDocument> result = em.createNamedQuery(OpenApiDocument.Queries.FIND_ALL_METADATA, OpenApiDocument.class)
+                .getResultList();
+
+        return result;
+    }
+
     public List<OpenApiDocument> findAllApplicationsWithEndpoints() {
         return em.createNamedQuery(OpenApiDocument.Queries.FIND_ALL_WITH_ENDPOINTS, OpenApiDocument.class)
                 .getResultList();

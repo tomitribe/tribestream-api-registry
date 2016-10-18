@@ -73,7 +73,11 @@ import static org.tomitribe.tribestream.registryng.entities.Normalizer.normalize
                 query = "SELECT d FROM OpenApiDocument d where d.humanReadableName = :applicationName AND d.version = :applicationVersion"),
         @NamedQuery(
                 name = OpenApiDocument.Queries.FIND_BY_HUMAN_REDABLE_NAME_NO_VERSION,
-                query = "SELECT d FROM OpenApiDocument d where d.humanReadableName = :applicationName")
+                query = "SELECT d FROM OpenApiDocument d where d.humanReadableName = :applicationName"),
+        @NamedQuery(
+                name = OpenApiDocument.Queries.FIND_ALL_METADATA,
+                query = "SELECT new OpenApiDocument(d.id, d.name, d.version, d.humanReadableName) FROM OpenApiDocument d ORDER BY d.name ASC, d.version DESC")
+
 })
 @EntityListeners(OpenAPIDocumentSerializer.class)
 @Audited
@@ -85,6 +89,7 @@ public class OpenApiDocument extends AbstractEntity {
         String FIND_BY_NAME_AND_VERSION = "OpenApiDocument.findByNameAndVersion";
         String FIND_BY_NAME = "OpenApiDocument.findByName";
         String FIND_ALL = "OpenApiDocument.findAll";
+        String FIND_ALL_METADATA = "OpenApiDocument.findAllMetadata";
         String FIND_ALL_WITH_ENDPOINTS = "OpenApiDocument.findAllWithEndpoints";
         String FIND_BY_APPLICATIONID = "OpenApiDocument.findByApplicationId";
         String FIND_BY_APPLICATIONID_WITH_ENDPOINTS = "OpenApiDocument.findByApplicationIdWithEndpoints";
@@ -118,6 +123,13 @@ public class OpenApiDocument extends AbstractEntity {
     private transient Swagger swagger;
 
     public OpenApiDocument() {
+    }
+
+    public OpenApiDocument(final String id, final String name, final String version, final String humanReadableName) {
+        super(id);
+        this.name = name;
+        this.version = version;
+        this.humanReadableName = humanReadableName;
     }
 
     @PrePersist

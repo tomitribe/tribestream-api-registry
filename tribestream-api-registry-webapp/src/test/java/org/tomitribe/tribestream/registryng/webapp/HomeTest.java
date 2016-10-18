@@ -47,7 +47,7 @@ public class HomeTest extends WebAppTesting {
     @Test
     @Retry
     public void ensureHomeListsDefaultApps() {
-        waitingDriver.until(() -> applications.size() == 3, "ensureHomeListsDefaultApps :: applications.size() == 3");
+        waitingDriver.until(() -> applications.size() >= 3, "ensureHomeListsDefaultApps :: applications.size() >= 3");
 
         final Map<String, Collection<String>> expectedApplications = new HashMap<String, Collection<String>>() {{
             put("Swagger Petstore 1.0.0(4)", new HashSet<String>() {{
@@ -69,9 +69,18 @@ public class HomeTest extends WebAppTesting {
             }});
         }};
 
-        applications.forEach(app -> assertEquals(
-                expectedApplications.remove(app.findElement(cssSelector("h2")).getText() /*app name + version + number of endpoints*/),
-                app.findElements(cssSelector("div[x-ng-repeat='endpoint in endpoints']")).stream().map(WebElement::getText).collect(toSet())));
+        applications.stream()
+                .filter(webElement -> {
+                    try {
+                        // Filter out the applications without endpoints that were created by other tests. (Yes, test cases are not isolated)
+                        return !webElement.findElements(cssSelector("div[x-ng-repeat='endpoint in application.endpoints']")).isEmpty();
+                    } catch (Throwable th) {
+                        return false;
+                    }
+                })
+                .forEach(app -> assertEquals(
+                        expectedApplications.remove(app.findElement(cssSelector("h2")).getText() /*app name + version + number of endpoints*/),
+                        app.findElements(cssSelector("div[x-ng-repeat='endpoint in application.endpoints']")).stream().map(WebElement::getText).collect(toSet())));
 
         // we saw all applications we expected
         assertTrue(expectedApplications.keySet().toString(), expectedApplications.isEmpty());

@@ -16,26 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.tomitribe.tribestream.registryng.domain;
+package org.tomitribe.tribestream.registryng.domain.search;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.tomitribe.tribestream.registryng.domain.search.SearchResult;
 
-import java.util.Collection;
 import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SearchPage {
-    private List<SearchResult> results;
-    private int total;
-    private int current;
+public class SearchResult {
 
-    private Collection<CloudItem> applications;
-    private Collection<CloudItem> categories;
-    private Collection<CloudItem> tags;
-    private Collection<CloudItem> roles;
+    private ApplicationSearchResult application;
+
+    private List<EndpointSearchResult> endpoints;
+
 }
