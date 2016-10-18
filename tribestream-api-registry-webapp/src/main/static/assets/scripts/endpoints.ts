@@ -232,19 +232,15 @@ angular.module('tribe-endpoints', [
                 $scope.$watch('endpoints', function () {
                     $timeout(function () {
                         $scope.$apply(function () {
-                            var applicationsMap = _.groupBy($scope.endpoints, function (endpoint) {
-                                return endpoint['applicationId'];
+                            $scope.applications = ($scope.endpoints||[]).map((searchResult) => {
+                                return {
+                                    applicationId: searchResult.application.applicationId,
+                                    applicationName: searchResult.application.applicationName,
+                                    name: searchResult.application.application,
+                                    version: searchResult.application.applicationVersion,
+                                    endpoints: searchResult.endpoints
+                                  };
                             });
-                            var applications = [];
-                            _.each(applicationsMap, function (endpoints, applicationId) {
-                                applications.push({
-                                    applicationId: applicationId,
-                                    applicationName: endpoints[0]['applicationName'],
-                                    name: endpoints[0]['application'],
-                                    endpoints: endpoints
-                                });
-                            });
-                            $scope.applications = applications;
                         });
                     });
                 });
@@ -329,20 +325,16 @@ angular.module('tribe-endpoints', [
                     $scope.$watch('endpoints', function () {
                         $timeout(function () {
                             $scope.$apply(function () {
-                                var applicationsMap = _.groupBy($scope.endpoints, function (endpoint) {
-                                    return endpoint['applicationId'];
-                                });
-                                var applications = [];
-                                _.each(applicationsMap, function (endpoints, applicationId) {
-                                    applications.push({
-                                        applicationId: applicationId,
-                                        applicationName: endpoints[0]['applicationName'],
-                                        name: endpoints[0]['application'],
-                                        version: endpoints[0]['applicationVersion'],
-                                        endpoints: endpoints
-                                    });
-                                });
-                                $scope.applications = applications;
+
+                              $scope.applications = ($scope.endpoints||[]).map((searchResult) => {
+                                  return {
+                                      applicationId: searchResult.application.applicationId,
+                                      applicationName: searchResult.application.applicationName,
+                                      name: searchResult.application.application,
+                                      version: searchResult.application.applicationVersion,
+                                      endpoints: searchResult.endpoints
+                                    };
+                              });
                             });
                         });
                     });
