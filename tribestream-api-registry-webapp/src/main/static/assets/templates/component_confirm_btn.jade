@@ -1,6 +1,7 @@
 div
     .trigger
         i(class="fa fa-{{icon}}")
+        span(x-ng-if="label") {{label}}
     .confirmation-popup
         div
             div
