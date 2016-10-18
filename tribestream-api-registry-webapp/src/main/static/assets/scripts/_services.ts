@@ -80,26 +80,6 @@ module services {
             }
         ])
 
-        .factory('tribeServerService', ['$resource', '$http', 'tribeErrorHandlerService',
-            function ($resource, $http, tribeErrorHandlerService) {
-                var resource = $resource('api/server/info', null, {
-                    info: {method: 'GET', params: {}, isArray: false}
-                });
-                return {
-                    getInfo: function () {
-                        return {
-                            then: function (successCallback, errorCallback) {
-                                resource.info({},
-                                    successCallback,
-                                    tribeErrorHandlerService.ensureErrorHandler(errorCallback)
-                                );
-                            }
-                        };
-                    }
-                };
-            }
-        ])
-
         .run(function () {
             // placeholder
         });
