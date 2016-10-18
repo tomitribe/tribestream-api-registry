@@ -17,7 +17,7 @@ div
           i.fa.fa-plus
           a(x-ng-href="endpoint/{{humanReadableName}}")
             span Create Endpoint
-        .history(x-ng-if="historyLink" x-ng-click="showHistory()")
+        .history
           i.fa.fa-history
           span Show History
         .delete(data-tribe-confirm-btn, data-callback="delete", data-icon="trash", data-message="Are you sure you want to delete this application?", x-ng-if="applicationLink", data-label="Delete Application")
