@@ -7,7 +7,6 @@ div[data-app-endpoints-header]
     display: flex
     align-items: center
     margin: 20px 0
-    overflow: hidden
     @media (max-width: $wrapping-width)
       flex-direction: column
       align-items: flex-start
@@ -35,13 +34,12 @@ div[data-app-endpoints-header]
           color: #cacaca
           margin-left: 5px
           font-weight: 600
-    > i
-      margin: 0 60px 0 10px
-      @media (max-width: $wrapping-width)
-        margin: 0 20px 0 20px
-        align-self: stretch
+    div[data-app-endpoints-query-input]
       flex-grow: 1
-      max-width: 400px
-      &:last-of-type
-        @media (max-width: $wrapping-width)
-          margin-top: 10px
+      @media (max-width: $wrapping-width)
+        margin-left: 20px
+        margin-bottom: 20px
+        align-self: stretch
+      > div
+        max-width: 400px
+

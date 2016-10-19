@@ -1,14 +1,15 @@
 div
-  .button-face
+  div
     div
-      a(x-ng-href="application") 
+      i.fa.fa-file-text
+      a(x-ng-href="application")
         span Create Application
-  .button-face
+  .create-endpoint-btn
     div
+      i.fa.fa-plus-square
       span Create Endpoint
-    div.trigger
       i.fa.fa-caret-down
-  .button-applications.floating-menu
-    ul
-      li(x-ng-repeat="app in applications | orderBy:'text'")
-        a(x-ng-href="endpoint/{{app.applicationName}}") {{app.name}}
+    .button-applications
+      ul
+        li(x-ng-repeat="app in applications | orderBy:'text'")
+          a(x-ng-href="endpoint/{{app.applicationName}}") {{app.name}}
