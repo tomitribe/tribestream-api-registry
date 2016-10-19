@@ -12,6 +12,27 @@ angular.module('website-components', [
     'website-components-diff'
 ])
 
+    .directive('tribeCheckbox', ['$timeout', function ($timeout) {
+        return {
+            restrict: 'A',
+            scope: {
+                value: '=',
+                change: '&?'
+            },
+            template: require('../templates/component_checkbox.jade'),
+            controller: ['$scope', ($scope) => {
+                $scope['keyTriggered'] = () => $timeout(() => $scope.$apply(() => {
+                    $scope['value'] = !$scope['value'];
+                }));
+                $scope.$watch('value', () => {
+                    if ($scope['change'] !== undefined) {
+                        $scope['change']();
+                    }
+                });
+            }]
+        };
+    }])
+
     .directive('tribeConfirmBtn', ['$timeout', function ($timeout) {
         return {
             restrict: 'A',
