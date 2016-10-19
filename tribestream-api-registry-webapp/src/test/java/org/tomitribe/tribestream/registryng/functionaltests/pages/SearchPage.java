@@ -28,8 +28,10 @@ import org.openqa.selenium.support.FindBy;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.jboss.arquillian.graphene.Graphene.guardAjax;
 import static org.jboss.arquillian.graphene.Graphene.guardNoRequest;
+import static org.junit.Assert.assertThat;
 
 public class SearchPage {
 
@@ -77,4 +79,18 @@ public class SearchPage {
         guardNoRequest(searchField).sendKeys(Keys.chord(Keys.CONTROL, "a"), Keys.DELETE, Keys.RETURN);
     }
 
+    public void assertHasEndpoint(final String application, final String verb, final String path) {
+
+        WebElement applicationElement = applications.stream()
+                .filter(appElem -> appElem.findElement(By.tagName("h2")).getText().startsWith(application))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("There is no application with name " + application +". Available applications are " + getApplications()));
+
+
+        List<String> endpoints = applicationElement.findElements(By.cssSelector("div[x-ng-repeat='endpoint in application.endpoints'] a")).stream()
+                .map(endpointElem -> endpointElem.getText())
+                .collect(toList());
+
+        assertThat(endpoints, hasItem(verb + " " + path));
+    }
 }

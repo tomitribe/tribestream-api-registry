@@ -48,4 +48,13 @@ public class SearchPageSteps {
                 applicationNames.stream().filter(name -> name.contains(applicationName)).findFirst().isPresent());
     }
 
+    @Then("^I should see the endpoint \"(.*?)\" \"(.*?)\" in the application \"(.*?)\"$")
+    public void i_should_see_the_endpoint(final String verb, final String path, final String application) {
+
+        searchPage.refresh();
+
+        searchPage.assertHasEndpoint(application, verb, path);
+
+
+    }
 }

@@ -40,7 +40,8 @@ import java.io.File;
         ApplicationDetailsSteps.class
 })
 @Features({
-        "org/tomitribe/tribestream/registryng/functionaltests/application-details.feature"
+        "org/tomitribe/tribestream/registryng/functionaltests/application-details.feature",
+        "org/tomitribe/tribestream/registryng/functionaltests/endpoint-details.feature"
 })
 public class FunctionalTestsIT {
 
