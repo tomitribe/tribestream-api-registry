@@ -5,19 +5,22 @@ interface AuthenticationHeaderProvider { // TODO: move to a shared module to do 
   logout();
   isValid(): boolean;
   getAuthorizationHeader(): angular.IPromise<string>;
+  getState(): any;
+  fromState(state: any);
 }
 
 class BasicHeaderProvider implements AuthenticationHeaderProvider {
   private token: string;
 
-  constructor(private $q: angular.IQService) {
+  constructor(private $http: angular.IHttpService,
+              private $q: angular.IQService) {
   }
 
   login(username: string, password: string): angular.IPromise<any> {
-    this.token = 'Basic ' + Base64.encode(username + ':' + password);
-    const deferred = this.$q.defer();
-    deferred.resolve({token: this.token});
-    return deferred.promise;
+    return this.$http.post('api/login',
+        $.param({username: username, password: password}),
+        {headers: {'Content-Type': 'application/x-www-form-urlencoded'}})
+        .then((response) =>  this.token = 'Basic ' + Base64.encode(username + ':' + password));
   }
 
   logout() {
@@ -32,6 +35,15 @@ class BasicHeaderProvider implements AuthenticationHeaderProvider {
     const deferred = this.$q.defer();
     deferred.resolve(this.token);
     return deferred.promise;
+  }
+
+  getState() : any {
+    return { type: "Basic", token: this.token};
+  }
+
+  fromState(state: any) {
+    // we could check and enforce the type of the state to Basic
+    this.token = state["token"];
   }
 }
 
@@ -89,6 +101,15 @@ class OAuth2HeaderProvider implements AuthenticationHeaderProvider {
     return !!this.token;
   }
 
+  getState() : any {
+    return { type: "OAuth2", token: this.token, expiration: this.expiration};
+  }
+
+  fromState(state: any) {
+    this.token = state["token"];
+    this.expiration = state["expiration"];
+  }
+
   private refresh() {
     const start = new Date().getTime();
     return this.$http.post(
@@ -128,5 +149,5 @@ class HeaderProviderSelector {
 // register them all as angular services
 angular.module('tribe-services-header-providers', ['website-browser'])
   .service('tribeOauth2HeaderProvider', ['$http',  '$q', OAuth2HeaderProvider])
-  .service('tribeBasicHeaderProvider', ['$q', BasicHeaderProvider])
+  .service('tribeBasicHeaderProvider', ['$http', '$q', BasicHeaderProvider])
   .service('tribeHeaderProviderSelector', ['tribeOauth2HeaderProvider', 'tribeBasicHeaderProvider', HeaderProviderSelector]);
