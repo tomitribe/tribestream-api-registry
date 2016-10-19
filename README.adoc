@@ -3,7 +3,6 @@
 
 Tribestream API Registry
 
-
 == Development
 
 To build and run the registry in its own TomEE instance:
