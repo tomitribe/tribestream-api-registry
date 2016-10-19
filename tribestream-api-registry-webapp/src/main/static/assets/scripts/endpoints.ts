@@ -29,7 +29,7 @@ angular.module('tribe-endpoints', [
         };
     }])
 
-    .directive('appApplicationDetails', [function () {
+    .directive('appApplicationDetails', ['$timeout', '$window', function ($timeout, $window) {
         return {
             restrict: 'A',
             template: require('../templates/app_application_details.jade'),
@@ -128,29 +128,17 @@ angular.module('tribe-endpoints', [
                           $location.path("/");
                       });
                     };
-                    $scope.showHistory = () => {
-                      srv.getHistory($scope.historyLink).then((response) => {
-                        let links = tribeLinkHeaderService.parseLinkHeader(response['data']['links']);
-                        for (let entry of response['data']['items']) {
-                          entry.link = links["revision " + entry.revisionId];
+                    $scope.$watch('historyLink', () => {
+                        if($scope.historyLink) {
+                            srv.getHistory($scope.historyLink).then((response) => {
+                                let links = tribeLinkHeaderService.parseLinkHeader(response['data']['links']);
+                                for (let entry of response['data']['items']) {
+                                    entry.link = links[`revision ${entry.revisionId}`];
+                                }
+                                $timeout(() => $scope.$apply(() => $scope.history = response['data']['items']));
+                            });
                         }
-
-                        $timeout(function () {
-                          $scope.$apply(function () {
-                            $scope.history = response['data']['items'];
-                          });
-                        });
-                      });
-                    };
-                    // Triggered by the "Close History" button to close the Revision Log in whatever form it will be
-                    // presented
-                    $scope.closeHistory = () => {
-                      $timeout(() => {
-                        $scope.$apply(() => {
-                          $scope.history = null;
-                        });
-                      });
-                    };
+                    });
                     // Triggered by selecting one revision, will load it and show it
                     $scope.showHistoricApplication = (historyItem) => {
                       $timeout(() => {
@@ -170,7 +158,17 @@ angular.module('tribe-endpoints', [
                       });
                     };
                 }
-            ]
+            ],
+            link: (scope, el) => $timeout(() => {
+                el.find('div.history').on('click', () => {
+                    var winEl = angular.element($window);
+                    var calculateScroll = () => {
+                        var target = el.find('div[data-app-application-details-history]');
+                        return target.offset().top;
+                    };
+                    winEl.scrollTop(calculateScroll());
+                });
+            })
         };
     }])
 
