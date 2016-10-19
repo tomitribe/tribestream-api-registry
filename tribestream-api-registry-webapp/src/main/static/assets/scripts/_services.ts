@@ -44,28 +44,28 @@ module services {
                         return $http.get('api/security/oauth2/status');
                     },
                     setCredentials: function (username, providerState) {
+                        if ($localStorage.tribe == undefined) {
+                            $localStorage.tribe = {};
+                        }
                         $localStorage.tribe.security = providerState;
                         $localStorage.tribe.username = username;
                     },
                     getCredentials: function () {
-                        return $localStorage.tribe.username;
+                        if ($localStorage.tribe == undefined) {
+                            return "Guest";
+
+                        } else {
+                            return $localStorage.tribe.username;
+                        }
                     },
                     restoreSession: function () {
-                        var providerState = $localStorage.tribe.security;
-                        if (!providerState) {
+                        var providerState = $localStorage.tribe == undefined ? undefined : $localStorage.tribe.security;
+                        if (providerState) {
                             var provider = tribeHeaderProviderSelector.select($localStorage.tribe.security.type);
                             provider.fromState($localStorage.tribe.security);
                             return provider;
                         }
                         return undefined;
-                    },
-                    initContext: function () {
-                        if ($localStorage.tribe === null) {
-                            $localStorage.tribe = {};
-                            return undefined;
-                        } else {
-                            return this.restoreSession();
-                        }
                     },
                     isConnected: function () {
                         return $localStorage.tribe

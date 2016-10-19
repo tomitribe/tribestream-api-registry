@@ -145,9 +145,11 @@ angular.module('tribe-main', [
     }])
 
     .run(['tribeAuthorizationService', 'currentAuthProvider', function (Authorization, currentProvider) {
-        const provider = Authorization.initContext();
-        if (provider) {
-            currentProvider.set(provider);
+        if (Authorization.isConnected()) {
+            const provider = Authorization.restoreSession();
+            if (provider) {
+                currentProvider.set(provider);
+            }
         }
     }])
 
