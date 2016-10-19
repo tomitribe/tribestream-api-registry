@@ -135,6 +135,10 @@ public class ApplicationResource {
 
         // TODO: Handle added/updated/removed paths
 
+        oldDocument.setName(oldDocument.getSwagger().getInfo().getTitle());
+        oldDocument.setVersion(oldDocument.getSwagger().getInfo().getVersion());
+        oldDocument.updateHumanReadbleName();
+
         repository.update(oldDocument);
 
         // TODO: dont update/find
