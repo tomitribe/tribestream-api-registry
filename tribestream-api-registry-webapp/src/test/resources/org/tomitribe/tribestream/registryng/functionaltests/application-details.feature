@@ -19,6 +19,19 @@ Feature: Tribestream :: Registry :: Application Details
 
     When I create a new application
     And set the application name to "My cool app" and version to "1.0.0"
+#    And set the description to "A very nice description"
     And hit the create button
     And go back to the home page
     Then I should see the application "My cool app 1.0.0"
+    And the application details page shows these properties
+
+  Scenario: Update an application
+
+    Given I create a new application with title "My cool app to update" and version "1.1.1"
+    When I select this application
+    And I set the application name to "My super-cool app" and version to "1.2.3"
+    And hit the save button
+    And go back to the home page
+    Then I should see the application "My super-cool app 1.2.3"
+    And the application details page shows these properties
+

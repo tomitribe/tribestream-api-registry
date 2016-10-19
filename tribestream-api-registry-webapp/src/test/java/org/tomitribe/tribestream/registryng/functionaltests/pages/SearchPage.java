@@ -18,25 +18,37 @@
  */
 package org.tomitribe.tribestream.registryng.functionaltests.pages;
 
+import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.support.FindBy;
 
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 import static org.jboss.arquillian.graphene.Graphene.guardAjax;
+import static org.jboss.arquillian.graphene.Graphene.guardNoRequest;
 
 public class SearchPage {
 
+    @Drone
+    private PhantomJSDriver driver;
+
+    @FindBy(css = "div[data-app-endpoints-list='data-app-endpoints-list']")
+    private WebElement searchPage;
+
     @FindBy(css = "div[x-ng-repeat='application in applications']")
     private List<WebElement> applications;
+
+    @FindBy(css = "input[type='text']")
+    private WebElement searchField;
 
     @FindBy(linkText = "Create Application")
     private WebElement createApplicationButton;
 
     public List<String> getApplications() {
-
         return applications.stream()
                 .map(appElem -> appElem.findElement(By.tagName("h2")))
                 .map(WebElement::getText)
@@ -44,6 +56,25 @@ public class SearchPage {
     }
 
     public void clickCreateApplicationButton() {
-        guardAjax(createApplicationButton).click();
+        guardNoRequest(createApplicationButton).click();
     }
+
+    public void selectApplication(final String applicationName, final String version) {
+
+        WebElement element = driver.findElementByLinkText(applicationName + " " + version);
+
+        guardAjax(element).click();
+
+    }
+
+    public boolean isVisible() {
+
+        return searchPage.isDisplayed();
+
+    }
+
+    public void refresh() {
+        guardNoRequest(searchField).sendKeys(Keys.chord(Keys.CONTROL, "a"), Keys.DELETE, Keys.RETURN);
+    }
+
 }

@@ -30,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import static org.jboss.arquillian.graphene.Graphene.guardAjax;
+import static org.jboss.arquillian.graphene.Graphene.guardNoRequest;
 import static org.jboss.arquillian.graphene.Graphene.waitGui;
 
 public class ApplicationDetailsPage {
@@ -49,8 +50,11 @@ public class ApplicationDetailsPage {
     @FindBy(css = "div[x-ng-click='save()']")
     private WebElement saveButton;
 
-    @FindBy(css = "div[data-value='swagger.info.description']")
+    @FindBy(css = "div[data-value='swagger.info.description'] div.main")
     private WebElement descriptionField;
+
+    @FindBy(css = "div[data-value='swagger.info.description'] textarea")
+    private WebElement descriptionEditor;
 
     @FindBy(css = "div.tribe-field-actions-body div[x-ng-click='confirm()']")
     private WebElement confirmButton;
@@ -59,6 +63,10 @@ public class ApplicationDetailsPage {
     @FindBy(css = "a[href='.']")
     private WebElement homeLink;
 
+    @FindBy(css = "i.fa.fa-check")
+    private WebElement checkButton;
+
+
     public void enterApplicationName(final String newTitle) throws IOException {
         titleField.click();
 
@@ -66,11 +74,11 @@ public class ApplicationDetailsPage {
 
         WebElement textField = titleField.findElement(By.cssSelector("input[type='text']"));
         // No Ctrl+A because on Mac it's probably COMMAND+A
-        textField.sendKeys(Keys.END);
-        while (textField.getText().length() > 0) {
-            textField.sendKeys(Keys.BACK_SPACE);
-        }
-        textField.sendKeys(newTitle, "\n");
+        textField.sendKeys(Keys.chord(Keys.CONTROL, "a"), Keys.BACK_SPACE);
+        textField.sendKeys(newTitle);
+        guardNoRequest(checkButton).click();
+
+
     }
 
 
@@ -78,13 +86,38 @@ public class ApplicationDetailsPage {
         versionField.click();
         waitGui();
         WebElement textField = versionField.findElement(By.cssSelector("input[type='text']"));
-        textField.sendKeys(newVersion, "\n");
+        textField.sendKeys(Keys.chord(Keys.CONTROL, "a"), Keys.BACK_SPACE);
+        textField.sendKeys(newVersion);
+        guardNoRequest(checkButton).click();
     }
 
-    public void clickCreateApplicationButton() throws IOException {
+    public void enterDescription(final String newDescription) throws IOException {
+
+        // TODO: No idea how to edit the markdown component. SeleniumIDE does not see any actions as well... :-(
+//        assertTrue(descriptionField.isDisplayed());
+//        Actions actions = new Actions(driver).moveToElement(descriptionField);
+//        createScreenshot("target/aftermove.png");
+//        actions.click();
+//        createScreenshot("target/afterclick.png");
+
+    }
+
+    public String getApplicationName() {
+        return titleField.getText();
+    }
+
+    public String getApplicationVersion() {
+        return versionField.getText();
+    }
+
+    public void clickCreateApplicationButton() throws Exception {
         createApplicationButton.click();
 
         waitGui();
+    }
+
+    public void clickSaveApplicationButton() throws Exception {
+        guardAjax(saveButton).click();
     }
 
     public void clickHomeButton() {
