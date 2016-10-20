@@ -68,6 +68,8 @@ angular
                             });
                         });
                     });
+                    // we don't activate the switch yet so enforce it but keep the logic once we'll have themed it
+                    $scope.companyLogin = true; // == force oauth2
                     $scope.login = function () {
                         let headerProvider;
                         if ($scope.companyLogin) {
