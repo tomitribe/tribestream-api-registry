@@ -16,30 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.tomitribe.tribestream.registryng.domain;
+package org.tomitribe.tribestream.registryng.domain.search;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import java.util.Set;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SearchResult {
+@EqualsAndHashCode(of = "applicationId")
+public class ApplicationSearchResult {
     private String applicationId;
-    private String endpointId;
-    private String applicationName;
-    private String endpointName;
-    private String application;
+    private String applicationName;  // humanReadable
+    private String application;      // plain name
     private String applicationVersion;
-    private String httpMethod;
-    private String path;
-    private String description;
-    private Set<String> categories;
-    private Set<String> tags;
-    private Set<String> roles;
-    private double score;
     private String link;
+
+    public ApplicationSearchResult(final String applicationId) {
+        this.applicationId = applicationId;
+    }
 }

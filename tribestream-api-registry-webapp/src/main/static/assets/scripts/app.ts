@@ -16,18 +16,8 @@ angular.module('tribe-app', [
             restrict: 'A',
             scope: {},
             template: require('../templates/app_footer.jade'),
-            controller: ['$timeout', '$scope', 'tribeServerService', function ($timeout, $scope, server) {
+            controller: ['$timeout', '$scope', function ($timeout, $scope) {
                 $scope.now = Date.now();
-                server.getInfo().then(function (data) {
-                    $timeout(function () {
-                        $scope.$apply(function () {
-                            $scope.version = {
-                                app: data.applicationVersion,
-                                server: data.serverVersion
-                            };
-                        });
-                    });
-                });
             }]
         };
     }])

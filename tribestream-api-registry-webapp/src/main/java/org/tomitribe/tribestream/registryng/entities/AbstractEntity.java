@@ -53,6 +53,13 @@ public class AbstractEntity {
     private String updatedBy;
 
 
+    public AbstractEntity() {
+    }
+
+    public AbstractEntity(final String id) {
+        this.id = id;
+    }
+
     public String getId() {
         return id;
     }

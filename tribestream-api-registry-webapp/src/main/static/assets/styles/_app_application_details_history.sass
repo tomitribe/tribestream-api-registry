@@ -1,0 +1,18 @@
+@import "variables"
+@import "common_table"
+
+div[data-app-application-details-history]
+  margin-top: 20px
+  > div
+    @include common-table()
+    > table
+      td
+        padding: 20px 0
+        &:last-of-type
+          padding: 10px 0
+      td, th
+        // history button
+        &:last-of-type
+          width: 30px
+          i
+            font-size: 18px

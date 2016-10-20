@@ -1,7 +1,5 @@
 module endpointdetails {
 
-let codemirror = require("../../../static/bower_components/codemirror/lib/codemirror.js");
-
 angular.module('tribe-endpoints-details', [
     'website-services',
     'website-services-endpoints'
@@ -544,30 +542,18 @@ angular.module('tribe-endpoints-details', [
                     $scope.showDiff = !$scope.showDiff;
 
                     if ($scope.showDiff) {
-                      $scope['diffElement'].innerHTML = ''; // reset
                       $q.all($scope.selected.map(item => srv.getHistoricItem(item).promise()))
                         .then(results => {
                           $scope.ref = results[0].data;
-                          const json1 = JSON.parse($scope.ref['json']);
-                          const json2 = JSON.parse(results[1]['data']['json']);
-                          $scope.mergeWidget = codemirror.MergeView($scope['diffElement'], {
-                            value: JSON.stringify(json1, undefined, 2),
-                            orig: JSON.stringify(json2, undefined, 2),
-                            mode: 'application/json',
-                            connect: 'align',
-                            lineNumbers: true,
-                            highlightDifferences: true,
-                            collapseIdentical: false,
-                            lineWrapping: true
-                          });
+                          $timeout(() => $scope.$apply(() => {
+                              $scope['valueA'] = JSON.stringify(JSON.parse($scope.ref['json']), undefined, 2);
+                              $scope['valueB'] = JSON.stringify(JSON.parse(results[1]['data']['json']), undefined, 2);
+                          }));
                         });
                     }
                   };
                 }
-            ],
-            link: function (scope, el, attrs, controller) {
-                scope['diffElement'] = el.find('div#history-diff')[0];
-            }
+            ]
         };
     }])
 

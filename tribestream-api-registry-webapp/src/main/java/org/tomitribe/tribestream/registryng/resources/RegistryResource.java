@@ -55,11 +55,22 @@ public class RegistryResource {
                                     @QueryParam("page") @DefaultValue("0") final int page,
                                     @QueryParam("count") @DefaultValue("100") final int count) {
         final SearchPage searchPage = searchEngine.search(new SearchRequest(query, tags, categories, roles, apps, page, count));
-        searchPage.getResults().forEach(searchResult -> searchResult.setLink(
-                uriInfo.getBaseUriBuilder()
-                        .path("/application/{applicationId}/endpoint/{endpointId}")
-                        .resolveTemplate("applicationId", searchResult.getApplicationId())
-                        .resolveTemplate("endpointId", searchResult.getEndpointId()).build().toASCIIString()));
+
+        searchPage.getResults().forEach(searchResult -> {
+
+            searchResult.getApplication().setLink(uriInfo.getBaseUriBuilder()
+                    .path("/application/{applicationId}")
+                    .resolveTemplate("applicationId", searchResult.getApplication().getApplicationId()).build().toASCIIString());
+
+            searchResult.getEndpoints().forEach(endpoint -> endpoint.setLink(
+                    uriInfo.getBaseUriBuilder()
+                            .path("/application/{applicationId}/endpoint/{endpointId}")
+                            .resolveTemplate("applicationId", endpoint.getApplicationId())
+                            .resolveTemplate("endpointId", endpoint.getEndpointId()).build().toASCIIString()));
+
+        });
+
+
         return searchPage;
     }
 
