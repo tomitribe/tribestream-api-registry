@@ -164,6 +164,11 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>org.apache.tomee.patch</groupId>
+      <artifactId>commons-jcs-jcache</artifactId>
+      <version>2.0-M1</version>
+    </dependency>
 
     <dependency>
       <groupId>org.hibernate</groupId>
