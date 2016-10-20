@@ -44,14 +44,14 @@ module services {
                         return $http.get('api/security/oauth2/status');
                     },
                     setCredentials: function (username, providerState) {
-                        if ($localStorage.tribe == undefined) {
+                        if ($localStorage.tribe === undefined) {
                             $localStorage.tribe = {};
                         }
                         $localStorage.tribe.security = providerState;
                         $localStorage.tribe.username = username;
                     },
                     getCredentials: function () {
-                        if ($localStorage.tribe == undefined) {
+                        if ($localStorage.tribe === undefined) {
                             return "Guest";
 
                         } else {
