@@ -33,12 +33,11 @@ angular
         return {
             restrict: 'A',
             scope: true,
-            controller: ['$scope', '$location', '$timeout', 'tribeAuthorizationService', '$sessionStorage', 'systemMessagesService', 'tribeHeaderProviderSelector', 'currentAuthProvider',
+            controller: ['$scope', '$location', '$timeout', 'tribeAuthorizationService', 'systemMessagesService', 'tribeHeaderProviderSelector', 'currentAuthProvider',
                 function ($scope,
                           $location,
                           $timeout,
                           authorization,
-                          $sessionStorage,
                           systemMessagesService,
                           tribeHeaderProviderSelector,
                           currentAuthProvider) {
@@ -52,7 +51,7 @@ angular
                     };
                     var redirect = function() {
                         var path = authorization.targetPath;
-                        if (path) {
+                        if (path && path !== "/login") {
                             // in case we have a saved target url, use it instead of "/"
                             delete authorization.targetPath;
                             $location.path(path);
@@ -68,10 +67,12 @@ angular
                             });
                         });
                     });
+                    // we don't activate the switch yet so enforce it but keep the logic once we'll have themed it
+                    $scope.companyLogin = true; // == force oauth2
                     $scope.login = function () {
                         let headerProvider;
                         if ($scope.companyLogin) {
-                            headerProvider = tribeHeaderProviderSelector.select('Oauth2');
+                            headerProvider = tribeHeaderProviderSelector.select('OAuth2');
                         } else {
                             headerProvider = tribeHeaderProviderSelector.select('Basic');
                         }
@@ -79,9 +80,8 @@ angular
                         headerProvider.login($scope.username, $scope.password)
                           .then(
                               function() {
-                                  $sessionStorage.tribe.user = {name: $scope.username};
+                                  authorization.setCredentials($scope.username, headerProvider.getState());
                                   currentAuthProvider.set(headerProvider);
-                                  // TODO: Sometimes redirects to the login page, that's stupid
                                   redirect();
                               },
                               function (response) {
@@ -116,7 +116,7 @@ angular
                         currentAuthProvider.reset();
                         authorization.clearCredentials();
                         $location.search({});
-                        $location.path('/');
+                        $location.path('/login');
                         $window.location.reload();
                     };
                 }
@@ -126,22 +126,6 @@ angular
                     ctlr['logout']();
                 });
             }
-        };
-    }])
-
-    .directive('appLoggedIn', [function () {
-        return {
-            restrict: 'A',
-            scope: true,
-            controller: ['$scope', '$sessionStorage',
-                function ($scope, $sessionStorage) {
-                    if ($sessionStorage.tribe && $sessionStorage.tribe.user) {
-                        $scope.user = $sessionStorage.tribe.user.name;
-                    } else {
-                        $scope.user = 'guest';
-                    }
-                }
-            ]
         };
     }])
 
