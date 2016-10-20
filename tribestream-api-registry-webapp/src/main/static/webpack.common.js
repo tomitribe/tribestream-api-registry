@@ -116,7 +116,8 @@ module.exports = {
             // replace the original index.jsp by this one manipulated file
             filename: '../index.jsp',
             favicon: './assets/images/favicon.png',
-            chunks: []
+            chunks: ['app', 'vendor', 'polyfills'],
+            hash: true
         })
     ]
 };
