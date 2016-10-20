@@ -30,6 +30,11 @@ import javax.inject.Inject;
 public class Oauth2Configuration {
 
     @Inject
+    @Description("If the token is a JWT the username attribute in the payload")
+    @ConfigProperty(name = "tribe.registry.oauth2.jwt.username", defaultValue = "username")
+    private String jwtUsernameAttribute;
+
+    @Inject
     @Description("OAuth2 endpoint")
     @ConfigProperty(name = "tribe.registry.oauth2.authorizationServerUrl")
     private String authServerUrl;

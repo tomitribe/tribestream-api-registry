@@ -19,6 +19,7 @@
 package org.tomitribe.tribestream.registryng.security;
 
 import org.apache.catalina.User;
+import org.tomitribe.tribestream.registryng.entities.AccessToken;
 import org.tomitribe.tribestream.registryng.security.oauth2.AccessTokenService;
 import org.tomitribe.tribestream.registryng.security.oauth2.InvalidTokenException;
 
@@ -37,6 +38,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.Base64;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -96,9 +98,13 @@ public class SecurityWebFilter implements Filter {
             } else if (authHeader.startsWith("Bearer ")) {
 
                 try {
-                    loginContext.setRoles(new HashSet<>(accessTokenService.getScopes(authHeader.substring("Bearer ".length()))));
+                    final AccessToken token = accessTokenService.findToken(authHeader.substring("Bearer ".length()));
+                    loginContext.setUsername(token.getUsername());
+                    loginContext.setRoles(Stream.of(Optional
+                            .ofNullable(token.getScope()).map(s -> s.split(" ")).orElseGet(() -> new String[0]))
+                            .collect(toSet()));
                     filterChain.doFilter(servletRequest, servletResponse);
-                } catch (InvalidTokenException e) {
+                } catch (final InvalidTokenException e) {
                     LOGGER.log(Level.INFO, "Token could not be validated!", e);
                     sendUnauthorizedResponse(servletResponse);
                 }
