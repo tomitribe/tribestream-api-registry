@@ -8,7 +8,7 @@ var docBase = (process.env.DOC_BASE || helpers.root('target/apache-tomee/webapps
 console.log('Using base=' + docBase);
 
 module.exports = webpackMerge(commonConfig, {
-    devtool: 'cheap-module-eval-source-map',
+    devtool: 'source-map',
 
     output: {
         path: docBase,

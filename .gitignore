@@ -17,3 +17,6 @@ npm-debug.log
 *.iml
 .idea
 target
+
+*.map
+tribestream-api-registry-webapp/src/main/static/assets/scripts/*.js

@@ -37,38 +37,39 @@ module services {
             }
         ])
 
-        .factory('tribeAuthorizationService', ['Base64', '$cookieStore', '$http', '$sessionStorage',
-            function (Base64, $cookieStore, $http, $sessionStorage) {
-                var asBasic = function (token) {
-                    return 'Basic ' + token;
-                };
+        .factory('tribeAuthorizationService', ['$http', '$localStorage', 'tribeHeaderProviderSelector',
+            function ($http, $localStorage, tribeHeaderProviderSelector) {
                 return {
-                    token: function () {
-                        return $sessionStorage.tribe ? asBasic($sessionStorage.tribe.authtoken) : undefined;
-                    },
-                    login: function (credentials) {
-                        if ($sessionStorage.tribe && $sessionStorage.tribe.authtoken) {
-                            this.clearCredentials();
-                        }
-                        // we should instead send the Credential object in REQUEST_BODY mode
-                        return $http.post('api/login',
-                            $.param({username: credentials.username, password: credentials.password}),
-                            {headers: {'Content-Type': 'application/x-www-form-urlencoded'}});
-                    },
                     getOauth2Status: function() {
                         return $http.get('api/security/oauth2/status');
                     },
-                    setCredentials: function (username, password) {
-                        var encoded = Base64.encode(username + ':' + password);
-                        $http.defaults.headers.common['Authorization'] = asBasic(encoded);
-                        $sessionStorage.tribe.authtoken = encoded;
-                        $sessionStorage.tribe.username = username;
+                    setCredentials: function (username, providerState) {
+                        if ($localStorage.tribe == undefined) {
+                            $localStorage.tribe = {};
+                        }
+                        $localStorage.tribe.security = providerState;
+                        $localStorage.tribe.username = username;
+                    },
+                    getCredentials: function () {
+                        if ($localStorage.tribe == undefined) {
+                            return "Guest";
+
+                        } else {
+                            return $localStorage.tribe.username;
+                        }
                     },
                     restoreSession: function () {
-                        var encoded = $sessionStorage.tribe.authtoken;
-                        if (encoded != null) {
-                            $http.defaults.headers.common['Authorization'] = asBasic(encoded);
+                        var providerState = $localStorage.tribe == undefined ? undefined : $localStorage.tribe.security;
+                        if (providerState) {
+                            var provider = tribeHeaderProviderSelector.select($localStorage.tribe.security.type);
+                            provider.fromState($localStorage.tribe.security);
+                            return provider;
                         }
+                        return undefined;
+                    },
+                    isConnected: function () {
+                        return $localStorage.tribe
+                            && $localStorage.tribe.security;
                     },
                     clearCredentials: function () {
                         try {
@@ -76,8 +77,7 @@ module services {
                         } catch (e) {
                             // chrome does not support it
                         }
-                        $sessionStorage.tribe = {};
-                        delete $http.defaults.headers.common['Authorization'];
+                        $localStorage.tribe = {};
                     }
                 };
             }
