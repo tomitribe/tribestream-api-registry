@@ -48,6 +48,7 @@
     <registry.oauth2.tlsProvider>org.apache.deltaspike.NullValueMarker</registry.oauth2.tlsProvider>
     <registry.oauth2.trustStore>org.apache.deltaspike.NullValueMarker</registry.oauth2.trustStore>
     <registry.oauth2.trustStoreType>org.apache.deltaspike.NullValueMarker</registry.oauth2.trustStoreType>
+    <node.version>v5.10.1</node.version>
   </properties>
 
   <dependencies>
@@ -428,7 +429,7 @@
               <goal>install-node-and-npm</goal>
             </goals>
             <configuration>
-              <nodeVersion>v5.10.1</nodeVersion>
+              <nodeVersion>${node.version}</nodeVersion>
               <npmVersion>3.8.6</npmVersion>
             </configuration>
           </execution>
@@ -474,7 +475,7 @@
           </execution>
         </executions>
         <configuration>
-          <installDirectory>${user.home}/.tribe/node-installation-dir</installDirectory>
+          <installDirectory>${user.home}/.tribe/node/${node.version}</installDirectory>
           <workingDirectory>src/main/static</workingDirectory>
           <environmentVariables>
             <DOC_BASE>${frontend.docbase}</DOC_BASE>
