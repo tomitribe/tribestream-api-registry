@@ -2,7 +2,7 @@ div
   h2
     a(x-ng-href="application/{{application.applicationName}}?version={{application.version}}") {{application.name}} {{application.version}}
     span ({{application.endpoints.length}})
-  div(x-ng-repeat="endpoint in endpoints")
+  div(x-ng-repeat="endpoint in application.endpoints")
     i.fa(x-ng-class="{'fa-lock': endpoint.secured, 'fa-unlock': !endpoint.secured}")
     a(x-ng-href="endpoint/{{application.applicationName}}/{{endpoint.httpMethod}}{{endpoint.path| pathencode}}?version={{endpoint.applicationVersion}}") {{endpoint.httpMethod | uppercase}} {{endpoint.path| pathencode}}
     span {{endpoint.description | tribeHtmlText}}

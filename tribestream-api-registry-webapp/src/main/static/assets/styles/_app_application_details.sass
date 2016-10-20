@@ -1,70 +1,89 @@
 @import "variables"
 
 div[data-app-application-details]
-  > div
-    > div:first-of-type
-      > div // navigation top bar
-        border-bottom: solid #efefef 1px
-        padding: 20px
-        height: 66px
+  div.header
+    border-bottom: solid #efefef 1px
+    padding: 20px
+    display: flex
+    justify-content: space-between
+    align-items: center
+    .breadcrumb
+      *
+        margin: 0 10px 0 0
+        color: #c1c2c4
+      i.fa-home, span, a
+        font-size: 12px
+      i.fa-chevron-right
+        font-size: 10px
+      a i.fa-home, a
+        color: $tomitribe-orange
+      span, a
+        font-weight: 700 !important
+        white-space: nowrap
+      a
+        text-decoration: none
+        &:hover
+          text-decoration: underline
+    .buttons
+      display: flex
+      > div
         display: flex
         align-items: center
-        flex-wrap: wrap
-        > *
-          margin: 0 10px 0 0
-          color: #c1c2c4
-        > i.fa-home, > span, > a
-          font-size: 12px
-        > i.fa-chevron-right
-          font-size: 10px
-        > a > i.fa-home, > a
-          color: $tomitribe-orange
-        > span, > a
-          font-weight: 700 !important
-          white-space: nowrap
-        > a
+        margin-left: 20px
+        background-color: #f0f0f0
+        padding: 5px 15px
+        $color: #464748
+        border: solid $color 1px
+        border-radius: 3px
+        > *, > a > span, > div .trigger > *
+          color: $color
           text-decoration: none
-          &:hover
-            text-decoration: underline
-      > article // details body
-        padding: 10px 40px 0 40px
-        > div:first-of-type
-          > h1
-            transform: translate(-10px, 0)
-          > div
-            transform: translate(-10px, 0)
-        h1
-          margin: 0
-        h2, h3
+        > span, > a, > div .trigger > span, > div .trigger >  a
+          font-weight: 700
+        > i, > div .trigger > i
+          margin-right: 5px
+          font-size: 13px
+        &:hover
+          cursor: pointer
+  article.content
+    padding: 10px 40px 0 40px
+    > div:first-of-type
+      > h1
+        transform: translate(-10px, 0)
+      > div
+        transform: translate(-10px, 0)
+    h1
+      margin: 0
+    h2, h3
+      text-transform: uppercase
+      margin: 15px 0
+    h1, h1 input, h1 span
+      font-size: 25px !important
+      font-weight: $app-font-weight-h1 !important
+    h2
+      font-size: 18px !important
+      font-weight: $app-font-weight-h2 !important
+    h3
+      font-size: 14px !important
+      font-weight: $app-font-weight-h3 !important
+    ul, li
+      list-style: none
+      margin: 0
+    ul
+      margin-left: 10px
+    a
+      text-decoration: none
+      span
+        &:first-child
           text-transform: uppercase
-          margin: 15px 0
-        h1, h1 input, h1 span
-          font-size: 25px !important
-          font-weight: $app-font-weight-h1 !important
-        h2
-          font-size: 18px !important
-          font-weight: $app-font-weight-h2 !important
-        h3
-          font-size: 14px !important
-          font-weight: $app-font-weight-h3 !important
-        ul, li
-          list-style: none
-          margin: 0
-        ul
-          margin-left: 10px
-        a
-          text-decoration: none
+        &:last-child
+          font-style: italic
+      &:hover
+        span
+          color: $tomitribe-orange
+    ul.endpoint-info
+      li
+        margin-bottom: 5px
+        > a
           span
-            &:first-child
-              text-transform: uppercase
-            &:last-child
-              font-style: italic
-          &:hover
-            span
-              color: $tomitribe-orange
-        ul.endpoint-info
-          li
-            margin-bottom: 5px
-            > a
-              span
-                margin-right: 5px
+            margin-right: 5px

@@ -8,7 +8,8 @@ angular.module('website-components', [
     'website-components-multiselect',
     'website-components-singleselect',
     'website-components-text',
-    'website-components-markdown'
+    'website-components-markdown',
+    'website-components-diff'
 ])
 
     .directive('tribeConfirmBtn', ['$timeout', function ($timeout) {
@@ -17,7 +18,8 @@ angular.module('website-components', [
             scope: {
                 callback: '=',
                 message: '@',
-                icon: '@'
+                icon: '@',
+                label: '@?'
             },
             template: require('../templates/component_confirm_btn.jade'),
             link: function (scope, el) {

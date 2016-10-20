@@ -33,8 +33,10 @@ import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.EntityLink;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
-import org.tomitribe.tribestream.registryng.domain.SearchResult;
+import org.tomitribe.tribestream.registryng.domain.search.EndpointSearchResult;
 import org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension;
+import org.tomitribe.tribestream.registryng.domain.search.ApplicationSearchResult;
+import org.tomitribe.tribestream.registryng.domain.search.SearchResult;
 import org.tomitribe.tribestream.registryng.entities.Normalizer;
 import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 import org.tomitribe.tribestream.registryng.test.Registry;
@@ -46,8 +48,8 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -131,10 +133,10 @@ public class ApplicationResourceTest {
             assertNotNull(getLink(applicationWrapper, "GET /v2"));
 
             registry.withRetries(() -> {
-                EndpointWrapper endpoint = getSearchPage().getResults().stream()
-                        .filter((SearchResult sr) -> "/v2".equals(sr.getPath()) && "GET".equals(sr.getHttpMethod()))
+                EndpointWrapper endpoint = getSearchPage().getResults().stream().map(SearchResult::getEndpoints).flatMap(List::stream)
+                        .filter((EndpointSearchResult sr) -> "/v2".equals(sr.getPath()) && "GET".equals(sr.getHttpMethod()))
                         .findFirst()
-                        .map((SearchResult sr) -> loadEndpoint(sr.getApplicationId(), sr.getEndpointId()))
+                        .map((EndpointSearchResult sr) -> loadEndpoint(sr.getApplicationId(), sr.getEndpointId()))
                         .get();
                 assertEquals(singletonList("application/json"), endpoint.getOperation().getProduces());
 
@@ -147,9 +149,9 @@ public class ApplicationResourceTest {
                         .request(MediaType.APPLICATION_JSON_TYPE)
                         .get(SearchPage.class);
 
-                assertEquals(2, searchPage.getResults().size());
-                final List<String> foundPaths = searchPage.getResults().stream()
-                        .map(SearchResult::getPath)
+                assertEquals(2, searchPage.getResults().stream().map(SearchResult::getEndpoints).flatMap(List::stream).count());
+                final List<String> foundPaths = searchPage.getResults().stream().map(SearchResult::getEndpoints).flatMap(List::stream)
+                        .map(EndpointSearchResult::getPath)
                         .collect(toList());
                 assertThat(foundPaths, both(hasItem("/")).and(hasItem("/v2")));
             }, "shouldImportOpenAPIDocument");
@@ -225,9 +227,8 @@ public class ApplicationResourceTest {
 
     @Test
     public void shouldDeleteApplication() throws Exception {
-        final SearchResult searchResult = registry.withRetries(() -> {
-            final List<SearchResult> searchResults = new ArrayList<>(getSearchPage().getResults());
-            final SearchResult result = searchResults.get(0);
+        final ApplicationSearchResult searchResult = registry.withRetries(() -> {
+            final ApplicationSearchResult result = getSearchPage().getResults().get(0).getApplication();
             assertNotNull(loadApplication(result.getApplicationId()));
             return result;
         });
@@ -253,7 +254,7 @@ public class ApplicationResourceTest {
         registry.withRetries(() -> assertFalse(registry.target().path("api/registry")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(SearchPage.class)
-                .getResults().stream()
+                .getResults().stream().map(SearchResult::getApplication)
                 .filter(sr -> searchResult.getApplicationId().equals(sr.getApplicationId()))
                 .findFirst()
                 .isPresent()));

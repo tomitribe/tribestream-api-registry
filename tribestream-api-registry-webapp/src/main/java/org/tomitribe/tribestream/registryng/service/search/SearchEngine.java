@@ -20,10 +20,13 @@ package org.tomitribe.tribestream.registryng.service.search;
 
 import org.tomitribe.tribestream.registryng.domain.CloudItem;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
-import org.tomitribe.tribestream.registryng.domain.SearchResult;
+import org.tomitribe.tribestream.registryng.domain.search.ApplicationSearchResult;
+import org.tomitribe.tribestream.registryng.domain.search.EndpointSearchResult;
+import org.tomitribe.tribestream.registryng.domain.search.SearchResult;
 import org.tomitribe.tribestream.registryng.elasticsearch.ElasticsearchClient;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
+import org.tomitribe.tribestream.registryng.repository.Repository;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -76,6 +79,9 @@ public class SearchEngine {
     @Inject
     private ElasticsearchClient elasticsearch;
 
+    @Inject
+    private Repository repository;
+
     public SearchPage search(final SearchRequest request) {
         final int pageSize = request.getCount();
 
@@ -84,6 +90,8 @@ public class SearchEngine {
                 .add("categories", term("category"))
                 .add("roles", term("role"))
                 .add("applications", term("applicationName"));
+
+        final boolean showAll;
 
         final JsonObjectBuilder query = jsonFactory.createObjectBuilder().add("aggs", aggs);
         if ((request.getQuery() != null && !"*".equals(request.getQuery()) && !request.getQuery().isEmpty())
@@ -107,6 +115,10 @@ public class SearchEngine {
             query.add("query", jsonFactory.createObjectBuilder()
                     .add("bool", jsonFactory.createObjectBuilder()
                             .add("must", must)));
+
+            showAll = false;
+        } else {
+            showAll = true;
         }
 
         final JsonObject object = elasticsearch.search(query.build(), request.getPage() * pageSize, pageSize);
@@ -114,9 +126,11 @@ public class SearchEngine {
         final JsonObject hits = object.getJsonObject("hits");
         final JsonObject aggregations = object.getJsonObject("aggregations");
         final int total = hits.getInt("total");
-        return new SearchPage(total == 0 ? new ArrayList<>() : hits.getJsonArray("hits").stream()
+
+
+        List<EndpointSearchResult> allEndpointsSearchResults = total == 0 ? new ArrayList<>() : hits.getJsonArray("hits").stream()
                 .map(json -> JsonObject.class.cast(json).getJsonObject("_source"))
-                .map(source -> new SearchResult(
+                .map(source -> new EndpointSearchResult(
                         getString(source, APPLICATION_ID_FIELD),
                         getString(source, ENDPOINT_ID_FIELD),
                         getString(source, APPLICATION_HUMAN_READABLE_NAME),
@@ -131,7 +145,51 @@ public class SearchEngine {
                         getStrings(source, "role"),
                         getDouble(source, "_score"),
                         null))
-                .collect(toList()), total, request.getPage(),
+                .collect(toList());
+
+        final Stream<ApplicationSearchResult> applicationSearchResults;
+        if (showAll) {
+
+            applicationSearchResults = repository.findAllApplicationsMetadata().stream()
+                    .map(openApiDocument ->
+                            new ApplicationSearchResult(
+                                    openApiDocument.getId(),
+                                    openApiDocument.getHumanReadableName(),
+                                    openApiDocument.getName(),
+                                    openApiDocument.getVersion(), null));
+
+        } else if (total > 0) {
+
+            applicationSearchResults = allEndpointsSearchResults.stream()
+                    .map(searchResult ->
+                            new ApplicationSearchResult(
+                                    searchResult.getApplicationId(),
+                                    searchResult.getApplicationName(),
+                                    searchResult.getApplication(),
+                                    searchResult.getApplicationVersion(),
+                                    null))
+                    .distinct();
+
+        } else {
+            applicationSearchResults = Stream.empty();
+        }
+
+        List<SearchResult> searchResults = applicationSearchResults
+                .map(applicationSearchResult ->
+                        new SearchResult(
+                                applicationSearchResult,
+                                allEndpointsSearchResults.stream()
+                                        .filter(endpointSearchResult -> endpointSearchResult.getApplicationId().equals(applicationSearchResult.getApplicationId()))
+                                        .collect(toList())
+                        )
+                )
+                .collect(toList());
+
+
+        return new SearchPage(
+                searchResults,
+                total,
+                request.getPage(),
                 aggregationToSet(aggregations, "applications", request.getApps()),
                 aggregationToSet(aggregations, "categories", request.getCategories()),
                 aggregationToSet(aggregations, "tags", request.getTags()),
