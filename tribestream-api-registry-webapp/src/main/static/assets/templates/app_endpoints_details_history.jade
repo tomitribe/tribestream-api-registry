@@ -1,32 +1,26 @@
-div(ng-show="history")
+div
   h2 History
-  div
-    div
-      table
-        thead
-          tr
-            th &nbsp;
-            th Revision
-            th Timestamp
-            th Username
-            th Comment
-            th
-        tbody
-          tr(x-ng-repeat="historyItem in history")
-            td
-              input(type="checkbox", x-ng-change="onHistorySelect(historyItem)", x-ng-model="historyItem.$ui.selected")
-            td
-              span {{historyItem.revisionId}}
-            td
-              span {{historyItem.timestamp | date:'medium'}}
-            td
-              span {{historyItem.username}}
-            td
-              span {{historyItem.usercomment}}
-            td
-              i.fa.fa-edit(x-ng-click="showHistoricEndpoint(historyItem)")
-    div(data-tribe-diff, x-ng-show="showDiff && selected.length == 2", data-value-a="valueA", data-value-b="valueB")
-  button.orange(x-ng-click="closeHistory()") Close
+  table
+    thead
+      tr
+        th &nbsp;
+        th Revision
+        th Timestamp
+        th Username
+        th
+    tbody
+      tr(x-ng-repeat="historyItem in history")
+        td
+          i(data-tribe-checkbox, data-value="historyItem.$ui.selected", data-change="onHistorySelect(historyItem)")
+        td
+          span {{historyItem.revisionId}}
+        td
+          span {{historyItem.timestamp | date:'medium'}}
+        td
+          span {{historyItem.username}}
+        td
+          i.fa.fa-history(x-ng-click="showHistoricEndpoint(historyItem)")
+  button(x-ng-click="doDiff()", ng-disabled="selected.length !== 2 || showDiff") Show Difference
+  div(data-tribe-diff, x-ng-show="showDiff && selected.length == 2", data-value-a="valueA", data-value-b="valueB")
   button(x-ng-click="doDiff()", x-ng-show="showDiff") Hide Diff
-  button(x-ng-click="doDiff()", x-ng-show="!showDiff") Show Diff
   button(x-ng-click="saveMerge()", x-ng-show="showDiff") Save left pane as endpoint

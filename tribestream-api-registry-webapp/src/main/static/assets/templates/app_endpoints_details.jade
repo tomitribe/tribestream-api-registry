@@ -1,14 +1,23 @@
 div
-  div
-    a(href=".")
-      i.fa.fa-home
-    i.fa.fa-chevron-right
-    a(x-ng-href="application/{{application.humanReadableName}}") {{application.swagger.info.title}}
-    i.fa.fa-chevron-right
-    span(x-ng-if="historyItem") Revision {{historyItem.revisionId}} by {{historyItem.username}} created on {{historyItem.timestamp | date:'medium'}}
-    .actions
-      div(data-tribe-confirm-btn, data-callback="delete", data-icon="trash", data-message="Are you sure you want to delete this endpoint?", x-ng-if="endpointLink")
-      i(data-tribe-editable-option, data-empty-text="Actions", data-value="action", data-options="['Copy...', 'Release...', 'Export...', 'Share link...']")
+  .header
+    .breadcrumb
+      a(href=".")
+        i.fa.fa-home
+      i.fa.fa-chevron-right
+      a(x-ng-href="application/{{application.humanReadableName}}") {{application.swagger.info.title}}
+      i.fa.fa-chevron-right
+      span(x-ng-if="historyItem") Revision {{historyItem.revisionId}} by {{historyItem.username}} created on {{historyItem.timestamp | date:'medium'}}
+    .buttons
+      .save(x-ng-if="endpointLink" x-ng-click="save()")
+        i.fa.fa-floppy-o
+        span Save
+      .create-endpoint(x-ng-if="endpointsLink" x-ng-click="create()")
+        i.fa.fa-plus
+        span Create Endpoint
+      .history
+        i.fa.fa-history
+        span Show History
+      .delete(data-tribe-confirm-btn, data-callback="delete", data-icon="trash", data-message="Are you sure you want to delete this endpoint?", x-ng-if="endpointLink", data-label="Delete Endpoint")
   div
     div
       article.app-ep-details-body
@@ -17,8 +26,4 @@ div
         div(data-app-endpoints-details-parameters)
         div(data-app-endpoints-details-response-request)
         div(data-app-endpoints-details-history)
-        div
-          button.orange(x-ng-if="endpointLink", x-ng-click="save()") Save
-          button.orange(x-ng-if="endpointsLink", x-ng-click="create()") Create
-          button.orange(x-ng-if="historyLink", x-ng-click="showHistory()") Show History
     div(data-app-footer)
