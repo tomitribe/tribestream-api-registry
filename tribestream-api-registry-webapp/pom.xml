@@ -44,6 +44,7 @@
     <registry.oauth2.tlsProvider>org.apache.deltaspike.NullValueMarker</registry.oauth2.tlsProvider>
     <registry.oauth2.trustStore>org.apache.deltaspike.NullValueMarker</registry.oauth2.trustStore>
     <registry.oauth2.trustStoreType>org.apache.deltaspike.NullValueMarker</registry.oauth2.trustStoreType>
+    <node.version>v5.10.1</node.version>
   </properties>
 
   <dependencies>
@@ -210,6 +211,49 @@
       <version>${version.tomee}</version>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.jboss.arquillian.junit</groupId>
+      <artifactId>arquillian-junit-container</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tomee</groupId>
+      <artifactId>arquillian-tomee-remote</artifactId>
+      <scope>test</scope>
+      <version>${version.tomee}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.cukespace</groupId>
+      <artifactId>cukespace-core</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jboss.shrinkwrap</groupId>
+          <artifactId>shrinkwrap-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.shrinkwrap.resolver</groupId>
+      <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+        <version>2.2.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.arquillian.graphene</groupId>
+      <artifactId>graphene-webdriver-impl</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.arquillian.extension</groupId>
+      <artifactId>arquillian-drone-webdriver</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.arquillian.extension</groupId>
+      <artifactId>arquillian-drone-impl</artifactId>
+      <scope>test</scope>
+    </dependency>
+
     <dependency>
       <groupId>com.codeborne</groupId>
       <artifactId>phantomjsdriver</artifactId>
@@ -277,12 +321,6 @@
       <groupId>net.sf.jtidy</groupId>
       <artifactId>jtidy</artifactId>
       <version>r938</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.shrinkwrap.resolver</groupId>
-      <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
-      <version>2.2.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -434,7 +472,7 @@
               <goal>install-node-and-npm</goal>
             </goals>
             <configuration>
-              <nodeVersion>v5.10.1</nodeVersion>
+              <nodeVersion>${node.version}</nodeVersion>
               <npmVersion>3.8.6</npmVersion>
             </configuration>
           </execution>
@@ -480,7 +518,7 @@
           </execution>
         </executions>
         <configuration>
-          <installDirectory>${user.home}/.tribe/node-installation-dir</installDirectory>
+          <installDirectory>${user.home}/.tribe/node/${node.version}</installDirectory>
           <workingDirectory>src/main/static</workingDirectory>
           <environmentVariables>
             <DOC_BASE>${frontend.docbase}</DOC_BASE>
@@ -524,6 +562,31 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${version.failsafe}</version>
+        <executions>
+            <execution>
+                <phase>verify</phase>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+            </execution>
+        </executions>
+        <configuration>
+          <systemProperties>
+            <warfilename>${project.build.directory}/${project.build.finalName}.war</warfilename>
+            <es.http.port>${es.http.port}</es.http.port>
+            <es.transport.tcp.port>${es.transport.tcp.port}</es.transport.tcp.port>
+          </systemProperties>
+          <forkCount>1</forkCount>
+          <reuseForks>false</reuseForks>
+        </configuration>
+      </plugin>
+
       <plugin>
         <groupId>org.codehaus.gmaven</groupId>
         <artifactId>groovy-maven-plugin</artifactId>
@@ -548,7 +611,31 @@
           </dependency>
         </dependencies>
       </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.10</version>
+        <executions>
+          <execution>
+            <id>reserve-network-port</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>reserve-network-port</goal>
+            </goals>
+            <configuration>
+              <portNames>
+                <portName>es.http.port</portName>
+                <portName>es.transport.tcp.port</portName>
+              </portNames>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
+
+
   </build>
 
   <profiles>

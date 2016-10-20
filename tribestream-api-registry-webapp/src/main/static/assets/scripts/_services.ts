@@ -44,14 +44,14 @@ module services {
                         return $http.get('api/security/oauth2/status');
                     },
                     setCredentials: function (username, providerState) {
-                        if ($localStorage.tribe == undefined) {
+                        if (!$localStorage.tribe) {
                             $localStorage.tribe = {};
                         }
                         $localStorage.tribe.security = providerState;
                         $localStorage.tribe.username = username;
                     },
                     getCredentials: function () {
-                        if ($localStorage.tribe == undefined) {
+                        if (!$localStorage.tribe) {
                             return "Guest";
 
                         } else {
@@ -59,7 +59,7 @@ module services {
                         }
                     },
                     restoreSession: function () {
-                        var providerState = $localStorage.tribe == undefined ? undefined : $localStorage.tribe.security;
+                        var providerState = $localStorage.tribe ? $localStorage.tribe.security : undefined;
                         if (providerState) {
                             var provider = tribeHeaderProviderSelector.select($localStorage.tribe.security.type);
                             provider.fromState($localStorage.tribe.security);

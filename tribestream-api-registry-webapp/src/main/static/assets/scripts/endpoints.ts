@@ -221,7 +221,7 @@ angular.module('tribe-endpoints', [
         };
     }])
 
-    .directive('appEndpointsHeaderCreateBtn', ['$document', function ($document) {
+    .directive('appEndpointsHeaderCreateBtn', ['$document', '$timeout', function ($document, $timeout) {
         return {
             restrict: 'A',
             template: require('../templates/app_endpoints_header_create_btn.jade'),
@@ -245,35 +245,22 @@ angular.module('tribe-endpoints', [
                     });
                 });
             }],
-            link: function (scope, el, attrs, controller) {
-                var valueDiv = el.find('.button-applications');
-                valueDiv.detach();
-                var body = $document.find('body');
-                var clear = function () {
-                    el.removeClass('visible');
-                    valueDiv.detach();
+            link: (scope, el) => {
+                let valueDiv = el.find('.button-applications');
+                let clear = () => {
+                    valueDiv.removeClass('visible');
                 };
-                var elWin = $document;
-                el.find('div.trigger').on('click', function () {
-                    if (el.hasClass('visible')) {
-                        valueDiv.detach();
-                        el.removeClass('visible');
-                        valueDiv.off('scroll', clear);
+                let elWin = angular.element($document);
+                el.on('click', () => {
+                    if (valueDiv.hasClass('visible')) {
+                        valueDiv.removeClass('visible');
+                        elWin.off('click', clear);
                     } else {
-                        var pos = el.find('> div').offset();
-                        valueDiv.css({
-                            top: `${pos.top + el.find('> div').outerHeight()}px`,
-                            left: `${pos.left}px`
-                        });
-                        body.append(valueDiv);
-                        el.addClass('visible');
-                        elWin.on('scroll', clear);
+                        valueDiv.addClass('visible');
+                        $timeout(() => elWin.one('click', clear));
                     }
                 });
-                scope.$on('$destroy', function () {
-                    valueDiv.remove();
-                    elWin.off('scroll', clear);
-                });
+                scope.$on('$destroy', () => elWin.off('click', clear));
             }
         };
     }])
