@@ -1,0 +1,31 @@
+@import "variables"
+
+div[data-app-endpoints-details-history]
+  margin-top: 20px
+  > div
+    @include common-table()
+    > table
+      td
+        padding: 20px 0
+        &:last-of-type
+          padding: 10px 0
+      td, th
+        // checkbox
+        //&:first-of-type
+        //  width: 40px
+        // history button
+        &:last-of-type
+          width: 30px
+          i
+            font-size: 18px
+    button
+      margin: 20px 10px 20px 0
+      background-color: #f0f0f0 !important
+      $color: #464748
+      border: solid $color 1px
+      border-radius: 3px
+      color: $app-black
+      &[disabled]
+        color: $color
+      &:hover
+        background-color: #f0f0f0 !important

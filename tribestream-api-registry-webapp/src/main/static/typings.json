@@ -1,10 +1,10 @@
 {
   "globalDependencies": {
-    "angular": "registry:dt/angular#1.5.0+20160922195358",
+    "angular": "registry:dt/angular#1.5.0+20161016133926",
     "core-js": "registry:dt/core-js#0.0.0+20160914114559",
-    "jasmine": "registry:dt/jasmine#2.2.0+20160621224255",
+    "jasmine": "registry:dt/jasmine#2.5.0+20161003201800",
     "jquery": "registry:dt/jquery#1.10.0+20160929162922",
-    "node": "registry:env/node#6.0.0+20160918225031",
+    "node": "registry:env/node#6.0.0+20161019193037",
     "underscore": "registry:dt/underscore#1.8.3+20160908111004"
   }
 }

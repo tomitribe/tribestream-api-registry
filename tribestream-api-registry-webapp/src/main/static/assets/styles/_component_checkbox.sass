@@ -1,0 +1,20 @@
+@import "variables"
+
+i[data-tribe-checkbox]
+  > div
+    $size: 20px
+    height: $size
+    width: $size
+    $color: #464748
+    border: solid $color 1px
+    > div
+      display: flex
+      flex-direction: column
+      justify-content: center
+      align-items: center
+      width: 100%
+      height: 100%
+    > div.true
+      background-color: $color
+      i
+        color: $app-white
