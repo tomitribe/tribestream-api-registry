@@ -54,7 +54,8 @@ public class ElasticsearchServer implements Closeable {
 
     private final String workDir;
     private final String version;
-    private int port;
+    private int httpPort;
+    private int tcpPort;
 
     public ElasticsearchServer(final String workDir, final String version) {
         this.workDir = workDir;
@@ -62,9 +63,10 @@ public class ElasticsearchServer implements Closeable {
     }
 
     public ElasticsearchServer start() {
-        int tcpPort;
+        final int tcpPort;
+        final int httpPort;
         try (final ServerSocket rdm = new ServerSocket(0)) {
-            port = rdm.getLocalPort();
+            httpPort = rdm.getLocalPort();
 
             try (final ServerSocket rdm2 = new ServerSocket(0)) { // while other port is hold otherwise we could get the same
                 tcpPort = rdm2.getLocalPort();
@@ -74,6 +76,12 @@ public class ElasticsearchServer implements Closeable {
         } catch (final IOException e) {
             throw new IllegalStateException(e);
         }
+        return start(httpPort, tcpPort);
+    }
+    public ElasticsearchServer start(final int httpPort, final int tcpPort) {
+
+        this.httpPort = httpPort;
+        this.tcpPort = tcpPort;
 
         home = new File(ofNullable(workDir).orElseGet(() -> "target/elasticsearch-" + System.nanoTime()));
         final File config = new File(home, "config");
@@ -101,7 +109,7 @@ public class ElasticsearchServer implements Closeable {
                 .map(d -> mvn.resolve(d).withoutTransitivity().asSingleFile())
                 .collect(Collectors.toList()));
         try {
-            final String[] command = buildCommand(port, tcpPort, home, deps);
+            final String[] command = buildCommand(httpPort, tcpPort, home, deps);
             process = new ProcessBuilder(command).inheritIO().start();
         } catch (final IOException e) {
             throw new IllegalStateException(e);
@@ -114,13 +122,13 @@ public class ElasticsearchServer implements Closeable {
         };
         Runtime.getRuntime().addShutdownHook(shutdownHook);
 
-        waitForHttp(port, TimeUnit.MINUTES.toMillis(2));
+        waitForHttp(httpPort, TimeUnit.MINUTES.toMillis(2));
 
         return this;
     }
 
     public int getPort() {
-        return port;
+        return httpPort;
     }
 
     @Override

@@ -1,27 +1,49 @@
 @import "variables"
 
-i[data-app-endpoints-header-create-btn]
-  div.button-face
+div[data-app-endpoints-header-create-btn]
+  margin-right: 20px
+  font-style: normal
+  a
+    text-decoration: none
+  > div
     display: flex
+    justify-content: flex-end
+    > div > div
+      display: flex
+      align-items: center
+      margin-left: 20px
+      background-color: #f0f0f0
+      padding: 5px 15px
+      $color: #464748
+      border: solid $color 1px
+      border-radius: 3px
+      i
+        margin: 0 5px
+        &:first-child
+          margin-left: 0
+      i.fa.fa-caret-down
+        margin-left: 10px
+  .create-endpoint-btn
+    position: relative
     &:hover
       cursor: pointer
-    > div
-      background-color: $tomitribe-orange
-      border: solid $tomitribe-orange 1px
-      padding: 5px 8px
-      i, span
-        color: #ffffff
-      font-style: normal
-      &:first-of-type
-        border-radius: 3px 0 0 3px
-      &:last-of-type
-        border-radius: 0 3px 3px 0
-
-div.button-applications
-  ul
-    list-style: none
-    margin: 0
-    li
-      padding: 5px 10px
-      a
-        text-decoration: none
+    .button-applications
+      display: none
+      &.visible
+        display: block
+      border-top-left-radius: 0
+      border-top-right-radius: 0
+      position: absolute
+      right: 0
+      z-index: 3000
+      transform: translate(0, -1px)
+      background-color: #ffffff
+      margin: 0
+      ul, li
+        margin: 0
+        list-style: none
+      li
+        padding: 10px
+        a
+          color: $app-black
+          white-space: nowrap

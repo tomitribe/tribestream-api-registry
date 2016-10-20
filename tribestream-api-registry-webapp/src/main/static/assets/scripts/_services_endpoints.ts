@@ -18,8 +18,8 @@ module services_endpoints {
             }
         ])
         .factory('tribeEndpointsService', [
-            '$location', '$resource', '$http', 'tribeErrorHandlerService', '$sessionStorage', '$filter', 'tribeLinkHeaderService',
-            function ($location, $resource, $http, tribeErrorHandlerService, $sessionStorage, $filter, tribeLinkHeaderService) {
+            '$location', '$resource', '$http', 'tribeErrorHandlerService',
+            function ($location, $resource, $http, tribeErrorHandlerService) {
                 var httpListCall = function (url, params, successCallback, errorCallback) {
                     $http({
                         url: url,
