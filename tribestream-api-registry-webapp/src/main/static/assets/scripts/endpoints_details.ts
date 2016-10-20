@@ -504,24 +504,18 @@ angular.module('tribe-endpoints-details', [
                     $scope.showDiff = false;
                     $scope.mergeWidget = undefined;
 
-                    if (item.$ui.selected && $scope.selected.length >= 2) { // == should be fine too
-                      item.$ui.selected = false;
-                      systemMessagesService.warn('You can select only 2 items for a diff.');
-                      return;
-                    }
-
-                    if (item.$ui.selected) {
+                    if (item.$ui && item.$ui.selected) {
                       $scope.selected.push(item);
                     } else {
-                      $scope.selected = $scope.selected.filter(i => i['revisionId'] != item['revisionId']);
+                      $scope.selected = $scope.selected.filter(i => i != item);
                     }
                   };
 
                   $scope.saveMerge = () => {
                     // update new operation with the json content
-                    $scope.ref.operation = JSON.parse($scope.mergeWidget.editor().getValue());
+                    $scope.ref.operation = JSON.parse($scope['valueA']);
 
-                    srv.saveEndpoint($scope.ref.applicationId, $scope.ref.endpointId, {
+                    srv.saveEndpoint($scope.endpointLink, {
                       // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
                       httpMethod: $scope.ref.httpMethod,
                       path: $scope.ref.path,
@@ -534,11 +528,6 @@ angular.module('tribe-endpoints-details', [
                     );
                   };
                   $scope.doDiff = () => {
-                    if ($scope.selected.length != 2) {
-                      systemMessagesService.warn('You need to select 2 history items to be able to do a diff.');
-                      return;
-                    }
-
                     $scope.showDiff = !$scope.showDiff;
 
                     if ($scope.showDiff) {
@@ -557,7 +546,7 @@ angular.module('tribe-endpoints-details', [
         };
     }])
 
-.directive('appEndpointsDetails', [function () {
+.directive('appEndpointsDetails', ['$window', '$timeout', function ($window, $timeout) {
   return {
     restrict: 'A',
       template: require('../templates/app_endpoints_details.jade'),
@@ -672,15 +661,15 @@ angular.module('tribe-endpoints-details', [
                 $location.path("/application/" + $scope.requestMetadata.applicationName);
             });
           };
-          // Triggered by the Show History button on the endpoint details page to show the revision log for that entity
-          // TODO: Pagination!
-          $scope.showHistory = function() {
+          $scope.$watch('historyLink', () => {
+            if(!$scope.historyLink) {
+              return;
+            }
             srv.getHistory($scope.historyLink).then(function(response) {
 
               let links = tribeLinkHeaderService.parseLinkHeader(response['data']['links']);
               for (let entry of response['data']['items']) {
                 entry.link = links["revision " + entry.revisionId];
-                entry.$ui = {selected: false};
               }
 
               $timeout(function () {
@@ -689,16 +678,7 @@ angular.module('tribe-endpoints-details', [
                 });
               });
             });
-          };
-          // Triggered by the "Close History" button to close the Revision Log in whatever form it will be
-          // presented
-          $scope.closeHistory = function() {
-            $timeout(function () {
-              $scope.$apply(function () {
-                $scope.history = null;
-              });
-            });
-          };
+          });
           // Triggered by selecting one revision, will load it and show it
           $scope.showHistoricEndpoint = function(historyItem) {
             $timeout(function () {
@@ -719,7 +699,17 @@ angular.module('tribe-endpoints-details', [
             });
           };
         });
-      }]
+      }],
+      link: (scope, el) => $timeout(() => {
+          el.find('div.history').on('click', () => {
+              var winEl = angular.element($window);
+              var calculateScroll = () => {
+                  var target = el.find('div[data-app-endpoints-details-history]');
+                  return target.offset().top;
+              };
+              winEl.scrollTop(calculateScroll());
+          });
+      })
     };
   }])
 
