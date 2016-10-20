@@ -515,7 +515,7 @@ angular.module('tribe-endpoints-details', [
                     // update new operation with the json content
                     $scope.ref.operation = JSON.parse($scope['valueA']);
 
-                    srv.saveEndpoint($scope.ref.applicationId, $scope.ref.endpointId, {
+                    srv.saveEndpoint($scope.endpointLink, {
                       // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
                       httpMethod: $scope.ref.httpMethod,
                       path: $scope.ref.path,
