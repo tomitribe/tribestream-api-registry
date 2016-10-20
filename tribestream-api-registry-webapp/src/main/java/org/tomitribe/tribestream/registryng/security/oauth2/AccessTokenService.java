@@ -18,66 +18,49 @@
  */
 package org.tomitribe.tribestream.registryng.security.oauth2;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import org.tomitribe.tribestream.registryng.entities.AccessToken;
 
 import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.Schedule;
 import javax.ejb.Singleton;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.Collections;
+import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.Optional.ofNullable;
 
 @Singleton
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class AccessTokenService {
-
-    public static final Logger LOG = Logger.getLogger(AccessTokenService.class.getName());
+    private static final Logger LOG = Logger.getLogger(AccessTokenService.class.getName());
 
     @PersistenceContext
     private EntityManager em;
 
-    private static class TokenHolder {
+    @Inject
+    private Oauth2Configuration configuration;
 
-        private final AccessTokenResponse accessTokenResponse;
+    private final ObjectMapper mapper = new ObjectMapper();
 
-        private final long creationDate;
-
-
-        private TokenHolder(AccessTokenResponse accessTokenResponse) {
-            this.accessTokenResponse = accessTokenResponse;
-            this.creationDate = System.currentTimeMillis();
-        }
-
-        public boolean isExpired() {
-            long now = System.currentTimeMillis();
-
-            long expiryTs = creationDate + accessTokenResponse.getExpiresIn() * 1000;
-
-            return expiryTs < now;
-        }
-    }
-
-    private ConcurrentMap<String, TokenHolder> tokenCache = new ConcurrentHashMap<>();
-
-
-    public void addAccessToken(final AccessTokenResponse tokenResponse){
+    public void addAccessToken(final AccessTokenResponse tokenResponse) {
         LOG.fine("Add new access token " + tokenResponse);
         AccessToken accessTokenEntity = new AccessToken();
         accessTokenEntity.setAccessToken(tokenResponse.getAccessToken());
         accessTokenEntity.setExpiryTimestamp(System.currentTimeMillis() + tokenResponse.getExpiresIn() * 1000);
         accessTokenEntity.setScope(tokenResponse.getScope());
+        accessTokenEntity.setUsername(tryExtractingTheUser(tokenResponse.getAccessToken()));
         em.persist(accessTokenEntity);
     }
 
-    public List<String> getScopes(final String accessToken) throws InvalidTokenException {
+    public AccessToken findToken(final String accessToken) throws InvalidTokenException {
         final List<AccessToken> tokens = em.createNamedQuery(AccessToken.Queries.FIND_BY_TOKEN, AccessToken.class).setParameter("token", accessToken).getResultList();
         AccessToken accessTokenEntity = tokens.isEmpty() ? null : tokens.iterator().next();
         if (accessTokenEntity == null) {
@@ -85,20 +68,15 @@ public class AccessTokenService {
         }
         if (accessTokenEntity.getExpiryTimestamp() < System.currentTimeMillis()) {
             throw new InvalidTokenException("Found expired access token! " + accessTokenEntity.getAccessToken());
-        } else {
-            if (accessTokenEntity.getScope() == null) {
-                return Collections.emptyList();
-            } else {
-                return Stream.of(accessTokenEntity.getScope().split("\\s+")).collect(toList());
-            }
         }
+        return accessTokenEntity;
     }
 
     public void deleteToken(final String accessToken) {
         em.remove(em.createNamedQuery(AccessToken.Queries.FIND_BY_TOKEN, AccessToken.class).setParameter("token", accessToken).getSingleResult());
     }
 
-    @Schedule(minute="*", hour="*")
+    @Schedule(minute = "*", hour = "*")
     public void timedDeleteExpiredTokens() {
         LOG.fine("Delete expired tokens");
         int deletedTokens = deleteExpiredTokens();
@@ -113,4 +91,25 @@ public class AccessTokenService {
                 .executeUpdate();
     }
 
+    private String tryExtractingTheUser(final String accessToken) {
+        try {
+            final String[] segments = accessToken.split("\\.");
+            if (segments.length != 3) {
+                return null;
+            }
+            JsonNode node = mapper.readTree(Base64.getUrlDecoder().decode(segments[1]));
+            for (final String part : configuration.getJwtUsernameAttribute().split("\\/")) {
+                node = node.get(part);
+                if (node == null) {
+                    return null;
+                }
+            }
+            return ofNullable(node)
+                    .filter(n -> n.getNodeType() == JsonNodeType.STRING)
+                    .map(JsonNode::textValue)
+                    .orElse(null);
+        } catch (final RuntimeException | IOException re) {
+            return null;
+        }
+    }
 }
