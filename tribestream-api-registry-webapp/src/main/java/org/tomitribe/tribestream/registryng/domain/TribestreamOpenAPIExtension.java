@@ -18,6 +18,12 @@
  */
 package org.tomitribe.tribestream.registryng.domain;
 
+import io.swagger.models.Operation;
+import io.swagger.models.Swagger;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * This interface contains constants for the names used for the vendor extension
  * in the OpenAPI documents processed by the Tribestream API Registry.
@@ -44,7 +50,7 @@ package org.tomitribe.tribestream.registryng.domain;
  * }
  * </code>
  */
-public interface TribestreamOpenAPIExtension {
+public class TribestreamOpenAPIExtension {
 
     /**
      * The name of the vendor extension property.
@@ -76,4 +82,25 @@ public interface TribestreamOpenAPIExtension {
     public static final String PROP_API_VERSIONS    = "api-versions";
 
     public static final String HUMAN_READABLE_PATH           = "human-readable-path";
+
+    public static final String LINKS           = "links";
+
+
+    public void setLinks(final Operation operation, final EntityLink[] entityLinks) {
+        if (operation.getVendorExtensions() == null || operation.getVendorExtensions().get(VENDOR_EXTENSION_KEY) == null) {
+            operation.setVendorExtension(VENDOR_EXTENSION_KEY, new HashMap<>());
+        }
+        Map.class.cast(operation.getVendorExtensions()
+                .get(VENDOR_EXTENSION_KEY))
+                .put(LINKS, entityLinks);
+    }
+
+    public void setLinks(final Swagger swagger, final EntityLink[] entityLinks) {
+        if (swagger.getVendorExtensions() == null || swagger.getVendorExtensions().get(VENDOR_EXTENSION_KEY) == null) {
+            swagger.setVendorExtension(VENDOR_EXTENSION_KEY, new HashMap<>());
+        }
+        Map.class.cast(swagger.getVendorExtensions()
+                .get(VENDOR_EXTENSION_KEY))
+                .put(LINKS, entityLinks);
+    }
 }

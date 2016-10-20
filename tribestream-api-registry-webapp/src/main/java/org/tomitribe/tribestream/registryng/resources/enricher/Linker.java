@@ -18,6 +18,7 @@
  */
 package org.tomitribe.tribestream.registryng.resources.enricher;
 
+import org.tomitribe.tribestream.registryng.domain.EntityLink;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 
@@ -26,13 +27,14 @@ import javax.ws.rs.core.Link;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static javax.ws.rs.core.Link.fromUriBuilder;
 
 @ApplicationScoped
 public class Linker {
-    public Link[] buildEndpointLinks(final UriInfo uriInfo, final String applicationId, final String endpointId) {
-        return new Link[]{
+    public EntityLink[] buildEndpointLinks(final UriInfo uriInfo, final String applicationId, final String endpointId) {
+        return Stream.of(new Link[]{
                 fromUriBuilder(uriInfo.getBaseUriBuilder()
                         .path("application/{applicationId}/endpoint/{endpointId}")
                         .resolveTemplate("applicationId", applicationId)
@@ -50,10 +52,10 @@ public class Linker {
                         .resolveTemplate("applicationId", applicationId))
                         .rel("application")
                         .build()
-        };
+        }).map(l -> new EntityLink(l.getRel(), l.getUri().toASCIIString())).toArray(EntityLink[]::new);
     }
 
-    public Link[] buildApplicationLinks(final UriInfo uriInfo, final OpenApiDocument application) {
+    public EntityLink[] buildApplicationLinks(final UriInfo uriInfo, final OpenApiDocument application) {
         final List<Link> result = new ArrayList<>(2 + application.getEndpoints().size());
         result.add(
                 fromUriBuilder(uriInfo.getBaseUriBuilder()
@@ -83,6 +85,8 @@ public class Linker {
                             .build());
         }
 
-        return result.toArray(new Link[result.size()]);
+        return result.stream()
+                .map(l -> new EntityLink(l.getRel(), l.getUri().toASCIIString()))
+                .toArray(EntityLink[]::new);
     }
 }

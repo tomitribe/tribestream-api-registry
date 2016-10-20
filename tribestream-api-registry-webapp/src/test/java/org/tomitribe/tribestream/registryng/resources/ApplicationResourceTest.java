@@ -31,8 +31,12 @@ import org.junit.runner.RunWith;
 import org.tomitribe.tribestream.registryng.cdi.Tribe;
 import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
+import org.tomitribe.tribestream.registryng.domain.EntityLink;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
-import org.tomitribe.tribestream.registryng.domain.SearchResult;
+import org.tomitribe.tribestream.registryng.domain.search.EndpointSearchResult;
+import org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension;
+import org.tomitribe.tribestream.registryng.domain.search.ApplicationSearchResult;
+import org.tomitribe.tribestream.registryng.domain.search.SearchResult;
 import org.tomitribe.tribestream.registryng.entities.Normalizer;
 import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 import org.tomitribe.tribestream.registryng.test.Registry;
@@ -44,8 +48,10 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
@@ -119,18 +125,18 @@ public class ApplicationResourceTest {
             assertEquals("Show API version details", applicationWrapper.getSwagger().getPaths().get("/v2").getGet().getSummary());
 
             // And: The response contains links for self, history and the two endpoints
-            assertEquals(response.getLinks().toString(), 5, response.getLinks().size());
-            assertNotNull(response.getLink("self"));
-            assertNotNull(response.getLink("history"));
-            assertNotNull(response.getLink("endpoints"));
-            assertNotNull(response.getLink("GET /"));
-            assertNotNull(response.getLink("GET /v2"));
+            assertEquals(applicationWrapper.toString(), 5, getLinks(applicationWrapper).size());
+            assertNotNull(getLink(applicationWrapper, "self"));
+            assertNotNull(getLink(applicationWrapper, "history"));
+            assertNotNull(getLink(applicationWrapper, "endpoints"));
+            assertNotNull(getLink(applicationWrapper, "GET /"));
+            assertNotNull(getLink(applicationWrapper, "GET /v2"));
 
             registry.withRetries(() -> {
-                EndpointWrapper endpoint = getSearchPage().getResults().stream()
-                        .filter((SearchResult sr) -> "/v2".equals(sr.getPath()) && "GET".equals(sr.getHttpMethod()))
+                EndpointWrapper endpoint = getSearchPage().getResults().stream().map(SearchResult::getEndpoints).flatMap(List::stream)
+                        .filter((EndpointSearchResult sr) -> "/v2".equals(sr.getPath()) && "GET".equals(sr.getHttpMethod()))
                         .findFirst()
-                        .map((SearchResult sr) -> loadEndpoint(sr.getApplicationId(), sr.getEndpointId()))
+                        .map((EndpointSearchResult sr) -> loadEndpoint(sr.getApplicationId(), sr.getEndpointId()))
                         .get();
                 assertEquals(singletonList("application/json"), endpoint.getOperation().getProduces());
 
@@ -143,9 +149,9 @@ public class ApplicationResourceTest {
                         .request(MediaType.APPLICATION_JSON_TYPE)
                         .get(SearchPage.class);
 
-                assertEquals(2, searchPage.getResults().size());
-                final List<String> foundPaths = searchPage.getResults().stream()
-                        .map(SearchResult::getPath)
+                assertEquals(2, searchPage.getResults().stream().map(SearchResult::getEndpoints).flatMap(List::stream).count());
+                final List<String> foundPaths = searchPage.getResults().stream().map(SearchResult::getEndpoints).flatMap(List::stream)
+                        .map(EndpointSearchResult::getPath)
                         .collect(toList());
                 assertThat(foundPaths, both(hasItem("/")).and(hasItem("/v2")));
             }, "shouldImportOpenAPIDocument");
@@ -169,12 +175,12 @@ public class ApplicationResourceTest {
         final ApplicationWrapper createRequest = new ApplicationWrapper(createSwagger, null);
         final Response newApplicationWrapperResponse = registry.target().path("api/application")
                 .request(MediaType.APPLICATION_JSON_TYPE)
-                .buildPost(Entity.entity(createRequest, MediaType.APPLICATION_JSON_TYPE))
-                .invoke();
-
-        assertNotNull(newApplicationWrapperResponse.getLink("self"));
+                .post(Entity.entity(createRequest, MediaType.APPLICATION_JSON_TYPE));
 
         ApplicationWrapper newApplicationWrapper = newApplicationWrapperResponse.readEntity(ApplicationWrapper.class);
+
+        assertNotNull(getLink(newApplicationWrapper, "self"));
+
         assertNotNull(newApplicationWrapper);
         assertEquals("Test-API", newApplicationWrapper.getHumanReadableName());
 
@@ -201,7 +207,7 @@ public class ApplicationResourceTest {
         final Swagger updateSwagger = objectMapper.readValue(updateDocument, Swagger.class);
         final ApplicationWrapper updateRequest = new ApplicationWrapper(updateSwagger, null);
 
-        final ApplicationWrapper updatedApplicationWrapper = registry.client().target(newApplicationWrapperResponse.getLink("self"))
+        final ApplicationWrapper updatedApplicationWrapper = registry.client().target(getLink(newApplicationWrapper, "self"))
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .put(Entity.entity(updateRequest, MediaType.APPLICATION_JSON_TYPE), ApplicationWrapper.class);
 
@@ -221,9 +227,8 @@ public class ApplicationResourceTest {
 
     @Test
     public void shouldDeleteApplication() throws Exception {
-        final SearchResult searchResult = registry.withRetries(() -> {
-            final List<SearchResult> searchResults = new ArrayList<>(getSearchPage().getResults());
-            final SearchResult result = searchResults.get(0);
+        final ApplicationSearchResult searchResult = registry.withRetries(() -> {
+            final ApplicationSearchResult result = getSearchPage().getResults().get(0).getApplication();
             assertNotNull(loadApplication(result.getApplicationId()));
             return result;
         });
@@ -249,7 +254,7 @@ public class ApplicationResourceTest {
         registry.withRetries(() -> assertFalse(registry.target().path("api/registry")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(SearchPage.class)
-                .getResults().stream()
+                .getResults().stream().map(SearchResult::getApplication)
                 .filter(sr -> searchResult.getApplicationId().equals(sr.getApplicationId()))
                 .findFirst()
                 .isPresent()));
@@ -308,5 +313,18 @@ public class ApplicationResourceTest {
         return registry.target().path("api/registry")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(SearchPage.class);
+    }
+
+    private Collection<EntityLink> getLinks(final ApplicationWrapper applicationWrapper) {
+        return ((Collection<Map<String, String>>)Map.class.cast(applicationWrapper.getSwagger().getVendorExtensions().get(TribestreamOpenAPIExtension.VENDOR_EXTENSION_KEY))
+                .get(TribestreamOpenAPIExtension.LINKS)).stream()
+                .map(m -> new EntityLink(m.get("rel"), m.get("href")))
+                .collect(toList());
+    }
+
+    private String getLink(final ApplicationWrapper applicationWrapper, final String name) {
+        return getLinks(applicationWrapper).stream()
+                .filter(s -> name.equals(s.getRel()))
+                .findFirst().get().getHref();
     }
 }

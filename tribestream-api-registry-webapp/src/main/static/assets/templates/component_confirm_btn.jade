@@ -1,0 +1,13 @@
+div
+    .trigger
+        i(class="fa fa-{{icon}}")
+        span(x-ng-if="label") {{label}}
+    .confirmation-popup
+        div
+            div
+                i.fa.fa-exclamation-triangle
+                p {{message}}
+            div
+                div
+                    button.cancel.inverted Cancel
+                    button.confirm Confirm

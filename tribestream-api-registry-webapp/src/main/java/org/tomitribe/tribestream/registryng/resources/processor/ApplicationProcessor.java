@@ -23,12 +23,14 @@ import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.Swagger;
 import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
+import org.tomitribe.tribestream.registryng.domain.EntityLink;
 import org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 import org.tomitribe.tribestream.registryng.repository.Repository;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Locale;
@@ -38,8 +40,14 @@ import static java.util.Optional.ofNullable;
 
 @ApplicationScoped
 public class ApplicationProcessor {
-    public ApplicationWrapper toWrapper(final OpenApiDocument application) {
+    @Inject
+    private TribestreamOpenAPIExtension extensions;
+
+    public ApplicationWrapper toWrapper(final OpenApiDocument application, final EntityLink[] links) {
         final Swagger reducedSwagger = shrinkSwagger(mergeSwagger(application.getSwagger(), application.getEndpoints()));
+        if (links != null) {
+            extensions.setLinks(reducedSwagger, links);
+        }
         return new ApplicationWrapper(reducedSwagger, application.getHumanReadableName());
     }
 

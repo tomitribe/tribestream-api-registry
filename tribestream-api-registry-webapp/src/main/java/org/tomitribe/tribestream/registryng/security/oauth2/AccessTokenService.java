@@ -78,8 +78,8 @@ public class AccessTokenService {
     }
 
     public List<String> getScopes(final String accessToken) throws InvalidTokenException {
-
-        AccessToken accessTokenEntity = em.find(AccessToken.class, accessToken);
+        final List<AccessToken> tokens = em.createNamedQuery(AccessToken.Queries.FIND_BY_TOKEN, AccessToken.class).setParameter("token", accessToken).getResultList();
+        AccessToken accessTokenEntity = tokens.isEmpty() ? null : tokens.iterator().next();
         if (accessTokenEntity == null) {
             throw new InvalidTokenException("Could not find access token: " + accessToken);
         }
@@ -95,8 +95,7 @@ public class AccessTokenService {
     }
 
     public void deleteToken(final String accessToken) {
-        AccessToken accessTokenEntity = em.getReference(AccessToken.class, accessToken);
-        em.remove(accessTokenEntity);
+        em.remove(em.createNamedQuery(AccessToken.Queries.FIND_BY_TOKEN, AccessToken.class).setParameter("token", accessToken).getSingleResult());
     }
 
     @Schedule(minute="*", hour="*")

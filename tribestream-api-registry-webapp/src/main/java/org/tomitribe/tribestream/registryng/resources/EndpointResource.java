@@ -23,6 +23,8 @@ import io.swagger.models.Operation;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
+import org.tomitribe.tribestream.registryng.domain.EntityLink;
+import org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.repository.Repository;
 import org.tomitribe.tribestream.registryng.resources.enricher.Linker;
@@ -50,6 +52,7 @@ import javax.ws.rs.core.UriInfo;
 public class EndpointResource {
     private final Repository repository;
     private final Linker linker;
+    private final TribestreamOpenAPIExtension extensions;
 
     @GET
     @Path("/{endpointId}")
@@ -67,13 +70,8 @@ public class EndpointResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        final EndpointWrapper endpointWrapper = new EndpointWrapper(
-                applicationId, endpointId, endpoint.getHumanReadablePath(),
-                endpoint.getVerb(), endpoint.getPath(), endpoint.getOperation(), null);
-
-        return Response.ok()
-                .links(linker.buildEndpointLinks(uriInfo, applicationId, endpoint.getId()))
-                .entity(endpointWrapper).build();
+        final EndpointWrapper endpointWrapper = toEndpointWrapper(endpoint, linker.buildEndpointLinks(uriInfo, applicationId, endpoint.getId()));
+        return Response.ok().entity(endpointWrapper).build();
     }
 
     @DELETE
@@ -102,9 +100,6 @@ public class EndpointResource {
             @Context UriInfo uriInfo,
             @PathParam("applicationId") final String applicationId,
             final EndpointWrapper endpointWrapper) {
-
-        final Operation operation = endpointWrapper.getOperation();
-
         final Endpoint endpoint = new Endpoint();
         endpoint.setVerb(endpointWrapper.getHttpMethod().toUpperCase());
         endpoint.setPath(endpointWrapper.getPath());
@@ -117,10 +112,7 @@ public class EndpointResource {
         final Endpoint newDocument = repository.findEndpointById(document.getId());
 
         return Response.status(Response.Status.CREATED)
-                .entity(new EndpointWrapper(
-                        newDocument.getApplication().getId(), newDocument.getId(), newDocument.getHumanReadablePath(),
-                        newDocument.getVerb(), newDocument.getPath(), newDocument.getOperation(), null))
-                .links(linker.buildEndpointLinks(uriInfo, applicationId, newDocument.getId()))
+                .entity(toEndpointWrapper(newDocument, linker.buildEndpointLinks(uriInfo, applicationId, newDocument.getId())))
                 .build();
 
     }
@@ -148,16 +140,18 @@ public class EndpointResource {
 
         final Endpoint updatedDocument = repository.findEndpointById(endpointId);
 
-        final EndpointWrapper newEndpointWrapper = new EndpointWrapper(
-                applicationId, endpointId, updatedDocument.getHumanReadablePath(),
-                updatedDocument.getVerb(), updatedDocument.getPath(), updatedDocument.getOperation(), null);
-
+        final EndpointWrapper newEndpointWrapper = toEndpointWrapper(updatedDocument, linker.buildEndpointLinks(uriInfo, applicationId, endpointId));
         return Response.ok()
-                .links(linker.buildEndpointLinks(uriInfo, applicationId, endpointId))
                 .entity(newEndpointWrapper)
                 .build();
+    }
 
-
+    private EndpointWrapper toEndpointWrapper(final Endpoint e, final EntityLink[] entityLinks) {
+        final Operation operation = e.getOperation();
+        if (entityLinks != null) {
+            extensions.setLinks(operation, entityLinks);
+        }
+        return new EndpointWrapper(e.getApplication().getId(), e.getId(), e.getHumanReadablePath(), e.getVerb(), e.getPath(), operation, null);
     }
 
     private void validate(Endpoint endpoint) {

@@ -8,8 +8,34 @@ angular.module('website-components', [
     'website-components-multiselect',
     'website-components-singleselect',
     'website-components-text',
-    'website-components-markdown'
+    'website-components-markdown',
+    'website-components-diff'
 ])
+
+    .directive('tribeConfirmBtn', ['$timeout', function ($timeout) {
+        return {
+            restrict: 'A',
+            scope: {
+                callback: '=',
+                message: '@',
+                icon: '@',
+                label: '@?'
+            },
+            template: require('../templates/component_confirm_btn.jade'),
+            link: function (scope, el) {
+                el.find('.trigger').on('click', () => {
+                    el.addClass('visible');
+                });
+                el.find('button.cancel').on('click', () => {
+                    el.removeClass('visible');
+                });
+                el.find('button.confirm').on('click', () => {
+                    el.removeClass('visible');
+                    scope['callback']();
+                });
+            }
+        };
+    }])
 
     .directive('tribeEditableButtonText', [function () {
         return {

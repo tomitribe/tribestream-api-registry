@@ -32,7 +32,14 @@ import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.inject.Inject;
+import javax.script.Bindings;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.util.List;
@@ -66,8 +73,33 @@ public class Provisioning {
     @ConfigProperty(name = "tribe.registry.seeding.location", defaultValue = "seed-db")
     private String location;
 
+    @Inject
+    @Description("Optional script executed at startup (javascript)")
+    @ConfigProperty(name = "tribe.registry.seeding.script")
+    private String script;
+
     @PostConstruct
     public void init() {
+        ofNullable(script).ifPresent(s -> {
+            final ScriptEngine engine = new ScriptEngineManager().getEngineByExtension("js");
+            final Bindings bindings = engine.createBindings();
+            bindings.put("props", System.getProperties());
+
+            final File file = new File(s);
+            if (file.isFile()) {
+                try (final Reader reader = new FileReader(file)) {
+                    engine.eval(reader, bindings);
+                } catch (final IOException | ScriptException e) {
+                    throw new IllegalArgumentException(e);
+                }
+            } else {
+                try {
+                    engine.eval(s, bindings);
+                } catch (final ScriptException e) {
+                    throw new IllegalArgumentException(e);
+                }
+            }
+        });
         restore();
     }
 

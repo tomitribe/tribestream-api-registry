@@ -21,14 +21,16 @@ package org.tomitribe.tribestream.registryng.domain;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.tomitribe.tribestream.registryng.domain.search.SearchResult;
 
 import java.util.Collection;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class SearchPage {
-    private Collection<SearchResult> results;
+    private List<SearchResult> results;
     private int total;
     private int current;
 

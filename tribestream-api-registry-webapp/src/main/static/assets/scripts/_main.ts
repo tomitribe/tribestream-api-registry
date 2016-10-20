@@ -1,4 +1,5 @@
 import './_components.ts';
+import './_components_diff.ts';
 import './_components_field_actions.ts';
 import './_components_filters.ts';
 import './_components_markdown.ts';
@@ -80,7 +81,7 @@ angular.module('tribe-main', [
                     }]
                 })
                 .when('/application', {
-                    templateUrl: 'app/templates/page_application_details.html',
+                    template: require('../templates/page_application_details.jade'),
                     controller: ['$scope', '$routeParams', function ($scope, $routeParams) {
                         //$scope.app = $routeParams.applicationName;
                     }]

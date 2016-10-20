@@ -8,7 +8,7 @@
  * with the License.  You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
-
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -22,24 +22,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Set;
+import java.util.List;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class SearchResult {
-    private String applicationId;
-    private String endpointId;
-    private String applicationName;
-    private String endpointName;
-    private String application;
-    private String applicationVersion;
-    private String httpMethod;
-    private String path;
-    private String description;
-    private Set<String> categories;
-    private Set<String> tags;
-    private Set<String> roles;
-    private double score;
-    private String link;
+@NoArgsConstructor
+public class HistoryPage {
+    private List<HistoryItem> items;
+    private EntityLink[] links;
 }
