@@ -88,7 +88,7 @@ public class OAuth2Client {
             client = ClientBuilder.newBuilder()
                     .sslContext(createSslContext())
                     .build();
-            if (oauth2Config.getClientId() != null && oauth2Config.getClientId().length() > 0) {
+            if (oauth2Config.getClientId() != null && !oauth2Config.getClientId().isEmpty()) {
                 client.register(new BasicAuthFilter());
             }
             client.register(new CustomJacksonJaxbJsonProvider());

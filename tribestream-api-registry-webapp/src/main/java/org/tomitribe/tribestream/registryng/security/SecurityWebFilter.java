@@ -19,6 +19,8 @@
 package org.tomitribe.tribestream.registryng.security;
 
 import org.apache.catalina.User;
+import org.apache.deltaspike.core.api.config.ConfigProperty;
+import org.tomitribe.tribestream.registryng.documentation.Description;
 import org.tomitribe.tribestream.registryng.security.oauth2.IntrospectResponse;
 import org.tomitribe.tribestream.registryng.security.oauth2.OAuth2Tokens;
 
@@ -37,6 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.Base64;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,6 +59,11 @@ public class SecurityWebFilter implements Filter {
     @Inject
     private LoginContext loginContext;
 
+    @Inject
+    @Description("The list of endpoints which should be accessible without any security validation")
+    @ConfigProperty(name = "tribe.registry.security.filter.whitelist", defaultValue = "/api/server/info,/api/login,/api/security/oauth2,/api/security/oauth2/status")
+    private String whitelist;
+
     /**
      * Contains all request URIs that are available without authentication.
      * Everything that is not under /api is available because the filter does not apply for these requests.
@@ -63,19 +71,20 @@ public class SecurityWebFilter implements Filter {
     private Set<String> urlWhiteList;
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        urlWhiteList = Stream.of("/api/server/info", "/api/login", "/api/security/oauth2", "/api/security/oauth2/status")
+    public void init(final FilterConfig filterConfig) throws ServletException {
+        urlWhiteList = Stream.of(whitelist.split(","))
                 .map(p -> filterConfig.getServletContext().getContextPath() + p)
                 .collect(toSet());
     }
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
+        final HttpServletRequest httpServletRequest = HttpServletRequest.class.cast(servletRequest);
 
         if (!isSecuredPath(httpServletRequest)) {
             LOGGER.fine(() -> "Request to " + httpServletRequest.getRequestURI() + " is not secured.");
             filterChain.doFilter(servletRequest, servletResponse);
+            return;
         }
 
         final String authHeader = httpServletRequest.getHeader("Authorization");
@@ -85,7 +94,8 @@ public class SecurityWebFilter implements Filter {
             return;
         }
 
-        if (authHeader.startsWith("Basic ")) {
+        final String lowerHeader = authHeader.toLowerCase(Locale.ENGLISH);
+        if (lowerHeader.startsWith("basic ")) {
             if (loginBasic(httpServletRequest, authHeader)) {
                 try {
                     filterChain.doFilter(servletRequest, servletResponse);
@@ -96,7 +106,7 @@ public class SecurityWebFilter implements Filter {
                 sendUnauthorizedResponse(servletResponse);
             }
 
-        } else if (authHeader.startsWith("Bearer ")) {
+        } else if (lowerHeader.startsWith("bearer ")) {
             final IntrospectResponse tokenResponse = tokens.find(authHeader.substring("Bearer ".length()));
             if (tokenResponse == null) {
                 sendUnauthorizedResponse(servletResponse);
@@ -156,9 +166,11 @@ public class SecurityWebFilter implements Filter {
         return !urlWhiteList.contains(httpServletRequest.getRequestURI());
     }
 
-    private void sendUnauthorizedResponse(ServletResponse servletResponse) throws IOException {
-        HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
-        httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+    private void sendUnauthorizedResponse(final ServletResponse servletResponse) throws IOException {
+        if (servletResponse.isCommitted()) {
+            return; // too late anyway
+        }
+        HttpServletResponse.class.cast(servletResponse).sendError(HttpServletResponse.SC_UNAUTHORIZED);
     }
 
     @Override

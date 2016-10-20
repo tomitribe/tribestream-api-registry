@@ -74,7 +74,12 @@ import static org.tomitribe.util.Join.join;
         @ContainerProperties.Property(name = "registryDatasource.JdbcDriver", value = "org.h2.Driver"),
         @ContainerProperties.Property(name = "registryDatasource.JdbcUrl", value = "jdbc:h2:mem:registry;DB_CLOSE_ON_EXIT=FALSE"),
         @ContainerProperties.Property(name = "tribe.registry.elasticsearch.base", value = "http://localhost:${test.elasticsearch.port}"),
-        @ContainerProperties.Property(name = "tribe.registry.monitoring.http.urls", value = "http://localhost:${test.elasticsearch.port}")
+        @ContainerProperties.Property(name = "tribe.registry.monitoring.http.urls", value = "http://localhost:${test.elasticsearch.port}"),
+        @ContainerProperties.Property(name = "tribe.registry.oauth2.authorizationServerUrl", value = "http://localhost:${tomee.embedded.http}/api/oauth2/token"),
+        @ContainerProperties.Property(name = "tribe.registry.oauth2.introspectServerUrl", value = "http://localhost:${tomee.embedded.http}/api/oauth2/introspect"),
+        @ContainerProperties.Property(
+                name = "tribe.registry.security.filter.whitelist",
+                value = "/api/server/info,/api/login,/api/security/oauth2,/api/security/oauth2/status,/api/oauth2/token,/api/oauth2/introspect")
         /* can help for debugging (dumps sql queries and ES client HTTP requests
         ,@ContainerProperties.Property(name = "registryDatasource.LogSql", value = "true"),
         @ContainerProperties.Property(name = "tribe.registry.elasticsearch.features", value = "org.apache.cxf.feature.LoggingFeature")

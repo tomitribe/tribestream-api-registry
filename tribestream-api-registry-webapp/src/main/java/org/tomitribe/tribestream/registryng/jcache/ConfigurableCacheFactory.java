@@ -19,11 +19,13 @@
 package org.tomitribe.tribestream.registryng.jcache;
 
 import org.apache.deltaspike.core.api.config.ConfigProperty;
+import org.tomitribe.tribestream.registryng.cdi.Tribe;
 import org.tomitribe.tribestream.registryng.documentation.Description;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.cache.Cache;
+import javax.cache.CacheException;
 import javax.cache.CacheManager;
 import javax.cache.Caching;
 import javax.cache.annotation.CacheInvocationContext;
@@ -31,24 +33,37 @@ import javax.cache.annotation.CacheMethodDetails;
 import javax.cache.annotation.CacheResolver;
 import javax.cache.annotation.CacheResolverFactory;
 import javax.cache.annotation.CacheResult;
+import javax.cache.configuration.FactoryBuilder;
 import javax.cache.configuration.MutableConfiguration;
+import javax.cache.expiry.CreatedExpiryPolicy;
+import javax.cache.expiry.Duration;
 import javax.cache.spi.CachingProvider;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Proxy;
+import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.ofNullable;
 
 @ApplicationScoped
 public class ConfigurableCacheFactory implements CacheResolverFactory {
+    @Tribe
+    @Produces
     private CacheManager cacheManager;
+
     private CachingProvider provider;
 
     @Inject
     @Description("Should OAuth2 tokens be cached")
-    @ConfigProperty(name = "tribe.registry.security.token.cache.skip", defaultValue = "true")
+    @ConfigProperty(name = "tribe.registry.security.token.cache.skip", defaultValue = "false")
     private Boolean skip;
+
+    @Inject
+    @Description("How many time from the moment the token is received it is considered as valid")
+    @ConfigProperty(name = "tribe.registry.security.token.cache.expiry", defaultValue = "10 minutes")
+    private String duration;
 
     private final CacheResolver noCacheResolver = new CacheResolver() {
         private final Cache cache = Cache.class.cast(Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
@@ -87,16 +102,23 @@ public class ConfigurableCacheFactory implements CacheResolverFactory {
         return skip ? noCacheResolver : findCacheResolver(exceptionCacheName);
     }
 
-    private CacheResolver findCacheResolver(final String exceptionCacheName) {
-        Cache<?, ?> cache = cacheManager.getCache(exceptionCacheName);
+    private CacheResolver findCacheResolver(final String name) {
+        Cache<?, ?> cache = cacheManager.getCache(name);
         if (cache == null) {
-            cache = createCache(exceptionCacheName);
+            try {
+                cache = createCache(name);
+            } catch (final CacheException ce) {
+                cache = cacheManager.getCache(name);
+            }
         }
         return new ConfiguredCacheResolver(cache);
     }
 
     private Cache<?, ?> createCache(final String exceptionCacheName) {
-        cacheManager.createCache(exceptionCacheName, new MutableConfiguration<>().setStoreByValue(false));
+        final org.tomitribe.util.Duration d = new org.tomitribe.util.Duration(duration, TimeUnit.MILLISECONDS);
+        cacheManager.createCache(exceptionCacheName, new MutableConfiguration<>()
+                .setStoreByValue(false)
+                .setExpiryPolicyFactory(new FactoryBuilder.SingletonFactory<>(new CreatedExpiryPolicy(new Duration(d.getUnit(), d.getTime())))));
         return cacheManager.getCache(exceptionCacheName);
     }
 

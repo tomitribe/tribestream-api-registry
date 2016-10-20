@@ -87,10 +87,10 @@ public class OAuth2Tokens {
         }
     }
 
-    private static class TokenKey implements GeneratedCacheKey, Serializable {
+    public static class TokenKey implements GeneratedCacheKey, Serializable {
         private String value;
 
-        private TokenKey(final String accessToken) {
+        public TokenKey(final String accessToken) {
             this.value = accessToken;
         }
 
