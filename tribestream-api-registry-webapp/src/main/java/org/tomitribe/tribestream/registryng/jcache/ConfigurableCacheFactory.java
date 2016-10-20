@@ -18,6 +18,9 @@
  */
 package org.tomitribe.tribestream.registryng.jcache;
 
+import org.apache.deltaspike.core.api.config.ConfigProperty;
+import org.tomitribe.tribestream.registryng.documentation.Description;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.cache.Cache;
@@ -31,7 +34,9 @@ import javax.cache.annotation.CacheResult;
 import javax.cache.configuration.MutableConfiguration;
 import javax.cache.spi.CachingProvider;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Proxy;
 
 import static java.util.Optional.ofNullable;
 
@@ -39,6 +44,22 @@ import static java.util.Optional.ofNullable;
 public class ConfigurableCacheFactory implements CacheResolverFactory {
     private CacheManager cacheManager;
     private CachingProvider provider;
+
+    @Inject
+    @Description("Should OAuth2 tokens be cached")
+    @ConfigProperty(name = "tribe.registry.security.token.cache.skip", defaultValue = "true")
+    private Boolean skip;
+
+    private final CacheResolver noCacheResolver = new CacheResolver() {
+        private final Cache cache = Cache.class.cast(Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
+                new Class<?>[]{Cache.class},
+                (proxy, method, args) -> null));
+
+        @Override
+        public <K, V> Cache<K, V> resolveCache(final CacheInvocationContext<? extends Annotation> cacheInvocationContext) {
+            return cache;
+        }
+    };
 
     @PostConstruct
     private void init() {
@@ -54,7 +75,7 @@ public class ConfigurableCacheFactory implements CacheResolverFactory {
 
     @Override
     public CacheResolver getCacheResolver(final CacheMethodDetails<? extends Annotation> cacheMethodDetails) {
-        return findCacheResolver(cacheMethodDetails.getCacheName());
+        return skip ? noCacheResolver : findCacheResolver(cacheMethodDetails.getCacheName());
     }
 
     @Override
@@ -63,7 +84,7 @@ public class ConfigurableCacheFactory implements CacheResolverFactory {
         if (exceptionCacheName.isEmpty()) {
             throw new IllegalArgumentException("CacheResult.exceptionCacheName() not specified");
         }
-        return findCacheResolver(exceptionCacheName);
+        return skip ? noCacheResolver : findCacheResolver(exceptionCacheName);
     }
 
     private CacheResolver findCacheResolver(final String exceptionCacheName) {

@@ -43,8 +43,10 @@ public class OAuth2CaseTest {
 
     @Test
     public void authenticate() {// TODO
-        registry.target(false)
-                .path("security/oauth2")
+        // we get a valid token using oauth2
+        // then we
+        final AccessTokenResponse token = registry.target(false)
+                .path("api/security/oauth2")
                 .request()
                 .accept(APPLICATION_JSON_TYPE)
                 .post(entity(new Form()
