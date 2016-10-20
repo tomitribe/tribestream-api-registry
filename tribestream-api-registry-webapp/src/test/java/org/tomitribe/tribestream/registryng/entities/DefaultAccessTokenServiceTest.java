@@ -23,16 +23,23 @@ import org.apache.openejb.testing.Application;
 import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.tomitribe.tribestream.registryng.security.LoginContext;
 import org.tomitribe.tribestream.registryng.security.oauth2.AccessTokenResponse;
 import org.tomitribe.tribestream.registryng.security.oauth2.AccessTokenService;
 import org.tomitribe.tribestream.registryng.security.oauth2.InvalidTokenException;
 import org.tomitribe.tribestream.registryng.test.Registry;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.List;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import static javax.ws.rs.core.MediaType.WILDCARD_TYPE;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -58,7 +65,24 @@ public class DefaultAccessTokenServiceTest {
 
         accessTokenService.addAccessToken(tokenResponse);
 
-        assertNotNull(accessTokenService.getScopes(accessToken));
+        assertNotNull(accessTokenService.findToken(accessToken));
+        assertNull(accessTokenService.findToken(accessToken).getUsername());
+        accessTokenService.deleteToken(accessToken);
+    }
+
+    @Test
+    public void shouldReadUsernameFromJwt() throws Exception {
+        final String accessToken = "ignored." + Base64.getUrlEncoder().encodeToString("{\"username\":\"test\"}".getBytes(StandardCharsets.UTF_8)) + ".ignoredtoo";
+
+        AccessTokenResponse tokenResponse = new AccessTokenResponse();
+        tokenResponse.setAccessToken(accessToken);
+        tokenResponse.setExpiresIn(1000);
+
+        accessTokenService.addAccessToken(tokenResponse);
+
+        assertNotNull(accessTokenService.findToken(accessToken));
+        assertEquals("test", accessTokenService.findToken(accessToken).getUsername());
+        accessTokenService.deleteToken(accessToken);
     }
 
     @Test
@@ -72,15 +96,15 @@ public class DefaultAccessTokenServiceTest {
         tokenResponse.setExpiresIn(1000);
 
         accessTokenService.addAccessToken(tokenResponse);
-        assertNotNull(accessTokenService.getScopes(accessToken));
+        assertNotNull(accessTokenService.findToken(accessToken));
 
         // When: I delete it
         accessTokenService.deleteToken(accessToken);
 
         // Then: I also don't find it anymore
         try {
-            List<String> scopes = accessTokenService.getScopes(accessToken);
-            fail("Expected no scopes, but got " + scopes);
+            final AccessToken token = accessTokenService.findToken(accessToken);
+            fail("Expected no scopes, but got " + token.getScope());
         } catch (InvalidTokenException e) {
             Logger.getAnonymousLogger().fine("Got expected invalid token exception");
         }
@@ -92,8 +116,8 @@ public class DefaultAccessTokenServiceTest {
         final String accessToken = UUID.randomUUID().toString();
 
         try {
-            List<String> scopes = accessTokenService.getScopes(accessToken);
-            fail("Expected no scopes, but got " + scopes);
+            accessTokenService.findToken(accessToken);
+            fail("Expected no scopes, but found");
         } catch (InvalidTokenException e) {
             Logger.getAnonymousLogger().fine("Got expected invalid token exception");
         }
@@ -110,15 +134,15 @@ public class DefaultAccessTokenServiceTest {
         tokenResponse.setExpiresIn(2);
 
         accessTokenService.addAccessToken(tokenResponse);
-        assertNotNull(accessTokenService.getScopes(accessToken));
+        assertNotNull(accessTokenService.findToken(accessToken));
 
         // When: the token expires
         Thread.sleep(3000);
 
         // Then: the Token is no longer found
         try {
-            List<String> scopes = accessTokenService.getScopes(accessToken);
-            fail("Expected no scopes, but got " + scopes);
+            accessTokenService.findToken(accessToken);
+            fail("Expected no scopes, but found");
         } catch (InvalidTokenException e) {
             Logger.getAnonymousLogger().fine("Got expected invalid token exception");
         }
@@ -127,4 +151,34 @@ public class DefaultAccessTokenServiceTest {
         assertTrue(accessTokenService.deleteExpiredTokens() > 0);
     }
 
+    @Test
+    public void usernameIsAvailableContextually() {
+        final String accessToken = "ignored." + Base64.getUrlEncoder()
+                .encodeToString("{\"username\":\"usernameIsAvailableContextually\"}".getBytes(StandardCharsets.UTF_8)) + ".ignoredtoo";
+        final AccessTokenResponse tokenResponse = new AccessTokenResponse();
+        tokenResponse.setAccessToken(accessToken);
+        tokenResponse.setExpiresIn(1000);
+
+        accessTokenService.addAccessToken(tokenResponse);
+
+        assertEquals("usernameIsAvailableContextually", registry.target(false)
+                .path("api/test/AccessTokenService")
+                .request(WILDCARD_TYPE)
+                .header("Authorization", "Bearer " + accessToken)
+                .get(String.class));
+
+        accessTokenService.deleteToken(accessToken);
+    }
+
+    @ApplicationScoped
+    @Path("test/AccessTokenService")
+    public static class SpyEndpoint {
+        @Inject
+        private LoginContext ctx;
+
+        @GET
+        public String username() {
+            return ctx.getUsername();
+        }
+    }
 }
