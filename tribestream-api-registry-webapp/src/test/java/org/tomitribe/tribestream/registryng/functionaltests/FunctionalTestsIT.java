@@ -25,6 +25,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.tomitribe.tribestream.registryng.functionaltests.steps.ApplicationDetailsSteps;
@@ -33,6 +34,7 @@ import org.tomitribe.tribestream.registryng.functionaltests.steps.SearchPageStep
 
 import java.io.File;
 
+@Ignore("to activate back when basic we'll be added back")
 @RunWith(CukeSpace.class)
 @Glues({
         AuthorizationSteps.class,
