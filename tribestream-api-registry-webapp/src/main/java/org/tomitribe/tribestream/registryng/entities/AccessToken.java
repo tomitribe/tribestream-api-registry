@@ -53,6 +53,9 @@ public class AccessToken {
     @Column(length = MAX_ACCESS_TOKEN_LENGTH)
     private String accessToken;
 
+    @Column(length = 512)
+    private String username;
+
     @Column
     private long expiryTimestamp;
 
