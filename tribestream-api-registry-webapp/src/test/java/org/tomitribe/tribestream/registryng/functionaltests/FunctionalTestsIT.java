@@ -34,7 +34,7 @@ import org.tomitribe.tribestream.registryng.functionaltests.steps.SearchPageStep
 
 import java.io.File;
 
-@Ignore("to activate back when basic we'll be added back")
+@Ignore("0.04 doesn't support basic and this test was using that, to activate back starting at 0.5-SNAPSHOT")
 @RunWith(CukeSpace.class)
 @Glues({
         AuthorizationSteps.class,
