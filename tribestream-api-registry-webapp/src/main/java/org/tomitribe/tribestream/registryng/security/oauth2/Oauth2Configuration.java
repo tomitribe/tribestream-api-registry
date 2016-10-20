@@ -28,11 +28,15 @@ import javax.inject.Inject;
 @ApplicationScoped
 @Getter
 public class Oauth2Configuration {
-
     @Inject
     @Description("OAuth2 endpoint")
     @ConfigProperty(name = "tribe.registry.oauth2.authorizationServerUrl")
     private String authServerUrl;
+
+    @Inject
+    @Description("OAuth2 /introspect endpoint")
+    @ConfigProperty(name = "tribe.registry.oauth2.introspectServerUrl")
+    private String introspectServerUrl;
 
     @Inject
     @Description("OAuth2 client id if used")
