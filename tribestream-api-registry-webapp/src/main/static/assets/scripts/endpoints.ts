@@ -1,3 +1,6 @@
+module endpoints {
+let HistoryCommonController = require("./endpoints_common.ts").controllerApplication;
+
 angular.module('tribe-endpoints', [
     'website-services'
 ])
@@ -178,9 +181,8 @@ angular.module('tribe-endpoints', [
             template: require('../templates/app_application_details_history.jade'),
             scope: true,
             controller: [
-                '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', 'systemMessagesService', 'tribeLinkHeaderService',
-                function ($scope, srv, tribeFilterService, $timeout, $filter, $log, systemMessagesService, tribeLinkHeaderService) {
-                }
+                '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', 'systemMessagesService', 'tribeLinkHeaderService', '$q',
+                HistoryCommonController
             ]
         };
     }])
@@ -478,3 +480,5 @@ angular.module('tribe-endpoints', [
     .run(function () {
         // placeholder
     });
+
+}

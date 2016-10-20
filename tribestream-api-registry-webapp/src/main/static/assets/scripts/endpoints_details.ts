@@ -1,4 +1,5 @@
 module endpointdetails {
+let HistoryCommonController = require("./endpoints_common.ts").controllerEndpoint;
 
 angular.module('tribe-endpoints-details', [
     'website-services',
@@ -496,52 +497,7 @@ angular.module('tribe-endpoints-details', [
             scope: true,
             controller: [
                 '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', 'systemMessagesService', 'tribeLinkHeaderService', '$q',
-                function ($scope, srv, tribeFilterService, $timeout, $filter, $log, systemMessagesService, tribeLinkHeaderService, $q) {
-                  $scope.selected = [];
-                  $scope.showDiff = false;
-
-                  $scope.onHistorySelect = item => {
-                    $scope.showDiff = false;
-                    $scope.mergeWidget = undefined;
-
-                    if (item.$ui && item.$ui.selected) {
-                      $scope.selected.push(item);
-                    } else {
-                      $scope.selected = $scope.selected.filter(i => i != item);
-                    }
-                  };
-
-                  $scope.saveMerge = () => {
-                    // update new operation with the json content
-                    $scope.ref.operation = JSON.parse($scope['valueA']);
-
-                    srv.saveEndpoint($scope.endpointLink, {
-                      // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
-                      httpMethod: $scope.ref.httpMethod,
-                      path: $scope.ref.path,
-                      operation: $scope.ref.operation
-                    }).then(
-                      function (saveResponse) {
-                        $scope.updateEndpoint(saveResponse.data);
-                        systemMessagesService.info("Saved endpoint details! " + saveResponse.status);
-                      }
-                    );
-                  };
-                  $scope.doDiff = () => {
-                    $scope.showDiff = !$scope.showDiff;
-
-                    if ($scope.showDiff) {
-                      $q.all($scope.selected.map(item => srv.getHistoricItem(item).promise()))
-                        .then(results => {
-                          $scope.ref = results[0].data;
-                          $timeout(() => $scope.$apply(() => {
-                              $scope['valueA'] = JSON.stringify(JSON.parse($scope.ref['json']), undefined, 2);
-                              $scope['valueB'] = JSON.stringify(JSON.parse(results[1]['data']['json']), undefined, 2);
-                          }));
-                        });
-                    }
-                  };
-                }
+                HistoryCommonController
             ]
         };
     }])
