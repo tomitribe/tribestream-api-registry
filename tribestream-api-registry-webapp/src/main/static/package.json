@@ -1,7 +1,7 @@
 {
-  "name": "registry",
+  "name": "tribestream-api-registry",
   "version": "0.0.1-SNAPSHOT",
-  "description": "registry",
+  "description": "Frontend for tribestream-api-registry",
   "scripts": {
     "build": "rimraf ../../target/static-resources && webpack --config webpack.config.js --progress --profile --bail",
     "buildnwatch": "webpack --config webpack.config.dev.js --progress --profile --bail --watch",
@@ -9,7 +9,11 @@
     "test-once": "karma start karma.once.conf.js",
     "postinstall": "typings install && bower install"
   },
-  "license": "ASF",
+  "license": "Apache-2.0",
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/tomitribe/tribestream-api-registry.git"
+  },
   "dependencies": {
     "angular": "^1.5.8",
     "angular-cookies": "^1.5.8",
