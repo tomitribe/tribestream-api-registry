@@ -59,7 +59,7 @@ module services {
                         }
                     },
                     restoreSession: function () {
-                        var providerState = $localStorage.tribe == undefined ? undefined : $localStorage.tribe.security;
+                        var providerState = $localStorage.tribe ? $localStorage.tribe.security : undefined;
                         if (providerState) {
                             var provider = tribeHeaderProviderSelector.select($localStorage.tribe.security.type);
                             provider.fromState($localStorage.tribe.security);
