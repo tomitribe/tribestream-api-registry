@@ -48,10 +48,10 @@ public class ApplicationDetailsPage {
     @FindBy(css = "div[x-ng-click='save()']")
     private WebElement saveButton;
 
-    @FindBy(css = "div[data-value='swagger.info.description'] div.main")
+    @FindBy(css = "div[data-value='swagger.info.description'] div.preview")
     private WebElement descriptionField;
 
-    @FindBy(css = "div[data-value='swagger.info.description'] textarea")
+    @FindBy(css = "div[data-value='swagger.info.description'] .CodeMirror")
     private WebElement descriptionEditor;
 
     @FindBy(css = "div.tribe-field-actions-body div[x-ng-click='confirm()']")
@@ -89,7 +89,7 @@ public class ApplicationDetailsPage {
         guardNoRequest(checkButton).click();
     }
 
-    public void enterDescription(final String newDescription) throws IOException {
+    public void enterDescription(final String newDescription) throws Exception {
 
         // TODO: No idea how to edit the markdown component. SeleniumIDE does not see any actions as well... :-(
 //        assertTrue(descriptionField.isDisplayed());
@@ -98,6 +98,15 @@ public class ApplicationDetailsPage {
 //        actions.click();
 //        createScreenshot("target/afterclick.png");
 
+        descriptionField.click();
+        Thread.sleep(5000);
+        guardNoRequest(descriptionEditor).sendKeys(Keys.chord(Keys.CONTROL, "a"), Keys.BACK_SPACE, newDescription);
+        guardNoRequest(checkButton).click();
+
+    }
+
+    public String getDescription() {
+        return descriptionField.getText();
     }
 
     public String getApplicationName() {

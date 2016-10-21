@@ -27,8 +27,10 @@ import org.openqa.selenium.support.FindBy;
 
 import java.io.IOException;
 
+import static org.jboss.arquillian.graphene.Graphene.guardAjax;
 import static org.jboss.arquillian.graphene.Graphene.guardNoRequest;
 import static org.jboss.arquillian.graphene.Graphene.waitGui;
+import static org.jboss.arquillian.graphene.Graphene.waitModel;
 
 public class EndpointDetailsPage {
 
@@ -44,6 +46,9 @@ public class EndpointDetailsPage {
     @FindBy(css = "i.fa.fa-check")
     private WebElement checkButton;
 
+    @FindBy(css = "div[x-ng-click='save()']")
+    private WebElement saveButton;
+
     @FindBy(css = "article.app-ep-details-body")
     private WebElement endpointDetailsBody;
 
@@ -51,10 +56,10 @@ public class EndpointDetailsPage {
         return endpointDetailsBody;
     }
 
-    public void enterVerb(final String newVerb) throws IOException {
-        verbSingleSelect.click();
-        waitGui();
+    public void enterVerb(final String newVerb) throws Exception {
         WebElement textField = verbSingleSelect.findElement(By.cssSelector("input[type='text']"));
+        verbSingleSelect.click();
+        Thread.sleep(5000);
         guardNoRequest(textField).sendKeys(Keys.chord(Keys.CONTROL, "a"), Keys.BACK_SPACE, newVerb, Keys.ENTER);
     }
 
@@ -67,4 +72,7 @@ public class EndpointDetailsPage {
         guardNoRequest(checkButton).click();
     }
 
+    public void clickSaveEndpointButton() {
+        guardAjax(saveButton).click();
+    }
 }

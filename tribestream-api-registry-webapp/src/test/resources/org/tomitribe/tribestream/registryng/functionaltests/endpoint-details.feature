@@ -21,3 +21,6 @@ Feature: Tribestream :: Registry :: Endpoint Details
     When I select this application
     And hit the create endpoint button
     And set the verb to "OPTIONS" and the path to "/a/nice/path/with/a/:placeholder"
+    # And hit the save endpoint button
+    # And go back to the home page
+    # Then I should see the endpoint "OPTIONS" "/a/nice/path/with/a/:placeholder" in the application "New endpoint test app"

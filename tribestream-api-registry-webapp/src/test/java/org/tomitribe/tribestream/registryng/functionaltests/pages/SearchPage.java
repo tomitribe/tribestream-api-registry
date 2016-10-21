@@ -75,8 +75,9 @@ public class SearchPage {
 
     }
 
-    public void refresh() {
-        guardNoRequest(searchField).sendKeys(Keys.chord(Keys.CONTROL, "a"), Keys.DELETE, Keys.RETURN);
+    public void refresh() throws InterruptedException {
+        searchField.sendKeys(Keys.chord(Keys.CONTROL, "a"), Keys.DELETE, Keys.RETURN);
+        Thread.sleep(5000);
     }
 
     public void assertHasEndpoint(final String application, final String verb, final String path) {

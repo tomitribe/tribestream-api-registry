@@ -50,4 +50,9 @@ public class EndpointDetailsSteps extends StepBase {
         createScreenshot("target/afterSetPath.png");
     }
 
+    @When("^hit the save endpoint button$")
+    public void hit_the_save_button() throws Throwable {
+        endpointDetailsPage.clickSaveEndpointButton();
+    }
+
 }

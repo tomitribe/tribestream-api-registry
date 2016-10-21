@@ -39,6 +39,8 @@ public class ApplicationDetailsSteps extends StepBase {
 
     private String applicationVersion;
 
+    private String applicationDescription;
+
     @When("^I create a new application$")
     public void i_create_a_new_application() throws Throwable {
         clearState();
@@ -73,6 +75,7 @@ public class ApplicationDetailsSteps extends StepBase {
     @When("^set the description to \"([^\"]*)\"$")
     public void set_the_description_to(final String description) throws Throwable {
         applicationDetailsPage.enterDescription(description);
+        this.applicationDescription = description;
 
     }
 
@@ -113,9 +116,9 @@ public class ApplicationDetailsSteps extends StepBase {
         assertEquals(applicationVersion, applicationDetailsPage.getApplicationVersion());
 
         // TODO: test description if set
-//        if (description != null) {
-//            assertEquals(description, applicationDetailsPage.getDescription());
-//        }
+        if (applicationDescription != null) {
+            assertEquals(applicationDescription, applicationDetailsPage.getDescription());
+        }
     }
 
 

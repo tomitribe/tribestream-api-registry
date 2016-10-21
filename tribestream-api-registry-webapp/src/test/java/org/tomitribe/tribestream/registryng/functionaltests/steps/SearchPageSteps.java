@@ -44,12 +44,15 @@ public class SearchPageSteps extends StepBase {
     }
 
     @Then("^I should see the endpoint \"(.*?)\" \"(.*?)\" in the application \"(.*?)\"$")
-    public void i_should_see_the_endpoint(final String verb, final String path, final String application) {
+    public void i_should_see_the_endpoint(final String verb, final String path, final String application) throws Throwable {
 
-        searchPage.refresh();
+        retry(10, () -> {
+            searchPage.refresh();
 
-        searchPage.assertHasEndpoint(application, verb, path);
-
-
+            searchPage.assertHasEndpoint(application, verb, path);
+        });
     }
+
+
+
 }

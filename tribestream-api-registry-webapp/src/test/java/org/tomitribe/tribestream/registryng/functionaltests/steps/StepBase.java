@@ -23,6 +23,7 @@ import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.SystemClock;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -44,4 +45,25 @@ public class StepBase {
         }
 
     }
+
+    protected void retry(int timeoutInSecs, FailableAction action) throws Throwable {
+
+        Throwable finalError = null;
+        long end = System.currentTimeMillis() + timeoutInSecs * 1000;
+        while (System.currentTimeMillis() < end) {
+            try {
+                action.run();
+                return;
+            } catch (Throwable th) {
+                finalError = th;
+            }
+        }
+        throw finalError;
+    }
+
+    @FunctionalInterface
+    interface FailableAction {
+        public void run() throws Throwable;
+    }
+
 }
