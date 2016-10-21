@@ -70,9 +70,5 @@
 <div data-ng-view class="app-body">
     <div class="app-loading"></div>
 </div>
-<!-- Use this instead of HtmlWebpackPlugin in order to include the charset  -->
-<script type="text/javascript" src="app/polyfills.js" charset="utf-8"></script>
-<script type="text/javascript" src="app/vendor.js" charset="utf-8"></script>
-<script type="text/javascript" src="app/app.js" charset="utf-8"></script>
 </body>
 </html>
