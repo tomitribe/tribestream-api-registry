@@ -98,29 +98,30 @@ angular.module('tribe-endpoints', [
                       $scope.endpointsLink = null;
                     }
                     $scope.save = () => {
-                      srv.saveApplication($scope.applicationLink, $scope.swagger).then(
-                        function (saveResponse) {
-                          systemMessagesService.info("Saved application details! " + saveResponse.status);
-                        }
-                      );
-                    };
-                    $scope.create = () => {
-                      srv.createApplication($scope.applicationsLink, $scope.swagger).then(
-                        function (saveResponse) {
-                          systemMessagesService.info("Created application details! " + saveResponse.status);
-                          $timeout(() => {
-                            $scope.$apply(() => {
-                              $scope.swagger = saveResponse.data.swagger;
-                              $scope.humanReadableName = saveResponse.data.humanReadableName;
-                              let links = tribeLinkHeaderService.parseLinkHeader(saveResponse['data']['swagger']['x-tribestream-api-registry']['links']);
-                              $scope.applicationLink = links['self'];
-                              $scope.applicationsLink = null;
-                              $scope.historyLink = links['history'];
-                              $scope.endpointsLink = links['endpoints'];
+                      if ($scope.applicationLink) {
+                        srv.saveApplication($scope.applicationLink, $scope.swagger).then(
+                          function (saveResponse) {
+                            systemMessagesService.info("Saved application details!");
+                          }
+                        );
+                      } else {
+                        srv.createApplication($scope.applicationsLink, $scope.swagger).then(
+                          function (saveResponse) {
+                            systemMessagesService.info("Created application details!");
+                            $timeout(() => {
+                              $scope.$apply(() => {
+                                $scope.swagger = saveResponse.data.swagger;
+                                $scope.humanReadableName = saveResponse.data.humanReadableName;
+                                let links = tribeLinkHeaderService.parseLinkHeader(saveResponse['data']['swagger']['x-tribestream-api-registry']['links']);
+                                $scope.applicationLink = links['self'];
+                                $scope.applicationsLink = null;
+                                $scope.historyLink = links['history'];
+                                $scope.endpointsLink = links['endpoints'];
+                              });
                             });
-                          });
-                        }
-                      );
+                          }
+                        );
+                      }
                     };
                     $scope.delete = () => {
                       srv.delete($scope.applicationLink).then((response) => {
