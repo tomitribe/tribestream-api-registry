@@ -54,6 +54,7 @@ angular.module('tribe-endpoints', [
                                   $scope.applicationLink = links['self'];
                                   $scope.applicationsLink = null;
                                   $scope.historyLink = links['history'];
+                                  $scope.reloadHistory();
                                   $scope.endpointsLink = links['endpoints'];
                                   if (data.swagger.paths) {
                                       for (let pathName in data.swagger.paths) {
@@ -100,30 +101,44 @@ angular.module('tribe-endpoints', [
                       $scope.historyLink = null;
                       $scope.endpointsLink = null;
                     }
-                    $scope.save = () => {
-                      srv.saveApplication($scope.applicationLink, $scope.swagger).then(
-                        function (saveResponse) {
-                          systemMessagesService.info("Saved application details! " + saveResponse.status);
-                        }
-                      );
-                    };
-                    $scope.create = () => {
-                      srv.createApplication($scope.applicationsLink, $scope.swagger).then(
-                        function (saveResponse) {
-                          systemMessagesService.info("Created application details! " + saveResponse.status);
-                          $timeout(() => {
-                            $scope.$apply(() => {
-                              $scope.swagger = saveResponse.data.swagger;
-                              $scope.humanReadableName = saveResponse.data.humanReadableName;
-                              let links = tribeLinkHeaderService.parseLinkHeader(saveResponse['data']['swagger']['x-tribestream-api-registry']['links']);
-                              $scope.applicationLink = links['self'];
-                              $scope.applicationsLink = null;
-                              $scope.historyLink = links['history'];
-                              $scope.endpointsLink = links['endpoints'];
-                            });
+                    $scope.reloadHistory = () => {
+                      if($scope.historyLink) {
+                          srv.getHistory($scope.historyLink).then((response) => {
+                              let links = tribeLinkHeaderService.parseLinkHeader(response['data']['links']);
+                              for (let entry of response['data']['items']) {
+                                  entry.link = links[`revision ${entry.revisionId}`];
+                              }
+                              $timeout(() => $scope.$apply(() => $scope.history = response['data']['items']));
                           });
-                        }
-                      );
+                      }
+                    }
+                    $scope.save = () => {
+                      if ($scope.applicationLink) {
+                        srv.saveApplication($scope.applicationLink, $scope.swagger).then(
+                          (saveResponse) => {
+                            systemMessagesService.info("Saved application details!");
+                            $scope.reloadHistory();
+                          }
+                        );
+                      } else {
+                        srv.createApplication($scope.applicationsLink, $scope.swagger).then(
+                          function (saveResponse) {
+                            systemMessagesService.info("Created application details!");
+                            $timeout(() => {
+                              $scope.$apply(() => {
+                                $scope.swagger = saveResponse.data.swagger;
+                                $scope.humanReadableName = saveResponse.data.humanReadableName;
+                                let links = tribeLinkHeaderService.parseLinkHeader(saveResponse['data']['swagger']['x-tribestream-api-registry']['links']);
+                                $scope.applicationLink = links['self'];
+                                $scope.applicationsLink = null;
+                                $scope.historyLink = links['history'];
+                                $scope.endpointsLink = links['endpoints'];
+                                $scope.reloadHistory();
+                              });
+                            });
+                          }
+                        );
+                      }
                     };
                     $scope.delete = () => {
                       srv.delete($scope.applicationLink).then((response) => {
@@ -131,17 +146,6 @@ angular.module('tribe-endpoints', [
                           $location.path("/");
                       });
                     };
-                    $scope.$watch('historyLink', () => {
-                        if($scope.historyLink) {
-                            srv.getHistory($scope.historyLink).then((response) => {
-                                let links = tribeLinkHeaderService.parseLinkHeader(response['data']['links']);
-                                for (let entry of response['data']['items']) {
-                                    entry.link = links[`revision ${entry.revisionId}`];
-                                }
-                                $timeout(() => $scope.$apply(() => $scope.history = response['data']['items']));
-                            });
-                        }
-                    });
                     // Triggered by selecting one revision, will load it and show it
                     $scope.showHistoricApplication = (historyItem) => {
                       $timeout(() => {
