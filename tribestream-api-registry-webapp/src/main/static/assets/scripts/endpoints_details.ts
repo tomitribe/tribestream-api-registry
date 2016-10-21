@@ -628,6 +628,7 @@ angular.module('tribe-endpoints-details', [
               }).then(
                 function (saveResponse) {
                   systemMessagesService.info("Saved endpoint details!");
+                  $scope.reloadHistory();
                 }
               );
             } else {
@@ -649,6 +650,7 @@ angular.module('tribe-endpoints-details', [
                           $scope.endpointLink = links['self'];
                           $scope.historyLink = links['history'];
                           $scope.endpointsLink = null;
+                          $scope.reloadHistory();
                       });
                   });
                   systemMessagesService.info("Created new endpoint! " + saveResponse.status);
@@ -662,7 +664,7 @@ angular.module('tribe-endpoints-details', [
                 $location.path("/application/" + $scope.requestMetadata.applicationName);
             });
           };
-          $scope.$watch('historyLink', () => {
+          $scope.reloadHistory = () => {
             if(!$scope.historyLink) {
               return;
             }
@@ -679,7 +681,7 @@ angular.module('tribe-endpoints-details', [
                 });
               });
             });
-          });
+          };
           // Triggered by selecting one revision, will load it and show it
           $scope.showHistoricEndpoint = function(historyItem) {
             $timeout(function () {

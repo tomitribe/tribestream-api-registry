@@ -97,11 +97,23 @@ angular.module('tribe-endpoints', [
                       $scope.historyLink = null;
                       $scope.endpointsLink = null;
                     }
+                    $scope.reloadHistory = () => {
+                      if($scope.historyLink) {
+                          srv.getHistory($scope.historyLink).then((response) => {
+                              let links = tribeLinkHeaderService.parseLinkHeader(response['data']['links']);
+                              for (let entry of response['data']['items']) {
+                                  entry.link = links[`revision ${entry.revisionId}`];
+                              }
+                              $timeout(() => $scope.$apply(() => $scope.history = response['data']['items']));
+                          });
+                      }
+                    }
                     $scope.save = () => {
                       if ($scope.applicationLink) {
                         srv.saveApplication($scope.applicationLink, $scope.swagger).then(
-                          function (saveResponse) {
+                          (saveResponse) => {
                             systemMessagesService.info("Saved application details!");
+                            $scope.reloadHistory();
                           }
                         );
                       } else {
@@ -117,6 +129,7 @@ angular.module('tribe-endpoints', [
                                 $scope.applicationsLink = null;
                                 $scope.historyLink = links['history'];
                                 $scope.endpointsLink = links['endpoints'];
+                                $scope.reloadHistory();
                               });
                             });
                           }
@@ -129,17 +142,6 @@ angular.module('tribe-endpoints', [
                           $location.path("/");
                       });
                     };
-                    $scope.$watch('historyLink', () => {
-                        if($scope.historyLink) {
-                            srv.getHistory($scope.historyLink).then((response) => {
-                                let links = tribeLinkHeaderService.parseLinkHeader(response['data']['links']);
-                                for (let entry of response['data']['items']) {
-                                    entry.link = links[`revision ${entry.revisionId}`];
-                                }
-                                $timeout(() => $scope.$apply(() => $scope.history = response['data']['items']));
-                            });
-                        }
-                    });
                     // Triggered by selecting one revision, will load it and show it
                     $scope.showHistoricApplication = (historyItem) => {
                       $timeout(() => {
