@@ -51,6 +51,7 @@ angular.module('tribe-endpoints', [
                                   $scope.applicationLink = links['self'];
                                   $scope.applicationsLink = null;
                                   $scope.historyLink = links['history'];
+                                  $scope.reloadHistory();
                                   $scope.endpointsLink = links['endpoints'];
                                   if (data.swagger.paths) {
                                       for (let pathName in data.swagger.paths) {

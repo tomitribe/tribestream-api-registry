@@ -575,6 +575,7 @@ angular.module('tribe-endpoints-details', [
               if(detailsResponse['data']) {
                 let links = tribeLinkHeaderService.parseLinkHeader(detailsResponse['data']['operation']['x-tribestream-api-registry']['links']);
                 $scope.historyLink = links['history'];
+                $scope.reloadHistory();
                 $scope.applicationLink = links['application'];
                 $scope.endpointLink = links['self'];
                 $scope.endpointsLink = null;
