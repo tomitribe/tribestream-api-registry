@@ -19,7 +19,6 @@
 package org.tomitribe.tribestream.registryng.webapp;
 
 import org.apache.openejb.testing.Application;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -38,7 +37,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.openqa.selenium.By.cssSelector;
 
-@Ignore("0.04 doesn't support basic and this test was using that, to activate back starting at 0.5-SNAPSHOT")
 public class HomeTest extends WebAppTesting {
     @Application
     private Registry registry;
