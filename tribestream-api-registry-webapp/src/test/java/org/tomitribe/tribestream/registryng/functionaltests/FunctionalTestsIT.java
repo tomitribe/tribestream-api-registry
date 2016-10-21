@@ -34,7 +34,11 @@ import org.tomitribe.tribestream.registryng.functionaltests.steps.SearchPageStep
 
 import java.io.File;
 
-@Ignore("0.04 doesn't support basic and this test was using that, to activate back starting at 0.5-SNAPSHOT")
+import static org.apache.openejb.loader.JarLocation.jarLocation;
+
+@Ignore(
+        "these tests rely on sleep() or no wait which is just no way to be deterministic (use until())" +
+                "and duplicate WebAppTesting setup so we have to choose")
 @RunWith(CukeSpace.class)
 @Glues({
         AuthorizationSteps.class,
@@ -52,7 +56,8 @@ public class FunctionalTestsIT {
         WebArchive war =
                 ShrinkWrap.createFromZipFile(
                         WebArchive.class,
-                        new File("target").listFiles((File file) -> file.getName().matches("^tribestream-api-registry-.*\\.war$"))[0]
+                        jarLocation(FunctionalTestsIT.class).getParentFile()
+                                .listFiles((File file) -> file.getName().matches("^tribestream-api-registry-.*\\.war$"))[0]
                 );
 
         System.out.println(war.toString(true));
@@ -62,7 +67,6 @@ public class FunctionalTestsIT {
 
     @Drone
     private PhantomJSDriver /* WebDriver */ driver;
-
 
 
 }
