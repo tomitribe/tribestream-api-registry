@@ -21,8 +21,8 @@ package org.tomitribe.tribestream.registryng.functionaltests.pages;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.support.FindBy;
 
 import java.util.List;
@@ -36,7 +36,7 @@ import static org.junit.Assert.assertThat;
 public class SearchPage {
 
     @Drone
-    private PhantomJSDriver driver;
+    private WebDriver driver;
 
     @FindBy(css = "div[data-app-endpoints-list='data-app-endpoints-list']")
     private WebElement searchPage;
@@ -63,7 +63,7 @@ public class SearchPage {
 
     public void selectApplication(final String applicationName, final String version) {
 
-        WebElement element = driver.findElementByLinkText(applicationName + " " + version);
+        WebElement element = driver.findElement(By.linkText(applicationName + " " + version));
 
         guardAjax(element).click();
 

@@ -27,7 +27,7 @@ import org.tomitribe.tribestream.registryng.functionaltests.pages.SearchPage;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class ApplicationDetailsSteps {
+public class ApplicationDetailsSteps extends StepBase {
 
     @Page
     private SearchPage searchPage;
@@ -50,7 +50,7 @@ public class ApplicationDetailsSteps {
         clearState();
         searchPage.clickCreateApplicationButton();
         set_the_application_name_to_and_version_to(applicationName, applicationVersion);
-        hit_the_create_button();
+        hit_the_save_button();
         go_back_to_the_home_page();
     }
 
@@ -76,15 +76,16 @@ public class ApplicationDetailsSteps {
 
     }
 
-    @When("^hit the create button$")
-    public void hit_the_create_button() throws Throwable {
-        applicationDetailsPage.clickCreateApplicationButton();
-    }
-
     @When("^hit the save button$")
     public void hit_the_save_button() throws Throwable {
         applicationDetailsPage.clickSaveApplicationButton();
     }
+
+    @When("^hit the create endpoint button$")
+    public void hit_the_create_endpoint_button() throws Throwable {
+        applicationDetailsPage.clickCreateEndpointButton();
+    }
+
 
     @When("^go back to the home page$")
     public void go_back_to_the_home_page() throws Throwable {
