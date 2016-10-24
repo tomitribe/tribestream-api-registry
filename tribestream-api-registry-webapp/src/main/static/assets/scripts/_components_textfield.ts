@@ -66,6 +66,7 @@ angular.module('website-components-text', [
                         } else {
                             scope['onCommit']();
                         }
+                        element.removeClass('invalid');
                         element.removeClass('active');
                     }, 500);
                 };
