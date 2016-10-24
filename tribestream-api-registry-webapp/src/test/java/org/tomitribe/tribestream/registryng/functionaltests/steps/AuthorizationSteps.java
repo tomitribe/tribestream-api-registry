@@ -19,21 +19,20 @@
 package org.tomitribe.tribestream.registryng.functionaltests.steps;
 
 import cucumber.api.java.en.Given;
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.support.FindBy;
 
 import java.net.URL;
+import java.util.List;
 
 import static org.jboss.arquillian.graphene.Graphene.guardAjax;
+import static org.jboss.arquillian.graphene.Graphene.guardHttp;
+import static org.jboss.arquillian.graphene.Graphene.waitGui;
 import static org.junit.Assert.assertTrue;
 
-public class AuthorizationSteps {
-
-    @Drone
-    private PhantomJSDriver /* WebDriver */ driver;
+public class AuthorizationSteps extends StepBase {
 
     @ArquillianResource
     private URL url;
@@ -60,7 +59,13 @@ public class AuthorizationSteps {
 
         driver.navigate().to(url);
 
+        waitGui();
         Thread.sleep(5000);
+
+        List<WebElement> logoutButtons = driver.findElements(By.className("fa-sign-out"));
+        if (logoutButtons.size() > 0) {
+            guardHttp(logout).click();
+        }
 
         assertTrue(loginForm.isDisplayed());
         assertTrue(submit.isDisplayed());

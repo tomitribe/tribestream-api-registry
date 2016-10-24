@@ -21,12 +21,10 @@ package org.tomitribe.tribestream.registryng.functionaltests.pages;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
-import org.openqa.selenium.OutputType;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.support.FindBy;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import static org.jboss.arquillian.graphene.Graphene.guardAjax;
@@ -36,7 +34,7 @@ import static org.jboss.arquillian.graphene.Graphene.waitGui;
 public class ApplicationDetailsPage {
 
     @Drone
-    private PhantomJSDriver driver;
+    private WebDriver driver;
 
     @FindBy(css = "div[data-value='swagger.info.title'] div.text")
     private WebElement titleField;
@@ -44,16 +42,16 @@ public class ApplicationDetailsPage {
     @FindBy(css = "div[data-value='swagger.info.version'] div.text")
     private WebElement versionField;
 
-    @FindBy(css = "div[x-ng-click='create()']")
-    private WebElement createApplicationButton;
+    @FindBy(partialLinkText = "Create Endpoint")
+    private WebElement createEndpointButton;
 
     @FindBy(css = "div[x-ng-click='save()']")
     private WebElement saveButton;
 
-    @FindBy(css = "div[data-value='swagger.info.description'] div.main")
+    @FindBy(css = "div[data-value='swagger.info.description'] div.preview")
     private WebElement descriptionField;
 
-    @FindBy(css = "div[data-value='swagger.info.description'] textarea")
+    @FindBy(css = "div[data-value='swagger.info.description'] .CodeMirror")
     private WebElement descriptionEditor;
 
     @FindBy(css = "div.tribe-field-actions-body div[x-ng-click='confirm()']")
@@ -91,7 +89,7 @@ public class ApplicationDetailsPage {
         guardNoRequest(checkButton).click();
     }
 
-    public void enterDescription(final String newDescription) throws IOException {
+    public void enterDescription(final String newDescription) throws Exception {
 
         // TODO: No idea how to edit the markdown component. SeleniumIDE does not see any actions as well... :-(
 //        assertTrue(descriptionField.isDisplayed());
@@ -100,6 +98,15 @@ public class ApplicationDetailsPage {
 //        actions.click();
 //        createScreenshot("target/afterclick.png");
 
+        descriptionField.click();
+        Thread.sleep(5000);
+        guardNoRequest(descriptionEditor).sendKeys(Keys.chord(Keys.CONTROL, "a"), Keys.BACK_SPACE, newDescription);
+        guardNoRequest(checkButton).click();
+
+    }
+
+    public String getDescription() {
+        return descriptionField.getText();
     }
 
     public String getApplicationName() {
@@ -111,7 +118,13 @@ public class ApplicationDetailsPage {
     }
 
     public void clickCreateApplicationButton() throws Exception {
-        createApplicationButton.click();
+        saveButton.click();
+
+        waitGui();
+    }
+
+    public void clickCreateEndpointButton() throws Exception {
+        createEndpointButton.click();
 
         waitGui();
     }
@@ -122,13 +135,6 @@ public class ApplicationDetailsPage {
 
     public void clickHomeButton() {
         guardAjax(homeLink).click();
-    }
-
-    public void createScreenshot(final String filename) throws IOException {
-        try (FileOutputStream fout = new FileOutputStream(filename)) {
-            fout.write(driver.getScreenshotAs(OutputType.BYTES));
-        }
-
     }
 
 }
