@@ -8,10 +8,14 @@ angular.module('website-components-text', [
             scope: {
                 originalValue: '=value',
                 type: '@',
-                placeholder: '@'
+                placeholder: '@',
+                regex: '@?'
             },
             template: require('../templates/component_text.jade'),
             controller: ['$log', '$scope', ($log, $scope) => $timeout(() => {
+                if (!$scope['regex']) {
+                    $scope['regex'] = '.*';
+                }
                 $scope['version'] = 0;
                 $scope['fieldDirty'] = false;
                 $scope.$watch('originalValue', () => $timeout(() => $scope.$apply(() => {

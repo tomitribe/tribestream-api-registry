@@ -1,7 +1,7 @@
 div(tabindex=0, title="Click to edit")
     div
         .text
-            input(type="{{type ? type : 'text'}}", x-ng-keyup="keyEntered($event);", x-ng-model="value")
+            input(type="{{type ? type : 'text'}}", x-ng-keyup="keyEntered($event);", x-ng-model="value", ng-pattern="regex")
             span(x-ng-if="value") {{value}}
             span.empty(x-ng-if="!value") {{placeholder ? placeholder : Empty}}
         .edit-icon
