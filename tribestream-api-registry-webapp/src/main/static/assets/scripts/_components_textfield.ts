@@ -57,14 +57,18 @@ angular.module('website-components-text', [
                     }
                     deactivatePromise = null;
                 };
+                let input = element.find('input');
                 let deactivate = () => {
                     cancelDeactivate();
                     deactivatePromise = $timeout(() => {
-                        scope['onCommit']();
+                        if (element.hasClass('invalid')) {
+                            scope['onCancel']();
+                        } else {
+                            scope['onCommit']();
+                        }
                         element.removeClass('active');
                     }, 500);
                 };
-                let input = element.find('input');
                 scope.$on('fieldCanceled', () => input.blur());
                 scope.$on('fieldCommited', () => input.blur());
                 input.on('blur', () => deactivate());
@@ -79,6 +83,15 @@ angular.module('website-components-text', [
                 });
                 element.find('> div').on('focus', () => input.focus());
                 scope.$on('$destroy', () => element.remove());
+                input.on('keyup', () => $timeout(() => scope.$apply(() => {
+                    if (input.hasClass('ng-invalid')) {
+                        element.addClass('invalid');
+                        scope['valid'] = false;
+                    } else {
+                        element.removeClass('invalid');
+                        scope['valid'] = true;
+                    }
+                })));
             })
         };
     }]);
