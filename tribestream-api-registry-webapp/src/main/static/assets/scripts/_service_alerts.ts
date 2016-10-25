@@ -1,6 +1,6 @@
 angular.module('tribe-alerts', [])
 
-    .factory('tribeErrorHandlerService', ['systemMessagesService', function (systemMessagesService) {
+    .factory('tribeErrorHandlerService', ['systemMessagesService', '$log', function (systemMessagesService, $log) {
         return {
             ensureErrorHandler: function (originalCallback) {
                 if (originalCallback) {
@@ -8,7 +8,8 @@ angular.module('tribe-alerts', [])
                 }
                 return function (evn) {
                     if (!evn.statusText || evn.statusText === '') {
-                        systemMessagesService.error('There are something wrong with your connection.');
+                        systemMessagesService.error('There is something wrong with your connection.');
+                        $log.error(evn);
                     }
                     systemMessagesService.error(evn.statusText);
                 };
