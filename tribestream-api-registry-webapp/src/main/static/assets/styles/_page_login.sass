@@ -1,13 +1,15 @@
 @import "variables"
 
 div.app-login
-  height: 100%
-  width: 100%
+  position: fixed
+  top: 0
+  bottom: 0
+  left: 0
+  right: 0
   display: flex
   flex-direction: column
   justify-content: center
   align-items: center
-  padding: 25px
 
   $shrink-width-threshold: 500px
   $shrink-height-threshold: 479px
@@ -15,7 +17,13 @@ div.app-login
   @media (max-height: $shrink-height-threshold)
     justify-content: space-around
 
-  > div:first-child
+  input, select
+    color: $app-white !important
+    background-color: transparentize($app-white, 0.8) !important
+    border-color: transparent !important
+    &:hover, &:focus, &:active
+      border-color: $app-white !important
+  > div.background
     z-index: -1
     position: absolute
     left: 0
@@ -30,63 +38,62 @@ div.app-login
     @media (max-height: 320px) and (max-width: 568px)
       background-image: url("../images/login-background-568x320.jpg")
     background-size: cover
-  > footer
-    margin-top: $default-padding * 3
-    > div
-      > p
-        margin: 0
-        > span
-          text-transform: capitalize
-    *
+  div.oauth
+    display: flex
+    align-items: center
+    justify-content: center
+    margin-bottom: $default-padding * 2
+    span
       color: $app-white
-      font-size: 12px
+    > span
+      margin-right: 20px
+      font-weight: 600
+      font-size: 16px
   > form
     display: flex
     flex-direction: column
     align-items: center
+    justify-content: center
     width: 450px
-    @media (max-width: $shrink-width-threshold)
-      width: 100%
     > div.img
       background: url("../images/logo-header-login.svg") center no-repeat
       background-size: contain
       max-width: 600px
+      width: 100%
       height: 100px
-    > div
+      margin-bottom: 20px
+    > div.fields
       width: 100%
       display: flex
       flex-direction: column
       align-items: center
-      @media (max-height: $shrink-height-threshold)
-        flex-direction: row
-        > *
-          margin-left: $default-padding
-          margin-bottom: 0
-          &:first-child
-            margin-left: 0
-      > input
-        color: $app-white !important
-        background-color: transparentize($app-white, 0.8) !important
-        border-color: transparent !important
-        &:hover, &:focus, &:active
-          border-color: $app-white !important
-      > button, > input
+      > div > button, > div > input
         width: 350px
-        @media (max-width: $shrink-width-threshold)
-          width: 100%
+      > div:last-of-type
+        @media (max-height: $shrink-height-threshold)
+          display: flex
+          justify-content: center
+          align-items: center
+          width: 350px
+          > div
+            flex-grow: 1
+          > button
+            width: 100px
+            margin-left: 10px
+          > div
+            margin: 0
+
     > h1, > h2, > div > h3
       text-align: center
       margin: 0
       color: $app-white
     > h1
-      margin-top: $default-padding * 3
       font-size: 18px
       font-weight: bold
     > h2
       margin-bottom: $default-padding * 3
       font-size: 16px
-    > div > h3
-      font-size: 16px
-      margin: ($default-padding * 3) 0 ($default-padding * 3) 0
-      @media (max-height: $shrink-height-threshold)
-        display: none
+    > div[data-app-footer]
+      margin-top: 20px
+      > footer
+        padding: 0

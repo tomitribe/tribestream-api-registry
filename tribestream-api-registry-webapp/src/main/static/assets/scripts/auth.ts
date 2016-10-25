@@ -42,6 +42,7 @@ angular
                           tribeHeaderProviderSelector,
                           currentAuthProvider) {
                     var me = this;
+                    $scope.loginType = 'oauth';
                     me.onMessage = function (msgs) {
                         $scope.messages = msgs;
                     };
@@ -67,11 +68,9 @@ angular
                             });
                         });
                     });
-                    // we don't activate the switch yet so enforce it but keep the logic once we'll have themed it
-                    $scope.companyLogin = true; // == force oauth2
                     $scope.login = function () {
                         let headerProvider;
-                        if ($scope.companyLogin) {
+                        if ($scope.loginType === 'oauth') {
                             headerProvider = tribeHeaderProviderSelector.select('OAuth2');
                         } else {
                             headerProvider = tribeHeaderProviderSelector.select('Basic');
