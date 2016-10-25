@@ -1,4 +1,5 @@
 module endpointdetails {
+let HistoryCommonController = require("./endpoints_common.ts").controllerEndpoint;
 
 angular.module('tribe-endpoints-details', [
     'website-services',
@@ -496,52 +497,7 @@ angular.module('tribe-endpoints-details', [
             scope: true,
             controller: [
                 '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', 'systemMessagesService', 'tribeLinkHeaderService', '$q',
-                function ($scope, srv, tribeFilterService, $timeout, $filter, $log, systemMessagesService, tribeLinkHeaderService, $q) {
-                  $scope.selected = [];
-                  $scope.showDiff = false;
-
-                  $scope.onHistorySelect = item => {
-                    $scope.showDiff = false;
-                    $scope.mergeWidget = undefined;
-
-                    if (item.$ui && item.$ui.selected) {
-                      $scope.selected.push(item);
-                    } else {
-                      $scope.selected = $scope.selected.filter(i => i != item);
-                    }
-                  };
-
-                  $scope.saveMerge = () => {
-                    // update new operation with the json content
-                    $scope.ref.operation = JSON.parse($scope['valueA']);
-
-                    srv.saveEndpoint($scope.endpointLink, {
-                      // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
-                      httpMethod: $scope.ref.httpMethod,
-                      path: $scope.ref.path,
-                      operation: $scope.ref.operation
-                    }).then(
-                      function (saveResponse) {
-                        $scope.updateEndpoint(saveResponse.data);
-                        systemMessagesService.info("Saved endpoint details! " + saveResponse.status);
-                      }
-                    );
-                  };
-                  $scope.doDiff = () => {
-                    $scope.showDiff = !$scope.showDiff;
-
-                    if ($scope.showDiff) {
-                      $q.all($scope.selected.map(item => srv.getHistoricItem(item).promise()))
-                        .then(results => {
-                          $scope.ref = results[0].data;
-                          $timeout(() => $scope.$apply(() => {
-                              $scope['valueA'] = JSON.stringify(JSON.parse($scope.ref['json']), undefined, 2);
-                              $scope['valueB'] = JSON.stringify(JSON.parse(results[1]['data']['json']), undefined, 2);
-                          }));
-                        });
-                    }
-                  };
-                }
+                HistoryCommonController
             ]
         };
     }])
@@ -575,6 +531,7 @@ angular.module('tribe-endpoints-details', [
               if(detailsResponse['data']) {
                 let links = tribeLinkHeaderService.parseLinkHeader(detailsResponse['data']['operation']['x-tribestream-api-registry']['links']);
                 $scope.historyLink = links['history'];
+                $scope.reloadHistory();
                 $scope.applicationLink = links['application'];
                 $scope.endpointLink = links['self'];
                 $scope.endpointsLink = null;
@@ -619,41 +576,44 @@ angular.module('tribe-endpoints-details', [
             if (!!$scope.endpoint.endpointProtocol) {
               $scope.endpoint.operation.schemes = [$scope.endpoint.endpointProtocol];
             }
-            srv.saveEndpoint($scope.endpointLink, {
-              // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
-              httpMethod: $scope['endpoint']['httpMethod'],
-              path: $scope['endpoint'].path,
-              operation: $scope['endpoint'].operation
-            }).then(
-              function (saveResponse) {
-                systemMessagesService.info("Saved endpoint details! " + saveResponse.status);
-              }
-            );
-          };
-          $scope.create = function () {
-            srv.createEndpoint($scope.endpointsLink, {
-              // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
-              httpMethod: $scope['endpoint']['httpMethod'],
-              path: $scope['endpoint'].path,
-              operation: $scope['endpoint'].operation
-            }).then(
-              function (saveResponse) {
-                $timeout(() => {
-                    $scope.$apply(() => {
-                        $scope['endpointId'] = saveResponse['data']['endpointId'];
-                        $scope['endpoint'].path = saveResponse['data'].path;
-                        $scope['endpoint']['httpMethod'] = saveResponse['data']['httpMethod'];
-                        $scope['endpoint'].operation = saveResponse['data'].operation;
-                        let links = tribeLinkHeaderService.parseLinkHeader(saveResponse['data']['operation']['x-tribestream-api-registry']['links']);
-                        $scope.applicationLink = links['application'];
-                        $scope.endpointLink = links['self'];
-                        $scope.historyLink = links['history'];
-                        $scope.endpointsLink = null;
-                    });
-                });
-                systemMessagesService.info("Created new endpoint! " + saveResponse.status);
-              }
-            );
+            if ($scope.endpointLink) {
+              srv.saveEndpoint($scope.endpointLink, {
+                // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
+                httpMethod: $scope['endpoint']['httpMethod'],
+                path: $scope['endpoint'].path,
+                operation: $scope['endpoint'].operation
+              }).then(
+                function (saveResponse) {
+                  systemMessagesService.info("Saved endpoint details!");
+                  $scope.reloadHistory();
+                }
+              );
+            } else {
+              srv.createEndpoint($scope.endpointsLink, {
+                // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
+                httpMethod: $scope['endpoint']['httpMethod'],
+                path: $scope['endpoint'].path,
+                operation: $scope['endpoint'].operation
+              }).then(
+                function (saveResponse) {
+                  $timeout(() => {
+                      $scope.$apply(() => {
+                          $scope['endpointId'] = saveResponse['data']['endpointId'];
+                          $scope['endpoint'].path = saveResponse['data'].path;
+                          $scope['endpoint']['httpMethod'] = saveResponse['data']['httpMethod'];
+                          $scope['endpoint'].operation = saveResponse['data'].operation;
+                          let links = tribeLinkHeaderService.parseLinkHeader(saveResponse['data']['operation']['x-tribestream-api-registry']['links']);
+                          $scope.applicationLink = links['application'];
+                          $scope.endpointLink = links['self'];
+                          $scope.historyLink = links['history'];
+                          $scope.endpointsLink = null;
+                          $scope.reloadHistory();
+                      });
+                  });
+                  systemMessagesService.info("Created new endpoint! " + saveResponse.status);
+                }
+              );
+            }
           };
           $scope.delete = () => {
             srv.delete($scope.endpointLink).then((response) => {
@@ -661,7 +621,7 @@ angular.module('tribe-endpoints-details', [
                 $location.path("/application/" + $scope.requestMetadata.applicationName);
             });
           };
-          $scope.$watch('historyLink', () => {
+          $scope.reloadHistory = () => {
             if(!$scope.historyLink) {
               return;
             }
@@ -678,7 +638,7 @@ angular.module('tribe-endpoints-details', [
                 });
               });
             });
-          });
+          };
           // Triggered by selecting one revision, will load it and show it
           $scope.showHistoricEndpoint = function(historyItem) {
             $timeout(function () {

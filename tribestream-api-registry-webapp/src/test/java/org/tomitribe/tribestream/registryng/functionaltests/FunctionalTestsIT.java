@@ -22,14 +22,13 @@ import cucumber.runtime.arquillian.CukeSpace;
 import cucumber.runtime.arquillian.api.Features;
 import cucumber.runtime.arquillian.api.Glues;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Ignore;
 import org.junit.runner.RunWith;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.tomitribe.tribestream.registryng.functionaltests.steps.ApplicationDetailsSteps;
 import org.tomitribe.tribestream.registryng.functionaltests.steps.AuthorizationSteps;
+import org.tomitribe.tribestream.registryng.functionaltests.steps.EndpointDetailsSteps;
 import org.tomitribe.tribestream.registryng.functionaltests.steps.SearchPageSteps;
 
 import java.io.File;
@@ -43,7 +42,8 @@ import static org.apache.openejb.loader.JarLocation.jarLocation;
 @Glues({
         AuthorizationSteps.class,
         SearchPageSteps.class,
-        ApplicationDetailsSteps.class
+        ApplicationDetailsSteps.class,
+        EndpointDetailsSteps.class
 })
 @Features({
         "org/tomitribe/tribestream/registryng/functionaltests/application-details.feature",
@@ -59,9 +59,7 @@ public class FunctionalTestsIT {
                         jarLocation(FunctionalTestsIT.class).getParentFile()
                                 .listFiles((File file) -> file.getName().matches("^tribestream-api-registry-.*\\.war$"))[0]
                 );
-
         System.out.println(war.toString(true));
-
         return war;
     }
 

@@ -27,7 +27,7 @@ import org.tomitribe.tribestream.registryng.functionaltests.pages.SearchPage;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class ApplicationDetailsSteps {
+public class ApplicationDetailsSteps extends StepBase {
 
     @Page
     private SearchPage searchPage;
@@ -38,6 +38,8 @@ public class ApplicationDetailsSteps {
     private String applicationName;
 
     private String applicationVersion;
+
+    private String applicationDescription;
 
     @When("^I create a new application$")
     public void i_create_a_new_application() throws Throwable {
@@ -50,7 +52,7 @@ public class ApplicationDetailsSteps {
         clearState();
         searchPage.clickCreateApplicationButton();
         set_the_application_name_to_and_version_to(applicationName, applicationVersion);
-        hit_the_create_button();
+        hit_the_save_button();
         go_back_to_the_home_page();
     }
 
@@ -73,18 +75,20 @@ public class ApplicationDetailsSteps {
     @When("^set the description to \"([^\"]*)\"$")
     public void set_the_description_to(final String description) throws Throwable {
         applicationDetailsPage.enterDescription(description);
+        this.applicationDescription = description;
 
-    }
-
-    @When("^hit the create button$")
-    public void hit_the_create_button() throws Throwable {
-        applicationDetailsPage.clickCreateApplicationButton();
     }
 
     @When("^hit the save button$")
     public void hit_the_save_button() throws Throwable {
         applicationDetailsPage.clickSaveApplicationButton();
     }
+
+    @When("^hit the create endpoint button$")
+    public void hit_the_create_endpoint_button() throws Throwable {
+        applicationDetailsPage.clickCreateEndpointButton();
+    }
+
 
     @When("^go back to the home page$")
     public void go_back_to_the_home_page() throws Throwable {
@@ -112,9 +116,9 @@ public class ApplicationDetailsSteps {
         assertEquals(applicationVersion, applicationDetailsPage.getApplicationVersion());
 
         // TODO: test description if set
-//        if (description != null) {
-//            assertEquals(description, applicationDetailsPage.getDescription());
-//        }
+        if (applicationDescription != null) {
+            assertEquals(applicationDescription, applicationDetailsPage.getDescription());
+        }
     }
 
 

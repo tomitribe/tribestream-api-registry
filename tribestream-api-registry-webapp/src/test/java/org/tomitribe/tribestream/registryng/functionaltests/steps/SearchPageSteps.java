@@ -19,19 +19,14 @@
 package org.tomitribe.tribestream.registryng.functionaltests.steps;
 
 import cucumber.api.java.en.Then;
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.page.Page;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.tomitribe.tribestream.registryng.functionaltests.pages.SearchPage;
 
 import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
-public class SearchPageSteps {
-
-    @Drone
-    private PhantomJSDriver /* WebDriver */ driver;
+public class SearchPageSteps extends StepBase {
 
     @Page
     private SearchPage searchPage;
@@ -49,12 +44,15 @@ public class SearchPageSteps {
     }
 
     @Then("^I should see the endpoint \"(.*?)\" \"(.*?)\" in the application \"(.*?)\"$")
-    public void i_should_see_the_endpoint(final String verb, final String path, final String application) {
+    public void i_should_see_the_endpoint(final String verb, final String path, final String application) throws Throwable {
 
-        searchPage.refresh();
+        retry(10, () -> {
+            searchPage.refresh();
 
-        searchPage.assertHasEndpoint(application, verb, path);
-
-
+            searchPage.assertHasEndpoint(application, verb, path);
+        });
     }
+
+
+
 }
