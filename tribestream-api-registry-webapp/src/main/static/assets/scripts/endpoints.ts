@@ -167,13 +167,18 @@ angular.module('tribe-endpoints', [
                 }
             ],
             link: (scope, el) => $timeout(() => {
-                el.find('div.history').on('click', () => {
-                    var winEl = angular.element($window);
-                    var calculateScroll = () => {
-                        var target = el.find('div[data-app-application-details-history]');
-                        return target.offset().top;
-                    };
-                    winEl.scrollTop(calculateScroll());
+                scope.$watch('historyLink', () => {
+                    if(!scope['historyLink']) {
+                        return;
+                    }
+                    el.find('div.history').on('click', () => {
+                        var winEl = angular.element($window);
+                        var calculateScroll = () => {
+                            var target = el.find('div[data-app-application-details-history]');
+                            return target.offset().top;
+                        };
+                        winEl.scrollTop(calculateScroll());
+                    });
                 });
             })
         };
