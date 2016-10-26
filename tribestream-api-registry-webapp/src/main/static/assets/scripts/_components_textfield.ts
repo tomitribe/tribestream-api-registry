@@ -13,9 +13,19 @@ angular.module('website-components-text', [
             },
             template: require('../templates/component_text.jade'),
             controller: ['$log', '$scope', ($log, $scope) => $timeout(() => {
-                if (!$scope['regex']) {
-                    $scope['regex'] = '.*';
+                var regex = '.*';
+                if ($scope['regex']) {
+                    regex = $scope['regex'];
                 }
+                let normalTitle = 'Click to edit';
+                $scope['title'] = normalTitle;
+                $scope.$watch('valid', () => $timeout(() => $scope.$apply(() => {
+                    if ($scope['valid'] === false) {
+                        $scope['title'] = 'Invalid pattern';
+                    } else {
+                        $scope['title'] = normalTitle;
+                    }
+                })));
                 $scope['version'] = 0;
                 $scope['fieldDirty'] = false;
                 $scope.$watch('originalValue', () => $timeout(() => $scope.$apply(() => {
@@ -25,12 +35,14 @@ angular.module('website-components-text', [
                     if ($scope['fieldDirty']) {
                         $scope['fieldDirty'] = false;
                         $scope['originalValue'] = _.clone($scope['value']);
+                        $scope['title'] = normalTitle;
                         $scope.$broadcast('fieldCommited');
                     }
                 }));
                 $scope.onCancel = () =>  $timeout(() => $scope.$apply(() => {
                     $scope['fieldDirty'] = false;
                     $scope['value'] = _.clone($scope['originalValue']);
+                    $scope['title'] = normalTitle;
                     $scope.$broadcast('fieldCanceled');
                 }));
                 $scope.onChange = () =>  $timeout(() => $scope.$apply(() => {
@@ -48,6 +60,12 @@ angular.module('website-components-text', [
                         $scope.onChange();
                     }
                 }));
+                $scope.$watch('version', () => $timeout(() => $scope.$apply(() => {
+                    let value = $scope['value'];
+                    let valid = new RegExp(regex, 'g').test(value);
+                    console.log(valid + ' -> ' + value);
+                    $scope['valid'] = valid;
+                })));
             })],
             link: (scope, element) =>  $timeout(() => {
                 var deactivatePromise = null;
@@ -84,15 +102,13 @@ angular.module('website-components-text', [
                 });
                 element.find('> div').on('focus', () => input.focus());
                 scope.$on('$destroy', () => element.remove());
-                input.on('keyup', () => $timeout(() => scope.$apply(() => {
-                    if (input.hasClass('ng-invalid')) {
-                        element.addClass('invalid');
-                        scope['valid'] = false;
-                    } else {
+                scope.$watch('valid', () => {
+                    if (scope['valid']) {
                         element.removeClass('invalid');
-                        scope['valid'] = true;
+                    } else {
+                        element.addClass('invalid');
                     }
-                })));
+                });
             })
         };
     }]);
