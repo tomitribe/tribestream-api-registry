@@ -44,7 +44,8 @@
     <registry.oauth2.tlsProvider>org.apache.deltaspike.NullValueMarker</registry.oauth2.tlsProvider>
     <registry.oauth2.trustStore>org.apache.deltaspike.NullValueMarker</registry.oauth2.trustStore>
     <registry.oauth2.trustStoreType>org.apache.deltaspike.NullValueMarker</registry.oauth2.trustStoreType>
-    <node.version>v5.10.1</node.version>
+    <node.version>v6.9.1</node.version>
+    <npm.version>3.10.8</npm.version>
   </properties>
 
   <dependencies>
@@ -463,7 +464,7 @@
             </goals>
             <configuration>
               <nodeVersion>${node.version}</nodeVersion>
-              <npmVersion>3.8.6</npmVersion>
+              <npmVersion>${npm.version}</npmVersion>
             </configuration>
           </execution>
           <execution>
