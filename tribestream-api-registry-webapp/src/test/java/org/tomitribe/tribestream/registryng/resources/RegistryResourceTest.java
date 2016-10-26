@@ -75,13 +75,13 @@ public class RegistryResourceTest {
         assertEquals(endpoints.toString() + "\n\n" + root.getResults(), endpoints.size(), root.getTotal());
 
         final SearchPage withTag = registry.target().path("api/registry")
-                .queryParam("tag", "partners")
+                .queryParam("tag", "user")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(SearchPage.class);
         assertEquals(2, withTag.getTotal());
 
         final SearchPage withTagAndCategory = registry.target().path("api/registry")
-                .queryParam("tag", "partners")
+                .queryParam("tag", "user")
                 .queryParam("category", "partners")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(SearchPage.class);
@@ -108,7 +108,7 @@ public class RegistryResourceTest {
 
         // custom query_string
         final SearchPage query = registry.target().path("api/registry")
-                .queryParam("query", "partners")
+                .queryParam("query", "Estimates")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(SearchPage.class);
         assertEquals(query.toString(), 2, query.getTotal());

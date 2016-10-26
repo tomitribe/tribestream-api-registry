@@ -221,6 +221,9 @@
         "tags": [
           "User"
         ],
+        "x-tribestream-api-registry": {
+          "categories": ["partners"]
+        },
         "responses": {
           "200": {
             "description": "History information for the given user",
