@@ -1,5 +1,8 @@
-describe('it tests our custom markdown component', () => {
-    let expect = chai.expect;
+describe('Testing the markdown component', () => {
+    require("../scripts/_components_textfield.ts");
+    require('../scripts/_components_markdown.ts');
+    require('../scripts/_components_field_actions.ts');
+    require('../scripts/_components_filters.ts');
 
     var compile;
     var rootScope;
@@ -42,16 +45,16 @@ body content here
         // append to body so we can click on it.
         element.appendTo(document.find('body'));
         timeoutTryCatch(100, done, () => {
-            expect(element.find('div.preview').html()).to.contain('<p>body content here</p>');
-            expect(element.find('div.preview').html()).to.not.contain('<p>second paragraph</p>');
+            expect(element.find('div.preview').html()).toContain('<p>body content here</p>');
+            expect(element.find('div.preview').html()).not.toContain('<p>second paragraph</p>');
             timeoutTryCatch(100, done, () => {
                 let mainDiv = element.find('> div');
-                expect(mainDiv.scope().cmFocused).to.equal(false);
+                expect(mainDiv.scope()['cmFocused']).toEqual(false);
                 mainDiv.focus();
                 timeoutTryCatch(100, done, () => {
                     let elScope = mainDiv.scope();
-                    expect(elScope.cmFocused).to.equal(true);
-                    elScope.$apply(() => elScope.value = `
+                    expect(elScope['cmFocused']).toEqual(true);
+                    elScope.$apply(() => elScope['value'] = `
 # title
 
 body content here
@@ -59,17 +62,17 @@ body content here
 second paragraph
 `);
                     timeoutTryCatch(100, done, () => {
-                        expect(elScope.fieldDirty).to.equal(true);
+                        expect(elScope['fieldDirty']).toEqual(true);
                         let actionBtns = document.find('div.tribe-field-actions-body');
-                        expect(actionBtns.length).to.equal(1);
-                        expect(element.find('div.preview').html()).to.contain('<p>body content here</p>');
-                        expect(element.find('div.preview').html()).to.contain('<p>second paragraph</p>');
+                        expect(actionBtns.length).toEqual(1);
+                        expect(element.find('div.preview').html()).toContain('<p>body content here</p>');
+                        expect(element.find('div.preview').html()).toContain('<p>second paragraph</p>');
                         timeoutTryCatch(100, done, () => {
                             actionBtns.find('div[ng-click="cancel()"]').click();
                             timeoutTryCatch(100, done, () => {
-                                expect(element.find('div.preview').html()).to.contain('<p>body content here</p>');
-                                expect(element.find('div.preview').html()).to.not.contain('<p>second paragraph</p>');
-                                elScope.$apply(() => elScope.value = `
+                                expect(element.find('div.preview').html()).toContain('<p>body content here</p>');
+                                expect(element.find('div.preview').html()).not.toContain('<p>second paragraph</p>');
+                                elScope.$apply(() => elScope['value'] = `
 # title
 
 body content here
@@ -77,16 +80,16 @@ body content here
 second paragraph
 `);
                                 timeoutTryCatch(100, done, () => {
-                                    expect(elScope.fieldDirty).to.equal(true);
+                                    expect(elScope['fieldDirty']).toEqual(true);
                                     let actionBtns = document.find('div.tribe-field-actions-body');
-                                    expect(actionBtns.length).to.equal(1);
-                                    expect(element.find('div.preview').html()).to.contain('<p>body content here</p>');
-                                    expect(element.find('div.preview').html()).to.contain('<p>second paragraph</p>');
+                                    expect(actionBtns.length).toEqual(1);
+                                    expect(element.find('div.preview').html()).toContain('<p>body content here</p>');
+                                    expect(element.find('div.preview').html()).toContain('<p>second paragraph</p>');
                                     timeoutTryCatch(100, done, () => {
                                         actionBtns.find('div[ng-click="confirm()"]').click();
                                         timeoutTryCatch(100, done, () => {
-                                            expect(element.find('div.preview').html()).to.contain('<p>body content here</p>');
-                                            expect(element.find('div.preview').html()).to.contain('<p>second paragraph</p>');
+                                            expect(element.find('div.preview').html()).toContain('<p>body content here</p>');
+                                            expect(element.find('div.preview').html()).toContain('<p>second paragraph</p>');
                                             done();
                                         });
                                     });
@@ -114,7 +117,8 @@ second paragraph
             let toggleBtn = element.find('div.editor-toolbar > a.fa-eye');
             toggleBtn.click();
             timeoutTryCatch(100, done, () => {
-                expect(element.find('div.editor-preview').html()).to.contain('<em>body</em>');
+                expect(element.find('div.editor-preview').html()).toContain('<em>body</em>');
+                expect('titi').toBe('titi');
                 done();
             });
         });
@@ -131,7 +135,7 @@ second paragraph
             let toggleBtn = element.find('div.editor-toolbar > a.fa-eye');
             toggleBtn.click();
             timeoutTryCatch(100, done, () => {
-                expect(element.find('div.preview > div[x-ng-bind-html]').html()).to.contain('<code class="lang-xml hljs">');
+                expect(element.find('div.preview > div[x-ng-bind-html]').html()).toContain('<code class="lang-xml hljs">');
                 done();
             });
         });
@@ -154,47 +158,36 @@ second paragraph
             let toggleBtn = element.find('div.editor-toolbar > a.fa-question-circle');
             toggleBtn.click();
             timeoutTryCatch(100, done, () => {
-                expect(document.find('body div.markdown-help-content').length).to.equal(1);
+                expect(document.find('body div.markdown-help-content').length).toEqual(1);
                 triggerKeyDown(document, 27); // escape button
                 timeoutTryCatch(100, done, () => {
-                    expect(document.find('body div.markdown-help-content').length).to.equal(0);
+                    expect(document.find('body div.markdown-help-content').length).toEqual(0);
                     done();
                 });
             });
         });
     });
 
-    it('should show markdown side-by-side and fullscreen', (done) => {
+    it('should remove single char [REG-340]', (done) => {
         let scope = rootScope.$new();
-        scope.myvalue = `
-# title
-
-*body* content here
-`;
+        scope.myvalue = "";
         let element = angular.element('<div data-tribe-markdown data-value="myvalue"></div>');
         compile(element)(scope);
         // append to body so we can click on it.
         element.appendTo(document.find('body'));
         timeoutTryCatch(100, done, () => {
-            expect(element.find('div.preview').css('display')).to.equal('flex');
-            element.find('> div').focus();
+            let mainDiv = element.find('> div');
+            mainDiv.focus();
+            let mainScope = mainDiv.scope();
+            mainScope['onChange']('A');
             timeoutTryCatch(100, done, () => {
-                expect(element.find('div.preview').css('display')).to.equal('none');
-                element.find('div.editor-toolbar > a.fa-columns').click();
+                mainScope['onChange']('');
+                mainDiv.blur();
                 timeoutTryCatch(100, done, () => {
-                    expect(element.find('div.preview').css('display')).to.equal('block');
-                    expect(element.find('> div').css('position')).to.equal('static');
-                    expect(element.find('div.preview').html()).to.contain('<em>body</em>');
-                    element.find('div.editor-toolbar > a.fa-arrows-alt').click();
-                    timeoutTryCatch(100, done, () => {
-                        expect(element.find('div.preview').css('display')).to.equal('block');
-                        expect(element.find('> div').css('position')).to.equal('fixed');
-                        expect(element.find('div.preview').html()).to.contain('<em>body</em>');
-                        done();
-                    });
+                    expect(element.find('div.preview > div').html()).toEqual('');
+                    done();
                 });
             });
         });
     });
-
 });

@@ -4,27 +4,23 @@
   "dependencies": {
     "jquery": "1.12.4",
     "underscore": "1.8.3",
-
     "angular-mocks": "1.5.5",
     "DefinitelyTyped": "master",
     "normalize-css": "normalize.css#3.0.3",
     "font-awesome": "4.4.0",
     "open-sans": "1.1.0",
-    "foundation-apps": "~1.2.0",
-
-
-
-    "js-base64": "~2.1.9",
-    "montserrat-webfont": "^1.0.3",
-    "lato": "^0.3.0",
-    "angular-ui-codemirror": "~0.3.0",
+    "foundation-apps": "1.2.0",
+    "js-base64": "2.1.9",
+    "montserrat-webfont": "1.0.3",
+    "lato": "0.3.0",
+    "angular-ui-codemirror": "0.3.0",
     "codemirror": "5.19.0",
     "google-diff-match-patch-js": "v1.0.0",
-    "angular-marked": "^1.2.2",
-    "mocha": "^3.0.2",
-    "chai": "^3.5.0",
+    "angular-marked": "1.2.2",
+    "mocha": "3.0.2",
+    "chai": "3.5.0",
     "simplemde": "^1.11.2",
-    "highlightjs": "^9.6.0"
+    "highlightjs": "9.6.0"
   },
   "resolutions": {
     "angular": "1.5.5"
