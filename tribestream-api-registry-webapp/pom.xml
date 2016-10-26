@@ -506,6 +506,26 @@
               <arguments>run buildnwatch</arguments>
             </configuration>
           </execution>
+          <execution>
+            <id>test-once</id>
+            <phase>test</phase>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <configuration>
+              <arguments>run test-once</arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>test</id>
+            <phase />
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <configuration>
+              <arguments>run test</arguments>
+            </configuration>
+          </execution>
         </executions>
         <configuration>
           <installDirectory>${user.home}/.tribe/node/${node.version}</installDirectory>

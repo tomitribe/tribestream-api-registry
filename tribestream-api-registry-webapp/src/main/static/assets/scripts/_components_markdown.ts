@@ -109,8 +109,8 @@ angular.module('website-components-markdown', [
                 }));
                 $scope['onChange'] = (newValue) =>  $timeout(() => $scope.$apply(() => {
                     $scope['version'] = $scope['version'] + 1;
+                    $scope['value'] = newValue;
                     if ($scope.originalValue !== newValue) {
-                        $scope['value'] = newValue;
                         $scope['fieldDirty'] = true;
                     }
                 }));
