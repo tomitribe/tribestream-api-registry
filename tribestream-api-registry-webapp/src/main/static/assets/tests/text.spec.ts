@@ -102,4 +102,33 @@ describe('it tests our custom text component', () => {
             });
         });
     });
+
+    it('should show tip when entering invalid pattern', (done) => {
+        let scope = rootScope.$new();
+        scope['value'] = 'a';
+        scope['regex'] = '^[a-z]+$';
+        let element = angular.element('<div data-tribe-text data-value="value" data-regex="{{regex}}"></div>');
+        compile(element)(scope);
+        // append to body so we can click on it.
+        element.appendTo(document.find('body'));
+        timeoutTryCatch(100, done, () => {
+            let input = angular.element(element.find('input'));
+            input.focus();
+            timeoutTryCatch(100, done, () => {
+                let compiledScope = angular.element(element.find('> div')[0]).scope();
+                input.scope()['value'] = '3';
+                input.scope()['onChange']();
+                timeoutTryCatch(100, done, () => {
+                    expect(compiledScope['valid']).toEqual(false);
+                    input.scope()['value'] = 'aa';
+                    input.scope()['onChange']();
+                    timeoutTryCatch(100, done, () => {
+                        expect(compiledScope['valid']).toEqual(true);
+                        done();
+                    });
+                });
+            });
+        });
+    });
+    
 });
