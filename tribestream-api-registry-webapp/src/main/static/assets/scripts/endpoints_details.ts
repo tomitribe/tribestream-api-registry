@@ -21,7 +21,18 @@ angular.module('tribe-endpoints-details', [
             template: require('../templates/app_endpoints_details_header.jade'),
             scope: true,
             controller: ['$scope', '$timeout', 'appEndpointsDetailsHeaderService', function ($scope, $timeout, srv) {
-                $scope.regex = '^(\\/{_*\\-*[a-zA-Z0-9_-]+}|\\/_*\\-*[a-zA-Z0-9_-]*)*$';
+                $scope.regex = '^(\\/|(\\/{_*\\-*[a-zA-Z0-9_-]{1,}}|\\/_*\\-*[a-zA-Z0-9_-]{1,})*)$';
+                $scope.regexTip = `
+                    <div class="endpoint-details-path-tip">
+                        <p>To be considered valid, the path should follow these rules:</p>
+                        <ul>
+                            <li>Starts with a single "&#47;" </li>
+                            <li>Contains only alphanumeric, "&#47;", "{", "}", "-" and "_" characters </li>
+                            <li>Does not end with "&#47;" </li>
+                            <li>Does not contain multiple "&#47;" characters in a row. </li>
+                        </ul>
+                    </div>
+                `;
                 $scope.toUppercase = (item) => {
                     if (!item) {
                         return null;

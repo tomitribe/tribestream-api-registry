@@ -1,5 +1,4 @@
 div(x-ng-if="visible")
     .arrow
     .message
-        i.fa.fa-info
-        span {{message}}
+        div(x-ng-bind-html="message | tribeHtml")

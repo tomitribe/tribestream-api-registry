@@ -9,10 +9,14 @@ angular.module('website-components-text', [
                 originalValue: '=value',
                 type: '@',
                 placeholder: '@',
-                regex: '@?'
+                regex: '@?',
+                regexTip: '@?'
             },
             template: require('../templates/component_text.jade'),
             controller: ['$log', '$scope', ($log, $scope) => $timeout(() => {
+                if(!$scope['regexTip']) {
+                    $scope['regexTip'] = 'Invalid Pattern';
+                }
                 var regex = '.*';
                 if ($scope['regex']) {
                     regex = $scope['regex'];
