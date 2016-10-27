@@ -63,7 +63,6 @@ angular.module('website-components-text', [
                 $scope.$watch('version', () => $timeout(() => $scope.$apply(() => {
                     let value = $scope['value'];
                     let valid = new RegExp(regex, 'g').test(value);
-                    console.log(valid + ' -> ' + value);
                     $scope['valid'] = valid;
                 })));
             })],

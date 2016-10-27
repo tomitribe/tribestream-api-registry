@@ -21,6 +21,7 @@ angular.module('tribe-endpoints-details', [
             template: require('../templates/app_endpoints_details_header.jade'),
             scope: true,
             controller: ['$scope', '$timeout', 'appEndpointsDetailsHeaderService', function ($scope, $timeout, srv) {
+                $scope.regex = '^(\\/{_*\\-*[a-zA-Z0-9_-]+}|\\/_*\\-*[a-zA-Z0-9_-]*)*$';
                 $scope.toUppercase = (item) => {
                     if (!item) {
                         return null;
