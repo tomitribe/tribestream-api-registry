@@ -43,6 +43,7 @@ angular.module('website-components-text', [
                     $scope['fieldDirty'] = false;
                     $scope['value'] = _.clone($scope['originalValue']);
                     $scope['title'] = normalTitle;
+                    $scope['valid'] = true;
                     $scope.$broadcast('fieldCanceled');
                 }));
                 $scope.onChange = () =>  $timeout(() => $scope.$apply(() => {

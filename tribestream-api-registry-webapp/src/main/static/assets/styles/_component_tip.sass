@@ -1,0 +1,23 @@
+@import "variables"
+
+[data-tribe-tip]
+  display: block
+  position: absolute
+  z-index: 4000
+  $color: $tomitribe-orange
+  div.arrow
+    width: 0
+    height: 0
+    border-left: 5px solid transparent
+    border-right: 5px solid transparent
+    border-bottom: 5px solid $color
+    margin-left: 5px
+  div.message
+    background-color: $color
+    padding: 5px 8px
+    i
+      margin-right: 5px
+    span, i
+      color: $app-white
+
+

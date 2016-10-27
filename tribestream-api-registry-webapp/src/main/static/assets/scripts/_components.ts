@@ -8,6 +8,7 @@ angular.module('website-components', [
     'website-components-multiselect',
     'website-components-singleselect',
     'website-components-text',
+    'website-components-tip',
     'website-components-markdown',
     'website-components-diff'
 ])
