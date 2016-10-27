@@ -42,11 +42,13 @@ body content here
         `;
         let element = angular.element('<div data-tribe-markdown data-value="myvalue"></div>');
         compile(element)(scope);
+        let compiledScope = element.scope();
         // append to body so we can click on it.
         element.appendTo(document.find('body'));
         timeoutTryCatch(100, done, () => {
-            expect(element.find('div.preview').html()).toContain('<p>body content here</p>');
-            expect(element.find('div.preview').html()).not.toContain('<p>second paragraph</p>');
+            let previewValue = angular.element(element.find('div[data-tribe-markdown] > div')[0]).scope()['preview'];
+            expect(previewValue).toContain('<p>body content here</p>');
+            expect(previewValue).not.toContain('<p>second paragraph</p>');
             timeoutTryCatch(100, done, () => {
                 let mainDiv = element.find('> div');
                 expect(mainDiv.scope()['cmFocused']).toEqual(false);
