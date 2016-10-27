@@ -1,5 +1,7 @@
 describe('it tests our custom text component', () => {
-    let expect = chai.expect;
+    require("../scripts/_components_textfield.ts");
+    require("../scripts/_components_tip.ts");
+    require("../scripts/_components_field_actions.ts");
 
     var compile;
     var rootScope;
@@ -44,7 +46,7 @@ describe('it tests our custom text component', () => {
         // append to body so we can click on it.
         element.appendTo(document.find('body'));
         timeoutTryCatch(100, done, () => {
-            expect(element.find('> div').attr('title')).to.deep.equal('Click to edit');
+            expect(element.find('> div').attr('title')).toEqual('Click to edit');
             done();
         });
     });
@@ -57,41 +59,41 @@ describe('it tests our custom text component', () => {
         // append to body so we can click on it.
         element.appendTo(document.find('body'));
         timeoutTryCatch(100, done, () => {
-            let value = element.scope().value;
-            expect(value).to.deep.equal('aaa');
+            let value = element.scope()['value'];
+            expect(value).toEqual('aaa');
             done();
         });
     });
 
     it('should show action buttons on change', (done) => {
         let scope = rootScope.$new();
-        scope.value = 1;
+        scope['value'] = 1;
         let element = angular.element('<div data-tribe-text data-type="number" data-value="value"></div>');
         compile(element)(scope);
         // append to body so we can click on it.
         element.appendTo(document.find('body'));
         timeoutTryCatch(100, done, () => {
             let input = angular.element(element.find('input'));
-            expect(input.scope().value).to.deep.equal(1);
+            expect(input.scope()['value']).toEqual(1);
             input.focus();
             timeoutTryCatch(100, done, () => {
-                input.scope().value = 3;
-                input.scope().keyEntered({
+                input.scope()['value'] = 3;
+                input.scope()['keyEntered']({
                     keyCode: 27
                 });
                 timeoutTryCatch(100, done, () => {
-                    expect(input.scope().value).to.deep.equal(1);
+                    expect(input.scope()['value']).toEqual(1);
                     input.focus();
                     timeoutTryCatch(100, done, () => {
-                        input.scope().value = 3;
+                        input.scope()['value'] = 3;
                         timeoutTryCatch(100, done, () => {
-                            expect(document.find('div.tribe-field-actions-body').length).to.equal(1);
-                            input.scope().keyEntered({
+                            expect(document.find('div.tribe-field-actions-body').length).toEqual(1);
+                            input.scope()['keyEntered']({
                                 keyCode: 13
                             });
                             timeoutTryCatch(100, done, () => {
-                                expect(input.scope().value).to.deep.equal(3);
-                                expect(document.find('div.tribe-field-actions-body').length).to.equal(0);
+                                expect(input.scope()['value']).toEqual(3);
+                                expect(document.find('div.tribe-field-actions-body').length).toEqual(0);
                                 done();
                             });
                         });
