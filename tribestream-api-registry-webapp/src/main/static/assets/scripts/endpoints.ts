@@ -124,18 +124,8 @@ angular.module('tribe-endpoints', [
                         srv.createApplication($scope.applicationsLink, $scope.swagger).then(
                           function (saveResponse) {
                             systemMessagesService.info("Created application details!");
-                            $timeout(() => {
-                              $scope.$apply(() => {
-                                $scope.swagger = saveResponse.data.swagger;
-                                $scope.humanReadableName = saveResponse.data.humanReadableName;
-                                let links = tribeLinkHeaderService.parseLinkHeader(saveResponse['data']['swagger']['x-tribestream-api-registry']['links']);
-                                $scope.applicationLink = links['self'];
-                                $scope.applicationsLink = null;
-                                $scope.historyLink = links['history'];
-                                $scope.endpointsLink = links['endpoints'];
-                                $scope.reloadHistory();
-                              });
-                            });
+                            let res = saveResponse.data;
+                            $location.url(`/application/${res.humanReadableName}?version=${res.swagger.info.version}`);
                           }
                         );
                       }
