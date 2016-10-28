@@ -56,6 +56,11 @@ div[data-app-endpoints-details]
             font-size: 13px
           &:hover
             cursor: pointer
+          &[disabled]
+            > *, > a > span, > div .trigger > *
+              color: lighten($color, 50%)
+            &:hover
+              cursor: default
 
     // body
     > div:last-of-type
