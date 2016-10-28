@@ -596,21 +596,11 @@ angular.module('tribe-endpoints-details', [
                 operation: $scope['endpoint'].operation
               }).then(
                 function (saveResponse) {
-                  $timeout(() => {
-                      $scope.$apply(() => {
-                          $scope['endpointId'] = saveResponse['data']['endpointId'];
-                          $scope['endpoint'].path = saveResponse['data'].path;
-                          $scope['endpoint']['httpMethod'] = saveResponse['data']['httpMethod'];
-                          $scope['endpoint'].operation = saveResponse['data'].operation;
-                          let links = tribeLinkHeaderService.parseLinkHeader(saveResponse['data']['operation']['x-tribestream-api-registry']['links']);
-                          $scope.applicationLink = links['application'];
-                          $scope.endpointLink = links['self'];
-                          $scope.historyLink = links['history'];
-                          $scope.endpointsLink = null;
-                          $scope.reloadHistory();
-                      });
-                  });
                   systemMessagesService.info("Created new endpoint! " + saveResponse.status);
+                  let res = saveResponse.data;
+                  let app = $scope['application'];
+                  let appName = app['humanReadableName'];
+                  $location.path(`endpoint/${appName}/${res.httpMethod}/${res.path}`);
                 }
               );
             }
