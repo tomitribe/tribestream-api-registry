@@ -22,10 +22,12 @@ import cucumber.runtime.arquillian.CukeSpace;
 import cucumber.runtime.arquillian.api.Features;
 import cucumber.runtime.arquillian.api.Glues;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Ignore;
 import org.junit.runner.RunWith;
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.tomitribe.tribestream.registryng.functionaltests.steps.ApplicationDetailsSteps;
 import org.tomitribe.tribestream.registryng.functionaltests.steps.AuthorizationSteps;
 import org.tomitribe.tribestream.registryng.functionaltests.steps.EndpointDetailsSteps;
@@ -33,7 +35,11 @@ import org.tomitribe.tribestream.registryng.functionaltests.steps.SearchPageStep
 
 import java.io.File;
 
-@Ignore("0.04 doesn't support basic and this test was using that, to activate back starting at 0.5-SNAPSHOT")
+import static org.apache.openejb.loader.JarLocation.jarLocation;
+
+@Ignore(
+        "these tests rely on sleep() or no wait which is just no way to be deterministic (use until())" +
+                "and duplicate WebAppTesting setup so we have to choose")
 @RunWith(CukeSpace.class)
 @Glues({
         AuthorizationSteps.class,
@@ -52,9 +58,15 @@ public class FunctionalTestsIT {
         WebArchive war =
                 ShrinkWrap.createFromZipFile(
                         WebArchive.class,
-                        new File("target").listFiles((File file) -> file.getName().matches("^tribestream-api-registry-.*\\.war$"))[0]
+                        jarLocation(FunctionalTestsIT.class).getParentFile()
+                                .listFiles((File file) -> file.getName().matches("^tribestream-api-registry-.*\\.war$"))[0]
                 );
         System.out.println(war.toString(true));
         return war;
     }
+
+    @Drone
+    private PhantomJSDriver /* WebDriver */ driver;
+
+
 }
