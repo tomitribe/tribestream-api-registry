@@ -1,14 +1,17 @@
 .app-login(app-login)
-  div
+  div.background
   form(x-ng-submit="login()")
     div.img
     h1 Welcome to Registry.
     h2 Login to see it in action.
-    div
-      input(type="text", placeholder="username", x-ng-model="username", name="username", autofocus)
-      input(type="password", placeholder="password", x-ng-model="password", name="password")
-      // TODO: Styling!!!!
-        h3 Oauth Login
-        i(data-tribe-switch, value="companyLogin")
-      button.orange(type="submit") login
-  div(data-app-footer)
+    div.fields
+      div
+        input(type="text", placeholder="username", x-ng-model="username", name="username", autofocus)
+        input(type="password", placeholder="password", x-ng-model="password", name="password")
+      div
+        div.oauth
+          select(ng-model="loginType")
+            option(value="oauth") Oauth Login
+            option(value="basic") Basic Login
+        button.orange(type="submit") login
+    div(data-app-footer)
