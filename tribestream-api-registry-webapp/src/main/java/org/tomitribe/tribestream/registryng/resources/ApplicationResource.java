@@ -28,6 +28,7 @@ import org.tomitribe.tribestream.registryng.resources.processor.ApplicationProce
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.transaction.TransactionalException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -89,11 +90,17 @@ public class ApplicationResource {
             ApplicationWrapper application) {
         final Swagger swagger = application.getSwagger();
         validate(swagger);
-        final OpenApiDocument document = repository.insert(swagger);
-        final OpenApiDocument newDocument = repository.findByApplicationIdWithEndpoints(document.getId());
-        return Response.status(Response.Status.CREATED)
-                .entity(processor.toWrapper(newDocument, linker.buildApplicationLinks(uriInfo, newDocument)))
-                .build();
+        try {
+            final OpenApiDocument document = repository.insert(swagger);
+            final OpenApiDocument newDocument = repository.findByApplicationIdWithEndpoints(document.getId());
+            return Response.status(Response.Status.CREATED)
+                    .entity(processor.toWrapper(newDocument, linker.buildApplicationLinks(uriInfo, newDocument)))
+                    .build();
+        } catch (TransactionalException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"key\": \"save.application.error\"}")
+                    .build();
+        }
     }
 
     private void validate(Swagger swagger) {

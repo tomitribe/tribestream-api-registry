@@ -126,6 +126,9 @@ angular.module('tribe-endpoints', [
                             systemMessagesService.info("Created application details!");
                             let res = saveResponse.data;
                             $location.url(`/application/${res.humanReadableName}?version=${res.swagger.info.version}`);
+                          },
+                          function() {
+                            systemMessagesService.error("Unable to create application.");
                           }
                         );
                       }

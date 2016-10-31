@@ -48,10 +48,12 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
@@ -285,6 +287,31 @@ public class ApplicationResourceTest {
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
     }
 
+    @Test
+    public void should_not_create_duplicated_application() throws IOException {
+        final String initialDocument = "{\n" +
+                "  \"swagger\": \"2.0\",\n" +
+                "  \"info\": {\n" +
+                "    \"title\": \"aaa\",\n" +
+                "    \"version\": \"v2\"\n" +
+                "  }\n" +
+                "}";
+        final Swagger createSwagger = objectMapper.readValue(initialDocument, Swagger.class);
+        final ApplicationWrapper createRequest = new ApplicationWrapper(createSwagger, null);
+        // create the app
+        registry.target().path("api/application")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .post(Entity.entity(createRequest, MediaType.APPLICATION_JSON_TYPE));
+        // create the same app again
+        final Response newApplicationWrapperResponse = registry.target().path("api/application")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .post(Entity.entity(createRequest, MediaType.APPLICATION_JSON_TYPE));
+        assertEquals(400, newApplicationWrapperResponse.getStatus());
+        assertEquals(
+                "{\"key\": \"save.application.error\"}",
+                new Scanner((InputStream) newApplicationWrapperResponse.getEntity()).useDelimiter("\\A").next()
+        );
+    }
 
     private List<ApplicationWrapper> loadAllApplications() {
         return registry.target().path("api/application")
