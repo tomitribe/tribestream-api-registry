@@ -424,5 +424,5 @@ describe('it tests our custom multiselect component', () => {
             });
         });
     });
-    
+
 });
