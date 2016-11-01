@@ -11,7 +11,8 @@ angular.module('website-components-singleselect', [
                 originalSelectedOption: '=selectedOption',
                 originalGetOptionText: '=getOptionText',
                 newLabel: '@?',
-                placeholder: '@?'
+                placeholder: '@?',
+                disableActions: '='
             },
             template: require('../templates/component_singleselect.jade'),
             controller: ['$scope', '$timeout', ($scope, $timeout) => $timeout(() => {
@@ -126,6 +127,7 @@ angular.module('website-components-singleselect', [
                 el.find('input').on('focus', () => {
                     cancelDeactivate();
                     el.addClass('active');
+                    scope['onChange']();
                     $timeout(() => scope.$apply(() => {
                         scope['fieldDirty'] = true;
                         scope['version'] = scope['version'] + 1;
