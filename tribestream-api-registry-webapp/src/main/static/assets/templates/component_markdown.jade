@@ -3,6 +3,8 @@ div(tabindex=0, ng-class="{'fullscreen': fullscreen}")
         .value
             textarea(ng-model="value")
         .preview
+            div.empty(x-ng-if="!preview && placeholder")
+                span {{placeholder}}
             div(x-ng-bind-html="preview | tribeHtml")
             .edit-icon
                 i.fa.fa-pencil
