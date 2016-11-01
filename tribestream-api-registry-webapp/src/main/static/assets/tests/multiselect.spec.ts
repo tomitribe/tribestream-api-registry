@@ -1,5 +1,6 @@
 describe('it tests our custom multiselect component', () => {
-    let expect = chai.expect;
+    require("../scripts/_components_multiselect.ts");
+    require("../scripts/_components_field_actions.ts");
 
     var compile;
     var rootScope;
@@ -38,8 +39,8 @@ describe('it tests our custom multiselect component', () => {
 
     it('should load selected options', (done) => {
         let scope = rootScope.$new();
-        scope.selected = ['aaa', 'bbb'];
-        scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+        scope['selected'] = ['aaa', 'bbb'];
+        scope['options'] = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
         let element = angular.element('<div data-tribe-multiselect data-selected-options="selected" data-available-options="options"></div>');
         compile(element)(scope);
         // append to body so we can click on it.
@@ -47,32 +48,35 @@ describe('it tests our custom multiselect component', () => {
         timeoutTryCatch(100, done, () => {
             let selectedItems = angular.element(element.find('div[data-tribe-multiselect-selected] .items'));
             timeoutTryCatch(100, done, () => {
-                let values = _.map(selectedItems, (item) => angular.element(item).scope().opt);
-                expect(values).to.deep.equal(['aaa', 'bbb']);
-                expect(angular.element(element.find('div[data-tribe-multiselect-selected] .items i.remove')).css('display')).to.equal('none');
-                done();
+                let values = _.map(selectedItems, (item) => angular.element(item).scope()['opt']);
+                expect(values).toEqual(['aaa', 'bbb']);
+                element.find('input').blur();
+                timeoutTryCatch(100, done, () => {
+                    expect(element.hasClass('active')).toEqual(false);
+                    done();
+                });
             });
         });
     });
 
     it('should show action buttons on input focus', (done) => {
         let scope = rootScope.$new();
-        scope.selected = ['aaa'];
-        scope.options = [];
+        scope['selected'] = ['aaa'];
+        scope['options'] = [];
         let element = angular.element('<div data-tribe-multiselect data-selected-options="selected" data-available-options="options"></div>');
         compile(element)(scope);
         // append to body so we can click on it.
         element.appendTo(document.find('body'));
         timeoutTryCatch(100, done, () => {
-            expect(document.find('div.tribe-field-actions-body').length).to.equal(0);
+            expect(document.find('div.tribe-field-actions-body').length).toEqual(0);
             let componentWrapper = angular.element(element.find('> div'));
             // it should trigger the input focus event
             componentWrapper.focus();
             timeoutTryCatch(100, done, () => {
                 let input = angular.element(element.find('input'));
-                expect(input.is(":focus")).to.equal(true);
+                expect(element.hasClass('active')).toEqual(true);
                 timeoutTryCatch(100, done, () => {
-                    expect(document.find('div.tribe-field-actions-body').length).to.equal(1);
+                    expect(document.find('div.tribe-field-actions-body').length).toEqual(1);
                     done();
                 });
             });
@@ -82,8 +86,8 @@ describe('it tests our custom multiselect component', () => {
     it('should show available options', (done) => {
         timeoutTryCatch(100, done, () => {
             let scope = rootScope.$new();
-            scope.selected = ['aaa', 'bbb'];
-            scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+            scope['selected'] = ['aaa', 'bbb'];
+            scope['options'] = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
             let element = angular.element('<div data-tribe-multiselect data-selected-options="selected" data-available-options="options"></div>');
             // append to body so we can click on it.
             element.appendTo(document.find('body'));
@@ -97,7 +101,7 @@ describe('it tests our custom multiselect component', () => {
                         timeoutTryCatch(100, done, () => {
                             let available = element.find('div[data-tribe-multiselect-available]');
                             // the list of items is visible
-                            expect(available.hasClass('active')).to.equal(true);
+                            expect(available.hasClass('active')).toEqual(true);
                             done();
                         });
                     });
@@ -109,8 +113,8 @@ describe('it tests our custom multiselect component', () => {
     it('should select selected items with the left-right keys', (done) => {
         timeoutTryCatch(100, done, () => {
             let scope = rootScope.$new();
-            scope.selected = ['aaa', 'bbb', 'ccc'];
-            scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+            scope['selected'] = ['aaa', 'bbb', 'ccc'];
+            scope['options'] = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
             let element = angular.element('<div data-tribe-multiselect data-selected-options="selected" data-available-options="options"></div>');
             // append to body so we can click on it.
             element.appendTo(document.find('body'));
@@ -122,23 +126,23 @@ describe('it tests our custom multiselect component', () => {
                     triggerKeyDown(input, 37); // left
                     timeoutTryCatch(100, done, () => {
                         let selected = element.find('div[data-tribe-multiselect-selected]');
-                        expect(angular.element(selected.find('.selected')).scope().opt).to.equal('ccc');
+                        expect(angular.element(selected.find('.selected')).scope()['opt']).toEqual('ccc');
                         triggerKeyDown(input, 39); // right
                         timeoutTryCatch(100, done, () => {
                             let selected = element.find('div[data-tribe-multiselect-selected]');
-                            expect(angular.element(selected.find('.selected')).scope().opt).to.equal('aaa');
+                            expect(angular.element(selected.find('.selected')).scope()['opt']).toEqual('aaa');
                             triggerKeyDown(input, 39); // right
                             timeoutTryCatch(100, done, () => {
                                 let selected = element.find('div[data-tribe-multiselect-selected]');
-                                expect(angular.element(selected.find('.selected')).scope().opt).to.equal('bbb');
+                                expect(angular.element(selected.find('.selected')).scope()['opt']).toEqual('bbb');
                                 triggerKeyDown(input, 8); // delete
                                 timeoutTryCatch(100, done, () => {
                                     let selected = element.find('div[data-tribe-multiselect-selected]');
-                                    expect(angular.element(selected.find('.selected')).scope().opt).to.equal('ccc');
+                                    expect(angular.element(selected.find('.selected')).scope()['opt']).toEqual('ccc');
                                     triggerKeyDown(input, 8); // delete
                                     timeoutTryCatch(100, done, () => {
                                         let selected = element.find('div[data-tribe-multiselect-selected]');
-                                        expect(angular.element(selected.find('.selected')).scope().opt).to.equal('aaa');
+                                        expect(angular.element(selected.find('.selected')).scope()['opt']).toEqual('aaa');
                                         done();
                                     });
                                 });
@@ -153,8 +157,8 @@ describe('it tests our custom multiselect component', () => {
     it('should enter new items', (done) => {
         timeoutTryCatch(100, done, () => {
             let scope = rootScope.$new();
-            scope.selected = ['aaa', 'bbb', 'ccc'];
-            scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+            scope['selected'] = ['aaa', 'bbb', 'ccc'];
+            scope['options'] = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
             let element = angular.element('<div data-tribe-multiselect data-selected-options="selected" data-available-options="options"></div>');
             // append to body so we can click on it.
             element.appendTo(document.find('body'));
@@ -165,32 +169,32 @@ describe('it tests our custom multiselect component', () => {
                 timeoutTryCatch(100, done, () => {
                     input.focus();
                     let selectedScope = selected.scope();
-                    selectedScope.$apply(() => selectedScope.inputText = 'fff');
+                    selectedScope.$apply(() => selectedScope['inputText'] = 'fff');
                     timeoutTryCatch(100, done, () => {
                         triggerKeyDown(input, 13); // enter
                         timeoutTryCatch(100, done, () => {
                             let lastSelected = selected.find('.items').last();
-                            expect(angular.element(lastSelected).scope().opt).to.equal('fff');
-                            selectedScope.$apply(() => selectedScope.inputText = 'eee');
+                            expect(angular.element(lastSelected).scope()['opt']).toEqual('fff');
+                            selectedScope.$apply(() => selectedScope['inputText'] = 'eee');
                             timeoutTryCatch(100, done, () => {
                                 triggerKeyDown(input, 13); // enter
                                 timeoutTryCatch(100, done, () => {
                                     let lastSelected = selected.find('.items')[3];
-                                    expect(angular.element(lastSelected).scope().opt).to.equal('eee');
+                                    expect(angular.element(lastSelected).scope()['opt']).toEqual('eee');
                                     triggerKeyDown(input, 40); // arrowdown
                                     timeoutTryCatch(100, done, () => {
                                         let available = element.find('div[data-tribe-multiselect-available]');
                                         // the list of items is visible
-                                        expect(available.hasClass('active')).to.equal(true);
+                                        expect(available.hasClass('active')).toEqual(true);
                                         let availableOptions = document.find('div.tribe-data-tribe-multiselect-available-body div.option');
-                                        expect(availableOptions.length).to.equal(1);
-                                        expect(angular.element(availableOptions.last()).scope().opt).to.equal('ddd');
+                                        expect(availableOptions.length).toEqual(1);
+                                        expect(angular.element(availableOptions.last()).scope()['opt']).toEqual('ddd');
                                         triggerKeyDown(input, 40); // arrowdown
                                         timeoutTryCatch(100, done, () => {
                                             triggerKeyDown(input, 13); // enter
                                             timeoutTryCatch(100, done, () => {
                                                 // items are sorted, so it should go to the third position
-                                                expect(angular.element(selected.find('.items')[3]).scope().opt).to.equal('ddd');
+                                                expect(angular.element(selected.find('.items')[3]).scope()['opt']).toEqual('ddd');
                                                 done();
                                             });
                                         });
@@ -207,8 +211,8 @@ describe('it tests our custom multiselect component', () => {
     it('should cancel and confirm edits', (done) => {
         timeoutTryCatch(100, done, () => {
             let scope = rootScope.$new();
-            scope.selected = ['aaa', 'bbb', 'ccc'];
-            scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+            scope['selected'] = ['aaa', 'bbb', 'ccc'];
+            scope['options'] = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
             let element = angular.element('<div data-tribe-multiselect data-selected-options="selected" data-available-options="options"></div>');
             // append to body so we can click on it.
             element.appendTo(document.find('body'));
@@ -219,27 +223,27 @@ describe('it tests our custom multiselect component', () => {
                 timeoutTryCatch(100, done, () => {
                     input.focus();
                     let selectedScope = selected.scope();
-                    selectedScope.$apply(() => selectedScope.inputText = 'fff');
+                    selectedScope.$apply(() => selectedScope['inputText'] = 'fff');
                     timeoutTryCatch(100, done, () => {
                         triggerKeyDown(input, 13); // enter
                         timeoutTryCatch(100, done, () => {
                             expect(_.map(angular.element(selected.find('.items')), (item) => {
-                                return angular.element(item).scope().opt;
-                            })).to.deep.equal(['aaa', 'bbb', 'ccc', 'fff']);
+                                return angular.element(item).scope()['opt'];
+                            })).toEqual(['aaa', 'bbb', 'ccc', 'fff']);
                             document.find('div.tribe-field-actions-body div[ng-click="cancel()"]').click();
                             timeoutTryCatch(100, done, () => {
                                 expect(_.map(angular.element(selected.find('.items')), (item) => {
-                                    return angular.element(item).scope().opt;
-                                })).to.deep.equal(['aaa', 'bbb', 'ccc']);
-                                selectedScope.$apply(() => selectedScope.inputText = 'ggg');
+                                    return angular.element(item).scope()['opt'];
+                                })).toEqual(['aaa', 'bbb', 'ccc']);
+                                selectedScope.$apply(() => selectedScope['inputText'] = 'ggg');
                                 timeoutTryCatch(100, done, () => {
                                     triggerKeyDown(input, 13); // enter
                                     timeoutTryCatch(100, done, () => {
                                         document.find('div.tribe-field-actions-body div[ng-click="confirm()"]').click();
                                         timeoutTryCatch(100, done, () => {
                                             expect(_.map(angular.element(selected.find('.items')), (item) => {
-                                                return angular.element(item).scope().opt;
-                                            })).to.deep.equal(['aaa', 'bbb', 'ccc', 'ggg']);
+                                                return angular.element(item).scope()['opt'];
+                                            })).toEqual(['aaa', 'bbb', 'ccc', 'ggg']);
                                             done();
                                         });
                                     });
@@ -255,8 +259,8 @@ describe('it tests our custom multiselect component', () => {
     it('should confirm edits with double enter', (done) => {
         timeoutTryCatch(100, done, () => {
             let scope = rootScope.$new();
-            scope.selected = ['aaa', 'bbb', 'ccc'];
-            scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+            scope['selected'] = ['aaa', 'bbb', 'ccc'];
+            scope['options'] = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
             let element = angular.element('<div data-tribe-multiselect data-selected-options="selected" data-available-options="options"></div>');
             // append to body so we can click on it.
             element.appendTo(document.find('body'));
@@ -267,19 +271,19 @@ describe('it tests our custom multiselect component', () => {
                 timeoutTryCatch(100, done, () => {
                     input.focus();
                     let selectedScope = selected.scope();
-                    selectedScope.$apply(() => selectedScope.inputText = 'fff');
+                    selectedScope.$apply(() => selectedScope['inputText'] = 'fff');
                     timeoutTryCatch(100, done, () => {
                         triggerKeyDown(input, 13); // enter
                         timeoutTryCatch(100, done, () => {
                             expect(_.map(angular.element(selected.find('.items')), (item) => {
-                                return angular.element(item).scope().opt;
-                            })).to.deep.equal(['aaa', 'bbb', 'ccc', 'fff']);
+                                return angular.element(item).scope()['opt'];
+                            })).toEqual(['aaa', 'bbb', 'ccc', 'fff']);
                             triggerKeyDown(input, 13); // enter again
                             timeoutTryCatch(100, done, () => {
-                                expect(selected.scope().fieldDirty).to.equal(false);
+                                expect(selected.scope()['fieldDirty']).toEqual(false);
                                 expect(_.map(angular.element(selected.find('.items')), (item) => {
-                                    return angular.element(item).scope().opt;
-                                })).to.deep.equal(['aaa', 'bbb', 'ccc', 'fff']);
+                                    return angular.element(item).scope()['opt'];
+                                })).toEqual(['aaa', 'bbb', 'ccc', 'fff']);
                                 done();
                             });
                         });
@@ -292,8 +296,8 @@ describe('it tests our custom multiselect component', () => {
     it('should cancel edits with double escape', (done) => {
         timeoutTryCatch(100, done, () => {
             let scope = rootScope.$new();
-            scope.selected = ['aaa', 'bbb', 'ccc'];
-            scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+            scope['selected'] = ['aaa', 'bbb', 'ccc'];
+            scope['options'] = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
             let element = angular.element('<div data-tribe-multiselect data-selected-options="selected" data-available-options="options"></div>');
             // append to body so we can click on it.
             element.appendTo(document.find('body'));
@@ -304,27 +308,27 @@ describe('it tests our custom multiselect component', () => {
                 timeoutTryCatch(100, done, () => {
                     input.focus();
                     let selectedScope = selected.scope();
-                    selectedScope.$apply(() => selectedScope.inputText = 'fff');
+                    selectedScope.$apply(() => selectedScope['inputText'] = 'fff');
                     timeoutTryCatch(100, done, () => {
                         triggerKeyDown(input, 13); // enter
                         timeoutTryCatch(100, done, () => {
                             expect(_.map(angular.element(selected.find('.items')), (item) => {
-                                return angular.element(item).scope().opt;
-                            })).to.deep.equal(['aaa', 'bbb', 'ccc', 'fff']);
-                            selectedScope.$apply(() => selectedScope.inputText = 'ddd');
+                                return angular.element(item).scope()['opt'];
+                            })).toEqual(['aaa', 'bbb', 'ccc', 'fff']);
+                            selectedScope.$apply(() => selectedScope['inputText'] = 'ddd');
                             triggerKeyDown(input, 27); // escape
                             timeoutTryCatch(100, done, () => {
                                 timeoutTryCatch(100, done, () => {
-                                    expect(selectedScope.inputText).to.equal('');
+                                    expect(selectedScope['inputText']).toEqual('');
                                     expect(_.map(angular.element(selected.find('.items')), (item) => {
-                                        return angular.element(item).scope().opt;
-                                    })).to.deep.equal(['aaa', 'bbb', 'ccc', 'fff']);
+                                        return angular.element(item).scope()['opt'];
+                                    })).toEqual(['aaa', 'bbb', 'ccc', 'fff']);
                                     triggerKeyDown(input, 27); // escape again
                                     timeoutTryCatch(100, done, () => {
                                         timeoutTryCatch(100, done, () => {
                                             expect(_.map(angular.element(selected.find('.items')), (item) => {
-                                                return angular.element(item).scope().opt;
-                                            })).to.deep.equal(['aaa', 'bbb', 'ccc']);
+                                                return angular.element(item).scope()['opt'];
+                                            })).toEqual(['aaa', 'bbb', 'ccc']);
                                             done();
                                         });
                                     });
@@ -340,8 +344,8 @@ describe('it tests our custom multiselect component', () => {
     it('should show the "new item" label in the available oprions list', (done) => {
         timeoutTryCatch(100, done, () => {
             let scope = rootScope.$new();
-            scope.selected = ['aaa', 'bbb', 'ccc'];
-            scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+            scope['selected'] = ['aaa', 'bbb', 'ccc'];
+            scope['options'] = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
             let element = angular.element('<div data-tribe-multiselect data-selected-options="selected" data-available-options="options" data-new-label="new lala"></div>');
             // append to body so we can click on it.
             element.appendTo(document.find('body'));
@@ -354,10 +358,10 @@ describe('it tests our custom multiselect component', () => {
                     let selectedScope = selected.scope();
                     triggerKeyDown(input, 40); // arrowdown
                     timeoutTryCatch(100, done, () => {
-                        selectedScope.$apply(() => selectedScope.inputText = 'fffffff');
+                        selectedScope.$apply(() => selectedScope['inputText'] = 'fffffff');
                         timeoutTryCatch(100, done, () => {
                             let newLabel = angular.element(document.find('div.tribe-data-tribe-multiselect-available-body .new-opt'));
-                            expect(newLabel.find('span').first().html()).to.deep.equal('new lala:');
+                            expect(newLabel.find('span').first().html()).toEqual('new lala:');
                             done();
                         });
                     });
@@ -369,7 +373,7 @@ describe('it tests our custom multiselect component', () => {
     it('should order available options list case insensitive', (done) => {
         timeoutTryCatch(100, done, () => {
             let scope = rootScope.$new();
-            scope.options = ['basic', 'form', 'digest', 'HTTP Signatures', 'Bearer'];
+            scope['options'] = ['basic', 'form', 'digest', 'HTTP Signatures', 'Bearer'];
             let element = angular.element('<div data-tribe-multiselect data-selected-options="[]" data-available-options="options"></div>');
             // append to body so we can click on it.
             element.appendTo(document.find('body'));
@@ -383,8 +387,8 @@ describe('it tests our custom multiselect component', () => {
                     timeoutTryCatch(100, done, () => {
                         let availableOptions = document.find('div.tribe-data-tribe-multiselect-available-body div.option');
                         expect(_.map(angular.element(availableOptions), (item) => {
-                            return angular.element(item).scope().opt;
-                        })).to.deep.equal(['basic', 'Bearer', 'digest', 'form', 'HTTP Signatures']);
+                            return angular.element(item).scope()['opt'];
+                        })).toEqual(['basic', 'Bearer', 'digest', 'form', 'HTTP Signatures']);
                         done();
                     });
                 });
@@ -395,8 +399,8 @@ describe('it tests our custom multiselect component', () => {
     it('should enter new items when selected items is null', (done) => {
         timeoutTryCatch(100, done, () => {
             let scope = rootScope.$new();
-            scope.selected = null;
-            scope.options = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+            scope['selected'] = null;
+            scope['options'] = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
             let element = angular.element('<div data-tribe-multiselect data-selected-options="selected" data-available-options="options"></div>');
             // append to body so we can click on it.
             element.appendTo(document.find('body'));
@@ -407,12 +411,12 @@ describe('it tests our custom multiselect component', () => {
                 timeoutTryCatch(100, done, () => {
                     input.focus();
                     let selectedScope = selected.scope();
-                    selectedScope.$apply(() => selectedScope.inputText = 'aaa');
+                    selectedScope.$apply(() => selectedScope['inputText'] = 'aaa');
                     timeoutTryCatch(100, done, () => {
                         triggerKeyDown(input, 13); // enter
                         timeoutTryCatch(100, done, () => {
                             let lastSelected = selected.find('.items').last();
-                            expect(angular.element(lastSelected).scope().opt).to.equal('aaa');
+                            expect(angular.element(lastSelected).scope()['opt']).toEqual('aaa');
                             done();
                         });
                     });
@@ -420,4 +424,5 @@ describe('it tests our custom multiselect component', () => {
             });
         });
     });
+    
 });
