@@ -27,7 +27,7 @@ describe('it tests our custom multiselect component', () => {
         try {
             callback();
         } catch (e) {
-            done(e);
+            done.fail(e);
         }
     }, ms);
 
@@ -420,6 +420,30 @@ describe('it tests our custom multiselect component', () => {
                             done();
                         });
                     });
+                });
+            });
+        });
+    });
+
+    it('should select item on blur', (done) => {
+        timeoutTryCatch(100, done, () => {
+            let scope = rootScope.$new();
+            scope['selected'] = null;
+            scope['options'] = ['aaa', 'bbb', 'ccc', 'ddd', 'eee'];
+            let element = angular.element('<div data-tribe-multiselect data-selected-options="selected" data-available-options="options"></div>');
+            // append to body so we can click on it.
+            element.appendTo(document.find('body'));
+            compile(element)(scope);
+            timeoutTryCatch(100, done, () => {
+                let selected = angular.element(element.find('div[data-tribe-multiselect-selected]'));
+                let selectedScope = angular.element(selected.find('> div')).scope();
+                selectedScope['selectedOption'] = 'aaa';
+                selectedScope['addItem']();
+                timeoutTryCatch(100, done, () => {
+                    let lastSelected = selected.find('.items').last();
+                    expect(selected.find('.items').length).toEqual(1);
+                    expect(angular.element(lastSelected).scope()['opt']).toEqual('aaa');
+                    done();
                 });
             });
         });
