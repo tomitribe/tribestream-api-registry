@@ -48,6 +48,7 @@ angular.module('website-components-multiselect', [
                 $scope['fieldChanged'] = () => $timeout(() => $scope.$apply(() => {
                     $scope['fieldDirty'] = true;
                     $scope['version'] = $scope['version'] + 1;
+                    $scope['optionsActivated'] = false;
                 }));
                 $scope['fieldCommitted'] = () => $timeout(() => $scope.$apply(() => {
                     $scope['onCommit']();
@@ -123,7 +124,7 @@ angular.module('website-components-multiselect', [
         };
     }])
 
-    .directive('tribeMultiselectAvailable', ['$document', '$window', '$timeout', '$log', ($document, $window, $timeout, $log) => {
+    .directive('tribeMultiselectAvailable', ['$document', '$window', '$timeout', ($document, $window, $timeout) => {
         return {
             restrict: 'A',
             scope: {
@@ -145,7 +146,6 @@ angular.module('website-components-multiselect', [
                 $scope['showOptions'] = () => $timeout(() => $scope.$apply(() => {
                     $scope['selectedItem'] = null;
                     $scope.newOpt = null;
-                    $log.info(`Updating available options.`);
                     $scope.availableOptions = _.clone($scope.originalAvailableOptions);
                     for (let opt of $scope['selectedOptions']) {
                         $scope.availableOptions = _.without($scope.availableOptions, opt);
