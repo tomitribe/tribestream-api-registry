@@ -121,9 +121,7 @@ angular.module('website-components-singleselect', [
                     cancelDeactivate();
                     deactivatePromise = $timeout(() => {
                         el.removeClass('active');
-                        if (scope['fieldDirty']) {
-                            scope['onCommit'](true);
-                        }
+                        scope.$apply(() => scope['optionsActivated'] = false);
                     }, 500);
                 };
                 let inputField = el.find('input');
