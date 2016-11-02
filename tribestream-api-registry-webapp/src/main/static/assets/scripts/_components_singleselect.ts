@@ -127,7 +127,9 @@ angular.module('website-components-singleselect', [
                 el.find('input').on('focus', () => {
                     cancelDeactivate();
                     el.addClass('active');
-                    scope['onChange']();
+                    if(scope['disableActions']) {
+                        scope['onChange']();
+                    }
                     $timeout(() => scope.$apply(() => {
                         scope['fieldDirty'] = true;
                         scope['version'] = scope['version'] + 1;

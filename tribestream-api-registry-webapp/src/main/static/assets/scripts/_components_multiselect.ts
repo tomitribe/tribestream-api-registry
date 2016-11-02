@@ -9,10 +9,12 @@ angular.module('website-components-multiselect', [
                 originalAvailableOptions: '=availableOptions',
                 originalSelectedOptions: '=selectedOptions',
                 originalGetOptionText: '=getOptionText',
-                newLabel: '@?'
+                newLabel: '@?',
+                autoShowOptions: '='
             },
             template: require('../templates/component_multiselect.jade'),
             controller: ['$log', '$scope', '$timeout', ($log, $scope, $timeout) => $timeout(() => {
+                $scope['inputFocused'] = false;
                 $scope.$watch('originalGetOptionText', () => {
                     if ($scope.originalGetOptionText) {
                         $scope.getOptionText = $scope.originalGetOptionText;
@@ -89,13 +91,23 @@ angular.module('website-components-multiselect', [
                     deactivatePromise = $timeout(() => {
                         scope['onCommit']();
                         el.removeClass('active');
+                        scope.$apply(() => {
+                            scope['inputFocused'] = false;
+                            scope['optionsActivated'] = false;
+                        });
                     }, 500);
                 };
                 el.find('> div').on('focus', () => el.find('input').focus());
                 el.find('input').on('focus', () => {
                     cancelDeactivate();
                     el.addClass('active');
-                    $timeout(() => scope.$apply(() => scope['fieldDirty'] = true));
+                    $timeout(() => scope.$apply(() => {
+                        scope['fieldDirty'] = true;
+                        scope['inputFocused'] = true;
+                        if(scope['autoShowOptions']) {
+                            scope['optionsActivated'] = true;
+                        }
+                    }));
                 });
                 el.find('input').on('blur', deactivate);
                 scope.$on('fieldDirty', () => {
@@ -111,7 +123,7 @@ angular.module('website-components-multiselect', [
         };
     }])
 
-    .directive('tribeMultiselectAvailable', ['$document', '$window', '$timeout', ($document, $window, $timeout) => {
+    .directive('tribeMultiselectAvailable', ['$document', '$window', '$timeout', '$log', ($document, $window, $timeout, $log) => {
         return {
             restrict: 'A',
             scope: {
@@ -124,7 +136,8 @@ angular.module('website-components-multiselect', [
                 inputText: '=',
                 selectedItem: '=selectedOption',
                 newLabel: '@?',
-                getOptionText: '='
+                getOptionText: '=',
+                version: '='
             },
             template: require('../templates/component_multiselect_available.jade'),
             controller: ['$scope', '$timeout', ($scope, $timeout) => {
@@ -132,6 +145,7 @@ angular.module('website-components-multiselect', [
                 $scope['showOptions'] = () => $timeout(() => $scope.$apply(() => {
                     $scope['selectedItem'] = null;
                     $scope.newOpt = null;
+                    $log.info(`Updating available options.`);
                     $scope.availableOptions = _.clone($scope.originalAvailableOptions);
                     for (let opt of $scope['selectedOptions']) {
                         $scope.availableOptions = _.without($scope.availableOptions, opt);
@@ -151,6 +165,7 @@ angular.module('website-components-multiselect', [
                         }
                     }
                 }));
+                $scope.$watch('version', $timeout(() => $scope['showOptions']()));
                 $scope['selectedItem'] = null;
                 $scope.selectAvailableItem = (item) => $timeout(() => $scope.$apply(() => {
                     $scope['selectedItem'] = item;
@@ -199,7 +214,6 @@ angular.module('website-components-multiselect', [
                 }));
                 $scope.selectItem = (opt) => $timeout(() => $scope.$apply(() => {
                     $scope['selectedOptions'].push(opt);
-                    $scope['active'] = false;
                     $scope['inputText'] = '';
                 }));
                 $scope.$watch('inputText', () => {
@@ -271,7 +285,9 @@ angular.module('website-components-multiselect', [
                 onSelectBottomUpOption: '&',
                 onOptionsDeactivated: '&',
                 selectedOption: '=',
-                inputText: '='
+                inputText: '=',
+                autoShowOptions: '=',
+                activated: '='
             },
             template: require('../templates/component_multiselect_selected.jade'),
             controller: ['$log', '$scope', '$timeout', ($log, $scope, $timeout) => {
