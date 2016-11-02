@@ -126,8 +126,9 @@ angular.module('website-components-singleselect', [
                         }
                     }, 500);
                 };
-                el.find('> div').on('focus', () => el.find('input').focus());
-                el.find('input').on('focus', () => {
+                let inputField = el.find('input');
+                el.find('> div').on('focus', () => inputField.focus());
+                inputField.on('focus', () => {
                     cancelDeactivate();
                     el.addClass('active');
                     if(scope['disableActions']) {
@@ -137,10 +138,11 @@ angular.module('website-components-singleselect', [
                         scope['fieldDirty'] = true;
                         scope['version'] = scope['version'] + 1;
                     }));
+                    inputField.select();
                 });
-                scope.$on('fieldCanceled', () => el.find('input').blur());
-                scope.$on('fieldCommitted', () => el.find('input').blur());
-                el.find('input').on('blur', deactivate);
+                scope.$on('fieldCanceled', () => inputField.blur());
+                scope.$on('fieldCommitted', () => inputField.blur());
+                inputField.on('blur', deactivate);
                 scope.$on('fieldDirty', () => {
                     if (scope['fieldDirty']) {
                         cancelDeactivate();
