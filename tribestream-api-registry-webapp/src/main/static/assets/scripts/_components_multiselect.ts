@@ -10,10 +10,13 @@ angular.module('website-components-multiselect', [
                 originalSelectedOptions: '=selectedOptions',
                 originalGetOptionText: '=getOptionText',
                 newLabel: '@?',
-                autoShowOptions: '='
+                autoShowOptions: '=?'
             },
             template: require('../templates/component_multiselect.jade'),
             controller: ['$log', '$scope', '$timeout', ($log, $scope, $timeout) => $timeout(() => {
+                if($scope['autoShowOptions'] === undefined) {
+                    $scope['autoShowOptions'] = true;
+                }
                 $scope['inputFocused'] = false;
                 $scope.$watch('originalGetOptionText', () => {
                     if ($scope.originalGetOptionText) {

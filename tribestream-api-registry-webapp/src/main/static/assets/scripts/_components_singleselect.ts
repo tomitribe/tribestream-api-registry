@@ -12,10 +12,13 @@ angular.module('website-components-singleselect', [
                 originalGetOptionText: '=getOptionText',
                 newLabel: '@?',
                 placeholder: '@?',
-                disableActions: '='
+                disableActions: '=?'
             },
             template: require('../templates/component_singleselect.jade'),
             controller: ['$scope', '$timeout', ($scope, $timeout) => $timeout(() => {
+                if($scope['disableActions'] === undefined) {
+                    $scope['disableActions'] = true;
+                }
                 $scope.$watch('originalGetOptionText', () => {
                     if ($scope.originalGetOptionText) {
                         $scope.getOptionText = $scope.originalGetOptionText;
