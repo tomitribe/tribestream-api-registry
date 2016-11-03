@@ -116,7 +116,9 @@ angular.module('website-components-text', [
                     if (scope['valid']) {
                         element.removeClass('invalid');
                     } else {
-                        element.addClass('invalid');
+                        if(scope['regex'] !== undefined && scope['regex'] !== null) {
+                            element.addClass('invalid');
+                        }
                     }
                 });
             })

@@ -1,11 +1,14 @@
 div
   .title
     h1
-      div(data-tribe-singleselect, data-get-option-text="toUppercase", data-available-options="[{text:'DELETE', value:'delete'}, {text:'HEAD', value:'head'}, {text:'GET', value:'get'}, {text:'OPTIONS', value:'options'}, {text:'POST', value:'post'}, {text:'PUT', value:'put'}, {text:'PATCH', value:'patch'}]", data-selected-option="endpoint.httpMethod")
+      div(data-tribe-singleselect,
+        data-disable-actions="true",
+        data-available-options="[{text:'DELETE', value:'delete'}, {text:'HEAD', value:'head'}, {text:'GET', value:'get'}, {text:'OPTIONS', value:'options'}, {text:'POST', value:'post'}, {text:'PUT', value:'put'}, {text:'PATCH', value:'patch'}]",
+        data-selected-option="endpoint.httpMethod")
       div(data-tribe-text,
-      data-on-edit-mode-on="onEditModeOn()",
-      data-on-edit-mode-off="onEditModeOff()",
-          data-regex="{{regex}}", data-regex-tip="{{regexTip}}", data-value="endpoint.path", data-placeholder="Path")
+        data-on-edit-mode-on="onEditModeOn()",
+        data-on-edit-mode-off="onEditModeOff()",
+        data-regex="{{regex}}", data-regex-tip="{{regexTip}}", data-value="endpoint.path", data-placeholder="Path")
   h2 Description
   div(data-tribe-markdown, data-value="endpoint.operation.description")
   div(data-app-endpoints-details-see, data-endpoint="endpoint")
