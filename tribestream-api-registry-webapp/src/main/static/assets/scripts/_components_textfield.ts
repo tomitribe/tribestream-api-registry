@@ -16,6 +16,7 @@ angular.module('website-components-text', [
             },
             template: require('../templates/component_text.jade'),
             controller: ['$log', '$scope', ($log, $scope) => $timeout(() => {
+                $scope['uniqueId'] = _.uniqueId('tribeText_');
                 if(!$scope['regexTip']) {
                     $scope['regexTip'] = 'Invalid Pattern';
                 }
@@ -91,7 +92,7 @@ angular.module('website-components-text', [
                         element.removeClass('invalid');
                         element.removeClass('active');
                         if(scope['onEditModeOff']) {
-                            scope['onEditModeOff']();
+                            scope['onEditModeOff']({'uniqueId': scope['uniqueId']});
                         }
                     }, 500);
                 };
@@ -106,7 +107,7 @@ angular.module('website-components-text', [
                         scope['version'] = scope['version'] + 1;
                         scope['fieldDirty'] = true;
                         if(scope['onEditModeOn']) {
-                            scope['onEditModeOn']();
+                            scope['onEditModeOn']({'uniqueId': scope['uniqueId']});
                         }
                     }));
                 });

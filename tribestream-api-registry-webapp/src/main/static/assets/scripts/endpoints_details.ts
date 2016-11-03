@@ -464,7 +464,9 @@ angular.module('tribe-endpoints-details', [
             restrict: 'A',
             template: require('../templates/app_endpoints_details_see.jade'),
             scope: {
-                'endpoint': '='
+                'endpoint': '=',
+                'onEditModeOn': '&',
+                'onEditModeOff': '&'
             },
             controller: ['$scope', function ($scope) {
                 this['addLink'] = function () {
@@ -524,9 +526,19 @@ angular.module('tribe-endpoints-details', [
     controller: [
       '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', '$location', 'systemMessagesService', 'tribeLinkHeaderService',
       function ($scope, srv, tribeFilterService, $timeout, $filter, $log, $location, systemMessagesService, tribeLinkHeaderService) {
-        $scope['onEditCount'] = 0;
-        $scope['onEditModeOn'] = () => $timeout(() => $scope.$apply(() => $scope['onEditCount'] = $scope['onEditCount'] + 1));
-        $scope['onEditModeOff'] = () => $timeout(() => $scope.$apply(() => $scope['onEditCount'] = $scope['onEditCount'] - 1));
+        $scope['onEditCount'] = {};
+        $scope['onEditModeOn'] = (uniqueId) => $timeout(() => $scope.$apply(() => {
+            $scope['onEditCount'][uniqueId] = {};
+            $scope['isOnEdit'] = true;
+            $log.info(`New field on edit mode. ${uniqueId}`);
+            $log.info($scope['onEditCount']);
+        }));
+        $scope['onEditModeOff'] = (uniqueId) => $timeout(() => $scope.$apply(() => {
+            delete $scope['onEditCount'][uniqueId];
+            $scope['isOnEdit'] = !_.isEmpty($scope['onEditCount']);
+            $log.info(`Field out of edit mode. ${uniqueId} -> onEditMode: ${$scope['isOnEdit']}`);
+            $log.info($scope['onEditCount']);
+        }));
         $scope.updateEndpoint = e => $scope.endpoint = e;
         $timeout(function () {
           $scope.$apply(function () {

@@ -9,10 +9,13 @@ angular.module('website-components-multiselect', [
                 originalAvailableOptions: '=availableOptions',
                 originalSelectedOptions: '=selectedOptions',
                 originalGetOptionText: '=getOptionText',
-                newLabel: '@?'
+                newLabel: '@?',
+                onEditModeOn: '&?',
+                onEditModeOff: '&?'
             },
             template: require('../templates/component_multiselect.jade'),
             controller: ['$log', '$scope', '$timeout', ($log, $scope, $timeout) => $timeout(() => {
+                $scope['uniqueId'] = _.uniqueId('tribeMultiselect_');
                 $scope.$watch('originalGetOptionText', () => {
                     if ($scope.originalGetOptionText) {
                         $scope.getOptionText = $scope.originalGetOptionText;
@@ -57,12 +60,18 @@ angular.module('website-components-multiselect', [
                         $scope['optionsActivated'] = false;
                         $scope['originalSelectedOptions'] = _.clone($scope['selectedOptions']);
                         $log.debug('field committed. values: ' + $scope['selectedOptions']);
+                        if ($scope['onEditModeOff']) {
+                            $scope['onEditModeOff']({'uniqueId': $scope['uniqueId']});
+                        }
                     }
                 }));
                 $scope['fieldCanceled'] = () => {
                     $scope['fieldDirty'] = false;
                     $scope['selectedOptions'] = _.clone($scope['originalSelectedOptions']);
                     $scope.$broadcast('fieldCanceled');
+                    if ($scope['onEditModeOff']) {
+                        $scope['onEditModeOff']({'uniqueId': $scope['uniqueId']});
+                    }
                 };
                 $scope.onSelectTopDownOption = () => $timeout(() => $scope.$apply(() => {
                     $scope['optionsActivatedTopDown'] = $scope['optionsActivatedTopDown'] + 1;
@@ -95,7 +104,12 @@ angular.module('website-components-multiselect', [
                 el.find('input').on('focus', () => {
                     cancelDeactivate();
                     el.addClass('active');
-                    $timeout(() => scope.$apply(() => scope['fieldDirty'] = true));
+                    $timeout(() => scope.$apply(() => {
+                        scope['fieldDirty'] = true;
+                        if (scope['onEditModeOn']) {
+                            scope['onEditModeOn']({'uniqueId': scope['uniqueId']});
+                        }
+                    }));
                 });
                 el.find('input').on('blur', deactivate);
                 scope.$on('fieldDirty', () => {

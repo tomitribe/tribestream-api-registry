@@ -262,10 +262,13 @@ angular.module('website-components', [
                 value: '=',
                 options: '=',
                 defaultText: '@?',
-                emptyText: '@?'
+                emptyText: '@?',
+                onEditModeOn: '&?',
+                onEditModeOff: '&?'
             },
             template: require('../templates/component_editable_option.jade'),
             controller: ['$scope', '$timeout', function ($scope, $timeout) {
+                $scope['uniqueId'] = _.uniqueId('tribeEditableOption_');
                 $scope.visible = false;
                 if (!$scope.emptyText) {
                     $scope.emptyText = 'empty';
@@ -303,6 +306,9 @@ angular.module('website-components', [
                     el.removeClass('visible');
                     $timeout(() => scope.$apply(() => {
                         scope['visible'] = false;
+                        if (scope['onEditModeOff']) {
+                            scope['onEditModeOff']({'uniqueId': scope['uniqueId']});
+                        }
                     }));
                 };
                 el.on('mouseover', () => {
@@ -327,6 +333,9 @@ angular.module('website-components', [
                         });
                         body.append(optionsDiv);
                         $document.on('click', detachOptions);
+                        if (scope['onEditModeOn']) {
+                            scope['onEditModeOn']({'uniqueId': scope['uniqueId']});
+                        }
                     } else {
                         detachOptions();
                         $document.off('click', detachOptions);

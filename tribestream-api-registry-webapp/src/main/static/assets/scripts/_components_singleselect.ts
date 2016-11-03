@@ -12,10 +12,13 @@ angular.module('website-components-singleselect', [
                 originalGetOptionText: '=getOptionText',
                 newLabel: '@?',
                 placeholder: '@?',
-                disableActions: '='
+                disableActions: '=',
+                onEditModeOn: '&?',
+                onEditModeOff: '&?'
             },
             template: require('../templates/component_singleselect.jade'),
             controller: ['$scope', '$timeout', ($scope, $timeout) => $timeout(() => {
+                $scope['uniqueId'] = _.uniqueId('tribeSingleselect_');
                 $scope.$watch('originalGetOptionText', () => {
                     if ($scope.originalGetOptionText) {
                         $scope.getOptionText = $scope.originalGetOptionText;
@@ -121,6 +124,9 @@ angular.module('website-components-singleselect', [
                         if (scope['fieldDirty']) {
                             scope['onCommit'](true);
                         }
+                        if (scope['onEditModeOff']) {
+                            scope['onEditModeOff']({'uniqueId': scope['uniqueId']});
+                        }
                     }, 500);
                 };
                 el.find('> div').on('focus', () => el.find('input').focus());
@@ -131,6 +137,9 @@ angular.module('website-components-singleselect', [
                     $timeout(() => scope.$apply(() => {
                         scope['fieldDirty'] = true;
                         scope['version'] = scope['version'] + 1;
+                        if (scope['onEditModeOn']) {
+                            scope['onEditModeOn']({'uniqueId': scope['uniqueId']});
+                        }
                     }));
                 });
                 scope.$on('fieldCanceled', () => el.find('input').blur());
