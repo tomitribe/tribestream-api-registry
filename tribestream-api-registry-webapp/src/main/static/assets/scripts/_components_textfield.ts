@@ -10,16 +10,14 @@ angular.module('website-components-text', [
                 type: '@',
                 placeholder: '@',
                 regex: '@?',
-                regexTip: '@?'
+                regexTip: '@?',
+                onEditModeOn: '&?',
+                onEditModeOff: '&?'
             },
             template: require('../templates/component_text.jade'),
             controller: ['$log', '$scope', ($log, $scope) => $timeout(() => {
                 if(!$scope['regexTip']) {
                     $scope['regexTip'] = 'Invalid Pattern';
-                }
-                var regex = '.*';
-                if ($scope['regex']) {
-                    regex = $scope['regex'];
                 }
                 let normalTitle = 'Click to edit';
                 $scope['title'] = normalTitle;
@@ -65,10 +63,12 @@ angular.module('website-components-text', [
                         $scope.onChange();
                     }
                 }));
-                $scope.$watch('version', () => $timeout(() => $scope.$apply(() => {
-                    let value = $scope['value'];
-                    let valid = new RegExp(regex, 'g').test(value);
-                    $scope['valid'] = valid;
+                $scope.$watchGroup(['version', 'value'], () => $timeout(() => $scope.$apply(() => {
+                    if($scope['regex'] !== undefined && $scope['regex'] !== null) {
+                        let value = $scope['value'];
+                        let valid = new RegExp($scope['regex'], 'g').test(value);
+                        $scope['valid'] = valid;
+                    }
                 })));
             })],
             link: (scope, element) =>  $timeout(() => {
@@ -90,6 +90,9 @@ angular.module('website-components-text', [
                         }
                         element.removeClass('invalid');
                         element.removeClass('active');
+                        if(scope['onEditModeOff']) {
+                            scope['onEditModeOff']();
+                        }
                     }, 500);
                 };
                 scope.$on('fieldCanceled', () => input.blur());
@@ -102,6 +105,9 @@ angular.module('website-components-text', [
                     $timeout(() => scope.$apply(() => {
                         scope['version'] = scope['version'] + 1;
                         scope['fieldDirty'] = true;
+                        if(scope['onEditModeOn']) {
+                            scope['onEditModeOn']();
+                        }
                     }));
                 });
                 element.find('> div').on('focus', () => input.focus());

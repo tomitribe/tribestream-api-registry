@@ -21,7 +21,7 @@ angular.module('tribe-endpoints-details', [
             template: require('../templates/app_endpoints_details_header.jade'),
             scope: true,
             controller: ['$scope', '$timeout', 'appEndpointsDetailsHeaderService', function ($scope, $timeout, srv) {
-                $scope.regex = '^(\\/|(\\/{_*\\-*[a-zA-Z0-9_-]{1,}}|\\/_*\\-*[a-zA-Z0-9_-]{1,})*)$';
+                $scope.regex = '^(\\/|(\\/{_*\\-*[a-zA-Z0-9_-]{1,}}|\\/_*\\-*[a-zA-Z0-9_-]{1,})+)$';
                 $scope.regexTip = `
                     <div class="endpoint-details-path-tip">
                         <p>To be considered valid, the path should follow these rules:</p>
@@ -524,6 +524,9 @@ angular.module('tribe-endpoints-details', [
     controller: [
       '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', '$location', 'systemMessagesService', 'tribeLinkHeaderService',
       function ($scope, srv, tribeFilterService, $timeout, $filter, $log, $location, systemMessagesService, tribeLinkHeaderService) {
+        $scope['onEditCount'] = 0;
+        $scope['onEditModeOn'] = () => $timeout(() => $scope.$apply(() => $scope['onEditCount'] = $scope['onEditCount'] + 1));
+        $scope['onEditModeOff'] = () => $timeout(() => $scope.$apply(() => $scope['onEditCount'] = $scope['onEditCount'] - 1));
         $scope.updateEndpoint = e => $scope.endpoint = e;
         $timeout(function () {
           $scope.$apply(function () {
