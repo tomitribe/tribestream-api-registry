@@ -41,6 +41,8 @@ div[data-app-endpoints-details-header]
           max-width: none !important
           &:last-of-type
             margin-right: 0
+        div[data-tribe-text] span.empty
+          font-weight: 100 !important
         div.value span
           margin-right: 5px !important
           color: #000000
@@ -59,7 +61,6 @@ div[data-app-endpoints-details-header]
       font-weight: $app-font-weight-h2 !important
       font-size: $app-font-size-h2
       color: $text-color
-
     div.resourceUrl
       margin-top: 15px
       > div
@@ -80,3 +81,8 @@ div[data-app-endpoints-details-header]
         font-weight: $app-font-weight-h2 !important
         font-size: $app-font-size-h2
         color: $text-color
+    span.empty
+      $color: #464748
+      color: lighten($color, 50%) !important
+      font-weight: 100 !important
+      font-style: italic !important
