@@ -45,6 +45,11 @@ div[data-app-application-details]
           font-size: 13px
         &:hover
           cursor: pointer
+        &[disabled]
+          > *, > a > span, > div .trigger > *
+            color: lighten($color, 50%)
+          &:hover
+            cursor: default
   article.content
     padding: 10px 40px 0 40px
     div[data-tribe-markdown]
