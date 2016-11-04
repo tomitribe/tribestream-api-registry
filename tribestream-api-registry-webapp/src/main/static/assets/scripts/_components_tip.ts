@@ -20,7 +20,7 @@ angular.module('website-components-tip', [])
                     let parentPosition = parent.offset();
                     el.offset({
                         top: parentPosition.top + parent.height(),
-                        left: parentPosition.left
+                        left: parentPosition.left + 40
                     });
                 };
                 var adjustPromise = null;
