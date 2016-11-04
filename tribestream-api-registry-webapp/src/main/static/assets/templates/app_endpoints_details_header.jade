@@ -2,6 +2,7 @@ div
   .title
     h1
       div(data-tribe-singleselect,
+        data-placeholder="Verb"
         data-disable-actions="true",
         data-on-edit-mode-on="onEditModeOn(uniqueId)",
         data-on-edit-mode-off="onEditModeOff(uniqueId)",
@@ -11,7 +12,6 @@ div
         data-on-edit-mode-on="onEditModeOn(uniqueId)",
         data-on-edit-mode-off="onEditModeOff(uniqueId)",
         data-regex="{{regex}}", data-regex-tip="{{regexTip}}", data-value="endpoint.path", data-placeholder="Path")
-  h2 Description
   div(data-tribe-markdown,
     data-on-edit-mode-on="onEditModeOn(uniqueId)",
     data-on-edit-mode-off="onEditModeOff(uniqueId)",
