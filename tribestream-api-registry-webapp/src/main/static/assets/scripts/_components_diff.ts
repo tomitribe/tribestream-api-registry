@@ -54,6 +54,11 @@ module _components_diff {
                                 angular.element(diffPanels[0]).prepend(`<h3 class="diff-title">${scope['titleA']}</h3>`);
                                 // right
                                 angular.element(diffPanels[1]).prepend(`<h3 class="diff-title">${scope['titleB']}</h3>`);
+                                $timeout(() => {
+                                    let titleHeight = el.find('div.CodeMirror-merge-pane h3.diff-title').outerHeight();
+                                    let cmHeight = el.find('div.CodeMirror-merge-pane h3.diff-title ~ div.CodeMirror').outerHeight();
+                                    el.find('div.CodeMirror-merge-pane h3.diff-title ~ div.CodeMirror').outerHeight(cmHeight - titleHeight);
+                                });
                             });
                         }
 
