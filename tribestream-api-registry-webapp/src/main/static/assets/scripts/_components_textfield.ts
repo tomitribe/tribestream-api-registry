@@ -35,7 +35,7 @@ angular.module('website-components-text', [
                     $scope['value'] = _.clone($scope['originalValue']);
                 })));
                 $scope['onCommit'] = () =>  $timeout(() => $scope.$apply(() => {
-                    if ($scope['fieldDirty']) {
+                    if ($scope['fieldDirty'] && $scope['valid']) {
                         $scope['fieldDirty'] = false;
                         $scope['originalValue'] = _.clone($scope['value']);
                         $scope['title'] = normalTitle;
