@@ -9,7 +9,9 @@ module _components_diff {
                 restrict: 'A',
                 scope: {
                     valueA: '=',
+                    titleA: '=',
                     valueB: '=',
+                    titleB: '=',
                     mode: '@?'
                 },
                 template: require('../templates/component_diff.jade'),
@@ -44,7 +46,22 @@ module _components_diff {
                             highlightDifferences: true,
                             collapseIdentical: false,
                             lineWrapping: true
-                        })
+                        });
+                        if(scope['titleA'] && scope['titleB']) {
+                            $timeout(() => {
+                                let diffPanels = el.find('div.CodeMirror-merge-pane');
+                                // left
+                                angular.element(diffPanels[0]).prepend(`<h3 class="diff-title">${scope['titleA']}</h3>`);
+                                // right
+                                angular.element(diffPanels[1]).prepend(`<h3 class="diff-title">${scope['titleB']}</h3>`);
+                                $timeout(() => {
+                                    let titleHeight = el.find('div.CodeMirror-merge-pane h3.diff-title').outerHeight();
+                                    let cmHeight = el.find('div.CodeMirror-merge-pane h3.diff-title ~ div.CodeMirror').outerHeight();
+                                    el.find('div.CodeMirror-merge-pane h3.diff-title ~ div.CodeMirror').outerHeight(cmHeight - titleHeight);
+                                });
+                            });
+                        }
+
                     });
                 })
             }
