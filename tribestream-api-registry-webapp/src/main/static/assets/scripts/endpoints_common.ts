@@ -36,7 +36,9 @@ let controller = ($scope,
                     $scope.ref = results[0]['data'];
                     $timeout(() => $scope.$apply(() => {
                         $scope['valueA'] = JSON.stringify(JSON.parse(JSON.stringify(results[0]['data'])), undefined, 2);
+                        $scope['titleA'] = `Rev ${$scope.selected[0]['revisionId']} - ${$filter('date')($scope.selected[0]['timestamp'], 'medium')}`;
                         $scope['valueB'] = JSON.stringify(JSON.parse(JSON.stringify(results[1]['data'])), undefined, 2);
+                        $scope['titleB'] = `Rev ${$scope.selected[1]['revisionId']} - ${$filter('date')($scope.selected[1]['timestamp'], 'medium')}`;
                     }));
                 });
         }

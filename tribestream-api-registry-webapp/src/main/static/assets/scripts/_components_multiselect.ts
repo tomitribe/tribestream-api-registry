@@ -93,7 +93,7 @@ angular.module('website-components-multiselect', [
                 let deactivate = () => {
                     cancelDeactivate();
                     deactivatePromise = $timeout(() => {
-                        scope['onCommit']();
+                        scope['fieldCommitted']();
                         el.removeClass('active');
                         scope.$apply(() => {
                             scope['inputFocused'] = false;
@@ -357,6 +357,7 @@ angular.module('website-components-multiselect', [
                     $scope['selectedOption'] = null;
                     $scope['inputText'] = '';
                 };
+                $scope['addItem'] = addItem;
                 $scope.keyEntered = (event) =>  $timeout(() => $scope.$apply(() => {
                     if (event.keyCode === 13 /* Enter */) {
                         let isCommitChanges = !$scope['inputText'] && !$scope['selectedOption'];
