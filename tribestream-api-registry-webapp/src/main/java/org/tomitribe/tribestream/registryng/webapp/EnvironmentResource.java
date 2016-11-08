@@ -22,6 +22,8 @@ import org.tomitribe.tribestream.registryng.Version;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 @Path("server")
 public class EnvironmentResource {
@@ -30,6 +32,7 @@ public class EnvironmentResource {
 
     @GET
     @Path("info")
+    @Produces(MediaType.APPLICATION_JSON)
     public Environment server() {
         return environment;
     }
