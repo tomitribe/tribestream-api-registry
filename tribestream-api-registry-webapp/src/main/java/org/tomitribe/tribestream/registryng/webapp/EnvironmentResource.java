@@ -25,7 +25,8 @@ import javax.ws.rs.Path;
 
 @Path("server")
 public class EnvironmentResource {
-    private final Environment environment = new Environment(System.getProperty("openejb.version", "unknown"), Version.VERSION);
+    private final Environment environment = new Environment(System.getProperty("openejb.version", "unknown"),
+            Version.VERSION, Version.REVISION);
 
     @GET
     @Path("info")
@@ -36,14 +37,16 @@ public class EnvironmentResource {
     public static class Environment {
         private String serverVersion;
         private String applicationVersion;
+        private String revision;
 
         public Environment() {
             // no-op
         }
 
-        public Environment(final String serverVersion, final String applicationVersion) {
+        public Environment(final String serverVersion, final String applicationVersion, final String revision) {
             this.serverVersion = serverVersion;
             this.applicationVersion = applicationVersion;
+            this.revision = revision;
         }
 
         public String getServerVersion() {
@@ -60,6 +63,14 @@ public class EnvironmentResource {
 
         public void setApplicationVersion(final String applicationVersion) {
             this.applicationVersion = applicationVersion;
+        }
+
+        public String getRevision() {
+            return revision;
+        }
+
+        public void setRevision(String revision) {
+            this.revision = revision;
         }
     }
 }
