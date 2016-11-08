@@ -233,12 +233,14 @@ public class ApplicationResourceTest {
             return result;
         });
         final List<ApplicationWrapper> apps = loadAllApplications();
-
+        final SearchPage sPageBefore = getSearchPage();
+        final int endpointsCount = sPageBefore.getResults().get(0).getEndpoints().size();
         Response response = registry.target().path("api/application/{applicationId}")
                 .resolveTemplate("applicationId", searchResult.getApplicationId())
                 .request()
                 .delete();
-
+        final SearchPage sPageAfter = getSearchPage();
+        assertEquals("Wrong counter", sPageBefore.getTotal() - endpointsCount, sPageAfter.getTotal());
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final List<ApplicationWrapper> newApps = loadAllApplications();
