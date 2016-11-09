@@ -167,7 +167,7 @@ angular.module('website-components-markdown', [
                 simplemde = new SimpleMDE({
                     element: anchorEl,
                     status: false,
-                    spellChecker: false,
+                    spellChecker: true,
                     previewRender: mdService.compileMd,
                     autoDownloadFontAwesome: false,
                     toolbar: [{
