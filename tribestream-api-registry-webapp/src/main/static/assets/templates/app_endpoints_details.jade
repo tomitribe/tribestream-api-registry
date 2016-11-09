@@ -8,7 +8,8 @@ div
       i.fa.fa-chevron-right
       span(x-ng-if="historyItem") Revision {{historyItem.revisionId}} by {{historyItem.username}} created on {{historyItem.timestamp | date:'medium'}}
     .buttons
-      .save(x-ng-disabled="!endpoint.httpMethod || !endpoint.path || !endpoint.path.trim()", x-ng-click="!endpoint.httpMethod || !endpoint.path || !endpoint.path.trim() || save()")
+      .save(x-ng-disabled="isOnEdit || !endpoint.httpMethod || !endpoint.path || !endpoint.path.trim()",
+               x-ng-click="isOnEdit || !endpoint.httpMethod || !endpoint.path || !endpoint.path.trim() || save()")
         i.fa.fa-floppy-o
         span Save
       .history(x-ng-if="historyLink")

@@ -20,4 +20,5 @@ package org.tomitribe.tribestream.registryng;
 
 public interface Version {
     String VERSION = "${project.version}";
+    String REVISION = "${buildNumber}";
 }

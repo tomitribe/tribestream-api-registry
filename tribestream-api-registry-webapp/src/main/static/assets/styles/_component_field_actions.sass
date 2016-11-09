@@ -4,6 +4,7 @@ div.tribe-field-actions-body
   display: flex
   border: solid #cccccc 1px
   background-color: #f0f0f0
+  z-index: 2000
   > div
     margin: 3px
     $size: 22px
@@ -23,4 +24,6 @@ div.tribe-field-actions-body
       cursor: pointer
       i
         color: inherit
+    &.disabled
+      display: none
 

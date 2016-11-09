@@ -7,7 +7,8 @@ angular.module('website-components-field-actions', [])
                 onCancel: '&',
                 onConfirm: '&',
                 active: '=',
-                version: '='
+                version: '=',
+                validValue: '=?'
             },
             template: require('../templates/component_field_actions.jade'),
             controller: ['$scope', ($scope) => {

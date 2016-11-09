@@ -14,13 +14,25 @@ div
       tbody
         tr(x-ng-repeat="val in endpoint.operation['x-tribestream-api-registry']['expected-values']")
           td
-            div(data-tribe-text, data-value="val.name")
+            div(data-tribe-text,
+              data-on-edit-mode-on="onEditModeOn(uniqueId)",
+              data-on-edit-mode-off="onEditModeOff(uniqueId)",
+              data-value="val.name")
           td
-            div(data-tribe-text, data-value="val.type")
+            div(data-tribe-text,
+              data-on-edit-mode-on="onEditModeOn(uniqueId)",
+              data-on-edit-mode-off="onEditModeOff(uniqueId)",
+              data-value="val.type")
           td
-            div(data-tribe-markdown, data-value="val.values")
+            div(data-tribe-markdown,
+              data-on-edit-mode-on="onEditModeOn(uniqueId)",
+              data-on-edit-mode-off="onEditModeOff(uniqueId)",
+              data-value="val.values")
           td
-            div(data-tribe-markdown, data-value="val.description")
+            div(data-tribe-markdown,
+              data-on-edit-mode-on="onEditModeOn(uniqueId)",
+              data-on-edit-mode-off="onEditModeOff(uniqueId)",
+              data-value="val.description")
           td
             div(x-ng-click="removeExpectedValue(val);")
               i.fa.fa-trash-o
@@ -39,26 +51,53 @@ div
       tbody
         tr(x-ng-repeat="val in endpoint.operation['x-tribestream-api-registry']['response-codes'] | orderBy:'http_status'")
           td
-            div(data-tribe-text, data-value="val.http_status")
+            div(data-tribe-text,
+              data-on-edit-mode-on="onEditModeOn(uniqueId)",
+              data-on-edit-mode-off="onEditModeOff(uniqueId)",
+              data-value="val.http_status")
           td
-            div(data-tribe-text, data-value="val.error_code")
+            div(data-tribe-text,
+              data-on-edit-mode-on="onEditModeOn(uniqueId)",
+              data-on-edit-mode-off="onEditModeOff(uniqueId)",
+              data-value="val.error_code")
           td
-            div(data-tribe-text, data-value="val.message")
+            div(data-tribe-text,
+              data-on-edit-mode-on="onEditModeOn(uniqueId)",
+              data-on-edit-mode-off="onEditModeOff(uniqueId)",
+              data-value="val.message")
           td
-            div(data-tribe-markdown, data-value="val.description")
+            div(data-tribe-markdown,
+              data-on-edit-mode-on="onEditModeOn(uniqueId)",
+              data-on-edit-mode-off="onEditModeOff(uniqueId)",
+              data-value="val.description")
           td
             div(x-ng-click="removeErrorCode(val);")
               i.fa.fa-trash-o
   .resp-body
     h2 Response Body
-    div(data-tribe-markdown, data-value="endpoint.operation['x-tribestream-api-registry']['response-body']")
+    div(data-tribe-markdown,
+      data-on-edit-mode-on="onEditModeOn(uniqueId)",
+      data-on-edit-mode-off="onEditModeOff(uniqueId)",
+      data-value="endpoint.operation['x-tribestream-api-registry']['response-body']")
   .samples
     h2 Samples
     h3 Request Headers
-    div(data-tribe-markdown, data-value="endpoint.operation['x-tribestream-api-registry']['request-parameters']")
+    div(data-tribe-markdown,
+      data-on-edit-mode-on="onEditModeOn(uniqueId)",
+      data-on-edit-mode-off="onEditModeOff(uniqueId)",
+      data-value="endpoint.operation['x-tribestream-api-registry']['request-parameters']")
     h3 Response Parameters
-    div(data-tribe-markdown, data-value="endpoint.operation['x-tribestream-api-registry']['response-parameters']")
+    div(data-tribe-markdown,
+      data-on-edit-mode-on="onEditModeOn(uniqueId)",
+      data-on-edit-mode-off="onEditModeOff(uniqueId)",
+      data-value="endpoint.operation['x-tribestream-api-registry']['response-parameters']")
     h3 Response Body
-    div(data-tribe-markdown, data-value="endpoint.operation['x-tribestream-api-registry']['example-response']")
+    div(data-tribe-markdown,
+      data-on-edit-mode-on="onEditModeOn(uniqueId)",
+      data-on-edit-mode-off="onEditModeOff(uniqueId)",
+      data-value="endpoint.operation['x-tribestream-api-registry']['example-response']")
     h3 Response Body Error
-    div(data-tribe-markdown, data-value="endpoint.operation['x-tribestream-api-registry']['example-error-response']")
+    div(data-tribe-markdown,
+      data-on-edit-mode-on="onEditModeOn(uniqueId)",
+      data-on-edit-mode-off="onEditModeOff(uniqueId)",
+      data-value="endpoint.operation['x-tribestream-api-registry']['example-error-response']")
