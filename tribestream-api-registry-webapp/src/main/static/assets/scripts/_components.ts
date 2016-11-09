@@ -232,7 +232,8 @@ angular.module('website-components', [
             restrict: 'A',
             scope: {
                 value: '=',
-                adjust: '@?'
+                adjust: '@?',
+                placeholder: '@?'
             },
             template: require('../templates/component_editable_number.jade'),
             link: function (scope, el, attrs, controller) {
@@ -242,11 +243,11 @@ angular.module('website-components', [
                     el.addClass('edit');
                     var input = el.find('input');
                     if (scope['adjust'] !== 'false') {
-                        input.width(width);
+                        input.width(width + 25);
                     }
                     input.focus();
                 };
-                el.on('click', activate);
+                el.on('keydown', activate);
                 el.find('input').on('blur', function () {
                     el.removeClass('edit');
                 });

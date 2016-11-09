@@ -68,13 +68,10 @@ div
       div(x-ng-click="addRate()", tabindex=0).tribe-add-btn
         i.fa.fa-plus
     .rates(x-ng-repeat="rl in endpoint.operation['x-tribestream-api-registry'].rates")
-      i(data-tribe-editable-number, data-adjust="false", data-value="rl.rateLimit")
+      i(data-tribe-editable-number, data-placeholder="Limit", data-value="rl.rateLimit")
       span requests /
-      i(data-tribe-editable-number, data-adjust="false", data-value="rl.rateWindow")
-      div(data-tribe-singleselect,
-          data-selected-option="rl.rateUnit",
-          data-available-options="rateUnits")
-      span Description
-      i(data-tribe-editable-text, data-adjust="false", data-value="rl.description")
+      i(data-tribe-editable-number, data-placeholder="Window", data-value="rl.rateWindow")
+      div(data-tribe-singleselect, data-disable-actions="true", data-placeholder="Time", data-selected-option="rl.rateUnit", data-available-options="rateUnits")
+      i(data-tribe-text, data-placeholder="Description", data-value="rl.description")
       div(x-ng-click="removeRate(rl)")
         i.fa.fa-trash
