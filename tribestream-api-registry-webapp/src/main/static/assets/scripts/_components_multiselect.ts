@@ -102,7 +102,7 @@ angular.module('website-components-multiselect', [
                     }, 500);
                 };
                 el.find('> div').on('focus', () => el.find('input').focus());
-                el.find('input').on('focus', () => {
+                let actiavionCb =  () => {
                     cancelDeactivate();
                     el.addClass('active');
                     $timeout(() => scope.$apply(() => {
@@ -112,8 +112,11 @@ angular.module('website-components-multiselect', [
                             scope['optionsActivated'] = true;
                         }
                     }));
-                });
-                el.find('input').on('blur', deactivate);
+                };
+                let inputEl = el.find('input');
+                inputEl.on('click', actiavionCb);
+                inputEl.on('focus', actiavionCb);
+                inputEl.on('blur', deactivate);
                 scope.$on('fieldDirty', () => {
                     if (scope['fieldDirty']) {
                         cancelDeactivate();
@@ -121,8 +124,8 @@ angular.module('website-components-multiselect', [
                     }
                 });
                 scope.$on('$destroy', () => el.remove());
-                scope.$on('fieldCanceled', () => $timeout(() => el.find('input').blur()));
-                scope.$on('fieldCommitted', () => $timeout(() => el.find('input').blur()));
+                scope.$on('fieldCanceled', () => $timeout(() => inputEl.blur()));
+                scope.$on('fieldCommitted', () => $timeout(() => inputEl.blur()));
             })
         };
     }])
@@ -216,7 +219,11 @@ angular.module('website-components-multiselect', [
                     }
                 }));
                 $scope.selectItem = (opt) => $timeout(() => $scope.$apply(() => {
-                    $scope['selectedOptions'].push(opt);
+                    if(!$scope['selectedOptions'].find((selected) => {
+                            return selected === opt;
+                        })) {
+                        $scope['selectedOptions'].push(opt);
+                    }
                     $scope['inputText'] = '';
                 }));
                 $scope.$watch('inputText', () => {
