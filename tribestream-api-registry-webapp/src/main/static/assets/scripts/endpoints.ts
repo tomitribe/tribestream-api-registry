@@ -126,6 +126,14 @@ angular.module('tribe-endpoints', [
                             systemMessagesService.info("Created application details!");
                             let res = saveResponse.data;
                             $location.url(`/application/${res.humanReadableName}?version=${res.swagger.info.version}`);
+                          },
+                          function(errorResponse) {
+                              if(errorResponse['data'] && errorResponse['data']['key'] === 'duplicated.swagger.exception') {
+                                  systemMessagesService.error(`There is an existing application with the same Name and
+                                  Version combination. Please try it again with new data.`);
+                              } else {
+                                  systemMessagesService.error("Unable to create application.");
+                              }
                           }
                         );
                       }

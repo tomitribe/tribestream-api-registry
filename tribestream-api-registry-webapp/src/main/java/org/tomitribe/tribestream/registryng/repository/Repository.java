@@ -27,6 +27,7 @@ import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
 import org.hibernate.envers.query.AuditQuery;
+import org.hibernate.exception.ConstraintViolationException;
 import org.tomitribe.tribestream.registryng.cdi.Tribe;
 import org.tomitribe.tribestream.registryng.entities.Endpoint;
 import org.tomitribe.tribestream.registryng.entities.HistoryEntry;
@@ -39,6 +40,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import javax.transaction.Transactional;
 import java.io.StringWriter;
 import java.util.Collection;
@@ -273,6 +275,15 @@ public class Repository {
         document.setCreatedBy(username);
         document.setUpdatedBy(username);
         em.persist(document);
+        try {
+            em.flush();
+        } catch (PersistenceException e) {
+            if(e.getCause() != null && ConstraintViolationException.class.isInstance(e.getCause())) {
+                throw new DuplicatedSwaggerException(e);
+            } else {
+                throw e;
+            }
+        }
 
         // Store the endpoints in a separate table
         if (swagger.getPaths() != null) {
