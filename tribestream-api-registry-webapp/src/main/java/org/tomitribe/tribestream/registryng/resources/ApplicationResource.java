@@ -22,6 +22,7 @@ import io.swagger.models.Swagger;
 import lombok.NoArgsConstructor;
 import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
+import org.tomitribe.tribestream.registryng.repository.DuplicatedSwaggerException;
 import org.tomitribe.tribestream.registryng.repository.Repository;
 import org.tomitribe.tribestream.registryng.resources.enricher.Linker;
 import org.tomitribe.tribestream.registryng.resources.processor.ApplicationProcessor;
@@ -97,9 +98,13 @@ public class ApplicationResource {
                     .entity(processor.toWrapper(newDocument, linker.buildApplicationLinks(uriInfo, newDocument)))
                     .build();
         } catch (TransactionalException e) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("{\"key\": \"save.application.error\"}")
-                    .build();
+            if (DuplicatedSwaggerException.class.isInstance(e.getCause())) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("{\"key\": \"duplicated.swagger.exception\"}")
+                        .build();
+            } else {
+                throw e;
+            }
         }
     }
 

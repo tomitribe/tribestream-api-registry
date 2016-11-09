@@ -64,6 +64,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(TomEEEmbeddedSingleRunner.class)
 public class ApplicationResourceTest {
@@ -310,7 +311,7 @@ public class ApplicationResourceTest {
                 .post(Entity.entity(createRequest, MediaType.APPLICATION_JSON_TYPE));
         assertEquals(400, newApplicationWrapperResponse.getStatus());
         assertEquals(
-                "{\"key\": \"save.application.error\"}",
+                "{\"key\": \"duplicated.swagger.exception\"}",
                 new Scanner((InputStream) newApplicationWrapperResponse.getEntity()).useDelimiter("\\A").next()
         );
     }
