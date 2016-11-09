@@ -78,7 +78,8 @@ angular.module('website-components-markdown', [
         return {
             restrict: 'A',
             scope: {
-                originalValue: '=value'
+                originalValue: '=value',
+                placeholder: '@?'
             },
             template: require('../templates/component_markdown.jade'),
             controller: ['$scope', ($scope) => $timeout(() => {
