@@ -1,4 +1,4 @@
-div(tabindex=0, title="Click to edit")
+div(tabindex=0, title="{{title}}")
     div
         .text
             input(type="{{type ? type : 'text'}}", x-ng-keyup="keyEntered($event);", x-ng-model="value")
@@ -10,4 +10,6 @@ div(tabindex=0, title="Click to edit")
         data-version="version",
         data-active="fieldDirty",
         data-on-confirm="onCommit()",
-        data-on-cancel="onCancel()")
+        data-on-cancel="onCancel()",
+        data-valid-value="valid")
+    div(data-tribe-tip, data-message="{{regexTip}}", data-visible="(valid === false)")

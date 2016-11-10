@@ -5,6 +5,6 @@ div
         span.opt {{opt}}
         i.fa.fa-times.remove(x-ng-click="releaseItem(opt)")
     .text
-      input(type="text", x-ng-keyup="keyEntered($event);", x-ng-model="inputText")
+      input(type="text", x-ng-keyup="keyEntered($event);", x-ng-blur="addItem()", x-ng-model="inputText")
   .edit-icon
     i.fa.fa-pencil

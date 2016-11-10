@@ -22,12 +22,14 @@ import io.swagger.models.Swagger;
 import lombok.NoArgsConstructor;
 import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
+import org.tomitribe.tribestream.registryng.repository.DuplicatedSwaggerException;
 import org.tomitribe.tribestream.registryng.repository.Repository;
 import org.tomitribe.tribestream.registryng.resources.enricher.Linker;
 import org.tomitribe.tribestream.registryng.resources.processor.ApplicationProcessor;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.transaction.TransactionalException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -89,11 +91,21 @@ public class ApplicationResource {
             ApplicationWrapper application) {
         final Swagger swagger = application.getSwagger();
         validate(swagger);
-        final OpenApiDocument document = repository.insert(swagger);
-        final OpenApiDocument newDocument = repository.findByApplicationIdWithEndpoints(document.getId());
-        return Response.status(Response.Status.CREATED)
-                .entity(processor.toWrapper(newDocument, linker.buildApplicationLinks(uriInfo, newDocument)))
-                .build();
+        try {
+            final OpenApiDocument document = repository.insert(swagger);
+            final OpenApiDocument newDocument = repository.findByApplicationIdWithEndpoints(document.getId());
+            return Response.status(Response.Status.CREATED)
+                    .entity(processor.toWrapper(newDocument, linker.buildApplicationLinks(uriInfo, newDocument)))
+                    .build();
+        } catch (TransactionalException e) {
+            if (DuplicatedSwaggerException.class.isInstance(e.getCause())) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("{\"key\": \"duplicated.swagger.exception\"}")
+                        .build();
+            } else {
+                throw e;
+            }
+        }
     }
 
     private void validate(Swagger swagger) {

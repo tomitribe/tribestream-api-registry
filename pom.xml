@@ -29,7 +29,7 @@
 
   <groupId>org.tomitribe.tribestream</groupId>
   <artifactId>tribestream-api-registry-parent</artifactId>
-  <version>0.5.2-SNAPSHOT</version>
+  <version>0.5.3-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Tribestream API Registry :: Parent</name>
@@ -378,6 +378,20 @@
           <source>1.8</source>
           <target>1.8</target>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>buildnumber-maven-plugin</artifactId>
+        <version>1.4</version>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>create</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
       <plugin>

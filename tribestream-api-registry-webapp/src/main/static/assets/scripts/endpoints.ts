@@ -126,6 +126,14 @@ angular.module('tribe-endpoints', [
                             systemMessagesService.info("Created application details!");
                             let res = saveResponse.data;
                             $location.url(`/application/${res.humanReadableName}?version=${res.swagger.info.version}`);
+                          },
+                          function(errorResponse) {
+                              if(errorResponse['data'] && errorResponse['data']['key'] === 'duplicated.swagger.exception') {
+                                  systemMessagesService.error(`There is an existing application with the same Name and
+                                  Version combination. Please try it again with new data.`);
+                              } else {
+                                  systemMessagesService.error("Unable to create application.");
+                              }
                           }
                         );
                       }
@@ -429,17 +437,32 @@ angular.module('tribe-endpoints', [
                         $location.search(values);
                         $route.reload();
                     };
+                    this['clearQuery'] = function() {
+                        $scope.value = '';
+                        this['updateQuery']();
+                    }
                     $scope['updateQuery'] = this['updateQuery'];
+                    $scope['clearQuery'] = this['clearQuery'];
                 }
             ],
             link: function (scope, el, attrs, controller) {
+                var keymap = {
+                    enter: 13,
+                    escape: 27
+                };
                 var update = function (event) {
                     controller['updateQuery']();
                     event.preventDefault();
                 };
+                var clear = function (event) {
+                    controller['clearQuery']();
+                    event.preventDefault();
+                }
                 el.find('input').bind("keydown keypress", function (event) {
-                    if (event.which === 13) {
+                    if (event.which === keymap["enter"]) {
                         update(event);
+                    } else if (event.which === keymap["escape"]) {
+                        clear(event);
                     }
                 });
                 $timeout(function () {

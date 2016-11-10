@@ -79,10 +79,13 @@ angular.module('website-components-markdown', [
             restrict: 'A',
             scope: {
                 originalValue: '=value',
-                placeholder: '@?'
+                placeholder: '@?',
+                onEditModeOn: '&?',
+                onEditModeOff: '&?'
             },
             template: require('../templates/component_markdown.jade'),
             controller: ['$scope', ($scope) => $timeout(() => {
+                $scope['uniqueId'] = _.uniqueId('tribeMarkdown_');
                 $scope['helpVisible'] = false;
                 $scope['simplemde'] = null;
                 $scope['version'] = 0;
@@ -102,11 +105,17 @@ angular.module('website-components-markdown', [
                         $scope.originalValue = _.clone($scope['value']);
                         $scope.$broadcast('fieldCommited');
                     }
+                    if ($scope['onEditModeOff']) {
+                        $scope['onEditModeOff']({'uniqueId': $scope['uniqueId']});
+                    }
                 }));
                 $scope['onCancel'] = () =>  $timeout(() => $scope.$apply(() => {
                     $scope['fieldDirty'] = false;
                     $scope['value'] = _.clone($scope.originalValue);
                     $scope.$broadcast('fieldCanceled');
+                    if ($scope['onEditModeOff']) {
+                        $scope['onEditModeOff']({'uniqueId': $scope['uniqueId']});
+                    }
                 }));
                 $scope['onChange'] = (newValue) =>  $timeout(() => $scope.$apply(() => {
                     $scope['version'] = $scope['version'] + 1;
@@ -154,6 +163,9 @@ angular.module('website-components-markdown', [
                         scope['cmFocused'] = true;
                         scope['version'] = scope['version'] + 1;
                         scope['fieldDirty'] = true;
+                        if (scope['onEditModeOn']) {
+                            scope['onEditModeOn']({'uniqueId': scope['uniqueId']});
+                        }
                     }));
                 };
                 let anchorEl = el.find('div.value > textarea')[0];
