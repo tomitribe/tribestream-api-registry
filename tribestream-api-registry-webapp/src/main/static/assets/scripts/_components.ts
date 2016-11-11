@@ -239,15 +239,14 @@ angular.module('website-components', [
             link: function (scope, el, attrs, controller) {
                 var activate = function () {
                     var span = el.find('span');
-                    var width = span.width();
                     el.addClass('edit');
                     var input = el.find('input');
                     if (scope['adjust'] !== 'false') {
-                        input.width(width + 25);
+                        input.width(70);
                     }
                     input.focus();
                 };
-                el.on('keydown', activate);
+                el.on('focus', activate);
                 el.find('input').on('blur', function () {
                     el.removeClass('edit');
                 });
