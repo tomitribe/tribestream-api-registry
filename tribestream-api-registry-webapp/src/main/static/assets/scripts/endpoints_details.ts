@@ -718,7 +718,6 @@ angular.module('tribe-endpoints-details', [
 
         return {
             scope: {
-                setClassWhenAtTop: "="
             },
             restrict: 'A',
             link: stickyNavLink
