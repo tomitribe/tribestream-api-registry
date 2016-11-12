@@ -118,7 +118,6 @@ angular.module('website-components', [
         };
     }])
 
-
     .directive('tribeEditableMd', [function () {
         return {
             restrict: 'A',
@@ -387,6 +386,40 @@ angular.module('website-components', [
                 }
             }]
         };
-    }]);
+    }])
+
+    .directive('setClassWhenAtTopApp', ['$window', function($window) {
+    function stickyNavLink(scope, element){
+        var window = angular.element($window),
+            size = element[0].clientHeight,
+            top = 0,
+            fixedClass = 'fixed-header';
+
+        function stickyNav(){
+            if (!element.hasClass(fixedClass)) {
+                if($window.pageYOffset > top + size) element.addClass(fixedClass);
+            } else if($window.pageYOffset <= top + size) {
+                element.removeClass(fixedClass);
+            }
+        }
+
+        function resizeNav(){
+            element.removeClass(fixedClass);
+            top = element[0].getBoundingClientRect().top + $window.pageYOffset;
+            size = element[0].clientHeight;
+            stickyNav();
+        }
+
+        window.bind('resize', resizeNav);
+        window.bind('scroll', stickyNav);
+    }
+
+    return {
+        scope: {
+        },
+        restrict: 'A',
+        link: stickyNavLink
+    };
+}])
 
 }
