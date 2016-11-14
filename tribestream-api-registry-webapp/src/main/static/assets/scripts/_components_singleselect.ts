@@ -12,7 +12,7 @@ angular.module('website-components-singleselect', [
                 originalGetOptionText: '=getOptionText',
                 newLabel: '@?',
                 placeholder: '@?',
-                disableActions: '=',
+                disableActions: '=?',
                 onEditModeOn: '&?',
                 onEditModeOff: '&?'
             },
