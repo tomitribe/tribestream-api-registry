@@ -388,7 +388,7 @@ angular.module('website-components', [
         };
     }])
 
-    .directive('setClassWhenAtTop', ['$window', function($window) {
+    .directive('setClassOnScroll', ['$window', function($window) {
         function stickyNavLink(scope, element){
             var window = angular.element($window),
                 size = element[0].clientHeight,
