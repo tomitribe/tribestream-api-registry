@@ -29,7 +29,7 @@
 
   <groupId>org.tomitribe.tribestream</groupId>
   <artifactId>tribestream-api-registry-parent</artifactId>
-  <version>0.5.3-SNAPSHOT</version>
+  <version>0.5.4-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Tribestream API Registry :: Parent</name>
