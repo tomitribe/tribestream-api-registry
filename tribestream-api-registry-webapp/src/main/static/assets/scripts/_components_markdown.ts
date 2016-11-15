@@ -308,10 +308,12 @@ angular.module('website-components-markdown', [
                     el.remove();
                     body.removeClass('noscroll');
                 });
-                el.find('> div').on('focus', () => {
+                let activate = () => {
                     el.addClass('active');
                     $timeout(() => simplemde.codemirror.focus());
-                });
+                };
+                el.on('click', activate);
+                el.find('> div').on('focus', activate);
             })
         };
     }]);

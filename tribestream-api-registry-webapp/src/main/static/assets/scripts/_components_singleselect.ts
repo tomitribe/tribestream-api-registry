@@ -129,6 +129,7 @@ angular.module('website-components-singleselect', [
                         }
                     }, 500);
                 };
+                el.on('click', () => el.find('input').focus());
                 el.find('> div').on('focus', () => el.find('input').focus());
                 el.find('input').on('focus', () => {
                     cancelDeactivate();
