@@ -49,7 +49,7 @@ angular.module('website-components-markdown', [
             }],
             template: require('../templates/component_markdown_help.jade'),
             link: (scope, el, attrs, controller) => {
-                let content = el.find('> div > div.markdown-help-wrapper');
+                let content = el.find('> div > div.markdown-help-content');
                 content.detach();
                 let body = $document.find('body');
                 let keyPress = (event) => {

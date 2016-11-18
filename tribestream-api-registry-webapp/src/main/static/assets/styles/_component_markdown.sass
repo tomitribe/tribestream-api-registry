@@ -31,50 +31,33 @@
 
 div[data-tribe-markdown-help]
   > div
-    > div.markdown-help-wrapper
+    > div.markdown-help-content
       display: none
 
-
-
-.fixed-stretch
+div.markdown-help-content
   position: fixed
   top: 0
   bottom: 0
   right: 0
   left: 0
-
-div.markdown-help-wrapper
   z-index: 3000
   background-color: transparentize(black, .5)
-  div.markdown-help-content
-    border-radius: 5px
-    overflow: hidden
-    display: flex
-    flex-direction: column
-    margin: 20px 40px
-    border: 1px solid #ccc
-    div.markdown-help-content-body
-      padding: 0 40px
-      overflow: auto
-      background-color: white
-      @include code-style
-    div.markdown-help-content-header
-      background-color: #f5f5f5
-      vertical-align: middle
-      border-bottom: 1px solid #ccc
-    div.markdown-help-content-footer
-      background-color: #f5f5f5
-      vertical-align: middle
-      border-top: 1px solid #ccc
-    a.close-link
-      display: inline-block
-      padding: 10px 0
-      margin: 0 10px
-      text-decoration: none
-      &:hover
-        text-decoration: underline
-    h4.markdown-help-title
-      margin: 5px 10px
+  > div
+    position: fixed
+    $distance: 40px
+    top: $distance
+    bottom: $distance
+    right: $distance
+    left: $distance
+    padding: 40px
+    overflow: auto
+    background-color: white
+    @include code-style
+    >i.fa.fa-times-circle
+      position: absolute
+      top: 5px
+      right: 5px
+      font-family: FontAwesome
 
 div[data-tribe-markdown]
   display: inline-block
