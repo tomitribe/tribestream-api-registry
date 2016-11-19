@@ -254,7 +254,28 @@ angular.module('website-components', [
             }
         };
     }])
-
+    .directive('tribeEditableText1', [function () {
+        return {
+            restrict: 'A',
+            scope: {
+                value: '=',
+                placeholder: '@?'
+            },
+            template: require('../templates/component_editable_text.jade'),
+            link: function (scope, el) {
+                var activate = function () {
+                    el.addClass('edit');
+                    var input = el.find('input');
+                    input.focus();
+                };
+                el.on('focus', activate);
+                el.find('> div').on('focus', activate);
+                el.find('input').on('blur', function () {
+                    el.removeClass('edit');
+                });
+            }
+        };
+    }])
     .directive('tribeEditableOption', ['$timeout', '$document', function ($timeout, $document) {
         return {
             restrict: 'A',
