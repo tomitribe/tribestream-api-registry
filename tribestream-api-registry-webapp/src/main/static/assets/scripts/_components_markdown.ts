@@ -138,6 +138,9 @@ angular.module('website-components-markdown', [
                 let deactivate = () => {
                     cancelDeactivate();
                     deactivatePromise = $timeout(() => {
+                        if(simplemde.codemirror.hasFocus()) {
+                            return;
+                        }
                         scope['onCommit']();
                         scope.$apply(() => {
                             scope['sidebyside'] = false;
@@ -309,6 +312,7 @@ angular.module('website-components-markdown', [
                     body.removeClass('noscroll');
                 });
                 let activate = () => {
+                    cancelDeactivate();
                     el.addClass('active');
                     $timeout(() => simplemde.codemirror.focus());
                 };
