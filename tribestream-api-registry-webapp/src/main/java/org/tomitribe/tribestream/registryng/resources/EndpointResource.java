@@ -43,6 +43,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.Optional;
 
 @Path("/application/{applicationId}/endpoint")
 @ApplicationScoped
@@ -106,6 +107,7 @@ public class EndpointResource {
         endpoint.setOperation(endpointWrapper.getOperation());
 
         validate(endpoint);
+        validateAlreadyExists(endpoint, applicationId);
 
         final Endpoint document = repository.insert(endpoint, applicationId);
 
@@ -166,6 +168,14 @@ public class EndpointResource {
         if (endpoint.getPath().contains(" ")) {
             throw new WebApplicationException(String.format("Path %s is invalid!", endpoint.getPath()), Response.Status.BAD_REQUEST);
         }
+    }
+
+    private void validateAlreadyExists(final Endpoint endpoint, final String applicationId) {
+        final Optional<Endpoint> endpointExists =
+                repository.findEndpointByVerbAndPath(applicationId, endpoint.getVerb(), endpoint.getPath());
+        endpointExists.ifPresent(e -> {
+            throw new WebApplicationException("Endpoint already exists!", Response.Status.BAD_REQUEST);
+        });
     }
 
     private void merge(Endpoint target, EndpointWrapper source) {

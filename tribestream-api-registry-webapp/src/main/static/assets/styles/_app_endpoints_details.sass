@@ -10,38 +10,36 @@ div[data-app-endpoints-details]
 div[data-app-endpoints-details]
   > div
     overflow: auto
-    > div.header
+    div.header
       border-bottom: solid #efefef 1px
       padding: 20px
       display: flex
-      align-items: center
-      flex-wrap: wrap
       justify-content: space-between
+      align-items: center
       &.fixed-header
         background-color: #ffffff
         position: fixed
         top: 0
         width: 100%
         z-index: 1
-      div.breadcrumb
-        > *
+      .breadcrumb
+        *
           margin: 0 10px 0 0
           color: #c1c2c4
-        > i.fa-home, > span, > a
+        i.fa-home, span, a
           font-size: 12px
-        > i.fa-chevron-right
+        i.fa-chevron-right
           font-size: 10px
-        > a > i.fa-home, > a
+        a i.fa-home, a
           color: $tomitribe-orange
-        > span, > a
+        span, a
           font-weight: 700 !important
           white-space: nowrap
-        > a
+        a
           text-decoration: none
           &:hover
             text-decoration: underline
-
-      div.buttons
+      .buttons
         display: flex
         > div
           display: flex
@@ -56,7 +54,7 @@ div[data-app-endpoints-details]
             color: $color
             text-decoration: none
           > span, > a, > div .trigger > span, > div .trigger >  a
-            font-weight: 700
+            font-weight: 400
           > i, > div .trigger > i
             margin-right: 5px
             font-size: 13px

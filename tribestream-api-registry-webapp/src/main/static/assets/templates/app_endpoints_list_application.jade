@@ -3,8 +3,9 @@ div
     a(x-ng-href="application/{{application.applicationName}}?version={{application.version}}") {{application.name}} {{application.version}}
     span ({{application.endpoints.length}})
   div(x-ng-repeat="endpoint in application.endpoints")
-    i.fa(x-ng-class="{'fa-lock': endpoint.secured, 'fa-unlock': !endpoint.secured}")
-    a(x-ng-href="endpoint/{{application.applicationName}}/{{endpoint.httpMethod}}{{endpoint.path| pathencode}}?version={{endpoint.applicationVersion}}") {{endpoint.httpMethod | uppercase}} {{endpoint.path| pathencode}}
-    span {{endpoint.description | tribeHtmlText}}
+    h3
+      i.fa(x-ng-class="{'fa-lock': endpoint.secured, 'fa-unlock': !endpoint.secured}")
+      a(x-ng-href="endpoint/{{application.applicationName}}/{{endpoint.httpMethod}}{{endpoint.path| pathencode}}?version={{endpoint.applicationVersion}}") {{endpoint.httpMethod | uppercase}} {{endpoint.path| pathencode}}
+      span {{endpoint.description | tribeHtmlText}}
   div(x-ng-if="showAll")
     span(x-ng-click="showAllEndpoints();") Show more {{application.endpoints.length - pageSize}} endpoints

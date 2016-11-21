@@ -235,6 +235,41 @@ public class EndpointResourceTest {
         });
     }
 
+    @Test
+    public void testCreateServiceDuplicate() throws Exception {
+        final String applicationId = registry.withRetries(() -> {
+            final List<EndpointSearchResult> searchResults = getSearchPage().getResults()
+                                                                            .stream()
+                                                                            .map(SearchResult::getEndpoints)
+                                                                            .flatMap(List::stream)
+                                                                            .collect(toList());
+            final EndpointSearchResult result = searchResults.get(0);
+            assertNotNull(loadApplication(result.getApplicationId()));
+            return result.getApplicationId();
+        });
+
+        final EndpointWrapper endpoint = new EndpointWrapper();
+        endpoint.setHttpMethod("POST");
+        endpoint.setPath("/test");
+        final Operation operation = new Operation();
+        operation.setDescription("Description");
+        operation.setSummary("Summary");
+        endpoint.setOperation(operation);
+
+        final Response response = registry.target().path("api/application/{applicationId}/endpoint")
+                                          .resolveTemplate("applicationId", applicationId)
+                                          .request(MediaType.APPLICATION_JSON_TYPE)
+                                          .post(Entity.entity(endpoint, MediaType.APPLICATION_JSON_TYPE));
+
+        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+
+        final Response duplicate = registry.target().path("api/application/{applicationId}/endpoint")
+                                           .resolveTemplate("applicationId", applicationId)
+                                           .request(MediaType.APPLICATION_JSON_TYPE)
+                                           .post(Entity.entity(endpoint, MediaType.APPLICATION_JSON_TYPE));
+
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), duplicate.getStatus());
+    }
 
     private SearchPage getSearchPage() {
         return registry.target().path("api/registry")
