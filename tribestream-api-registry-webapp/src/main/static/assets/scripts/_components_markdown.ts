@@ -224,7 +224,39 @@ angular.module('website-components-markdown', [
                         title: "Numbered List"
                     }, {
                         name: "clean-block",
-                        action: (editor) => actionClick(editor, SimpleMDE.cleanBlock),
+                        // replace by this action block if this PR gets merged.
+                        // https://github.com/NextStepWebs/simplemde-markdown-editor/pull/463
+                        // action: (editor) => actionClick(editor, SimpleMDE.cleanBlock),
+                        action: (editor) => $timeout(() => scope.$apply(() => {
+                            cancelDeactivate();
+                            var cm = editor.codemirror;
+                            // split the selection in lines
+                            var selections = cm.getSelection().split("\n");
+                            var removeTags = function (selection) {
+                                var html = marked(selection);
+                                // create a div...
+                                var tmp = document.createElement("DIV");
+                                // .. with the new generated html code...
+                                tmp.innerHTML = html;
+                                // ... now read the text of the generated code.
+                                // This way the browser does the job of removing the tags.
+                                var result = selection;
+                                if(tmp.textContent) {
+                                    result = tmp.textContent;
+                                } else if (tmp.innerText) {
+                                    result = tmp.innerText;
+                                }
+                                // removing trailing "new line"
+                                return result.split("\n").join('');
+                            };
+                            var result = [];
+                            for(var i = 0; i < selections.length; i++) {
+                                result.push(removeTags(selections[i]));
+                            }
+                            // Add removed "new lines" back to the resulting string.
+                            // Replace the selection with the new clean selection.
+                            cm.replaceSelection(result.join("\n"));
+                        })),
                         className: "fa fa-eraser fa-clean-block",
                         title: "Clean block"
                     }, '|', {
