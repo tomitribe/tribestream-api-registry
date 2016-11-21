@@ -40,17 +40,22 @@ angular.module('website-components-markdown', [
             scope: {
                 visible: '='
             },
+            controller: ['$timeout', '$scope', function($timeout, $scope) {
+                $scope.close = function() {
+                    $timeout(() => $scope.$apply(() => {
+                        $scope['visible'] = false;
+                    }));
+                }
+            }],
             template: require('../templates/component_markdown_help.jade'),
-            link: (scope, el) => {
+            link: (scope, el, attrs, controller) => {
                 let content = el.find('> div > div.markdown-help-content');
                 content.detach();
                 let body = $document.find('body');
                 let keyPress = (event) => {
                     console.log('event.keyCode -> ' + event.keyCode);
                     if (event.keyCode === 27 /* Escape */) {
-                        $timeout(() => scope.$apply(() => {
-                            scope['visible'] = false;
-                        }));
+                        scope['close']();
                     }
                 };
                 scope.$watch('visible', () => {
