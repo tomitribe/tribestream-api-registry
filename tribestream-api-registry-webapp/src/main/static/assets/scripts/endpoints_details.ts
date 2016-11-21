@@ -21,6 +21,18 @@ angular.module('tribe-endpoints-details', [
             template: require('../templates/app_endpoints_details_header.jade'),
             scope: true,
             controller: ['$scope', '$timeout', 'appEndpointsDetailsHeaderService', function ($scope, $timeout, srv) {
+                $scope.regex = '^(\\/|(\\/{_*\\-*[a-zA-Z0-9_-]{1,}}|\\/_*\\-*[a-zA-Z0-9_-]{1,})*)$';
+                $scope.regexTip = `
+                    <div class="endpoint-details-path-tip">
+                        <p>To be considered valid, the path should follow these rules:</p>
+                        <ul>
+                            <li>Starts with a single "&#47;" </li>
+                            <li>Contains only alphanumeric, "&#47;", "{", "}", "-" and "_" characters </li>
+                            <li>Does not end with "&#47;" </li>
+                            <li>Does not contain multiple "&#47;" characters in a row. </li>
+                        </ul>
+                    </div>
+                `;
                 $scope.toUppercase = (item) => {
                     if (!item) {
                         return null;
@@ -452,7 +464,9 @@ angular.module('tribe-endpoints-details', [
             restrict: 'A',
             template: require('../templates/app_endpoints_details_see.jade'),
             scope: {
-                'endpoint': '='
+                'endpoint': '=',
+                'onEditModeOn': '&',
+                'onEditModeOff': '&'
             },
             controller: ['$scope', function ($scope) {
                 this['addLink'] = function () {
@@ -502,7 +516,7 @@ angular.module('tribe-endpoints-details', [
         };
     }])
 
-.directive('appEndpointsDetails', ['$window', '$timeout', function ($window, $timeout) {
+    .directive('appEndpointsDetails', ['$window', '$timeout', function ($window, $timeout) {
   return {
     restrict: 'A',
       template: require('../templates/app_endpoints_details.jade'),
@@ -512,6 +526,19 @@ angular.module('tribe-endpoints-details', [
     controller: [
       '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', '$location', 'systemMessagesService', 'tribeLinkHeaderService',
       function ($scope, srv, tribeFilterService, $timeout, $filter, $log, $location, systemMessagesService, tribeLinkHeaderService) {
+        $scope['onEditCount'] = {};
+        $scope['onEditModeOn'] = (uniqueId) => $timeout(() => $scope.$apply(() => {
+            $scope['onEditCount'][uniqueId] = {};
+            $scope['isOnEdit'] = true;
+            $log.info(`New field on edit mode. ${uniqueId}`);
+            $log.info($scope['onEditCount']);
+        }));
+        $scope['onEditModeOff'] = (uniqueId) => $timeout(() => $scope.$apply(() => {
+            delete $scope['onEditCount'][uniqueId];
+            $scope['isOnEdit'] = !_.isEmpty($scope['onEditCount']);
+            $log.info(`Field out of edit mode. ${uniqueId} -> onEditMode: ${$scope['isOnEdit']}`);
+            $log.info($scope['onEditCount']);
+        }));
         $scope.updateEndpoint = e => $scope.endpoint = e;
         $timeout(function () {
           $scope.$apply(function () {
@@ -662,6 +689,40 @@ angular.module('tribe-endpoints-details', [
       })
     };
   }])
+
+    .directive('setClassWhenAtTop', ['$window', function($window) {
+        function stickyNavLink(scope, element){
+            var window = angular.element($window),
+                size = element[0].clientHeight,
+                top = 0,
+                fixedClass = 'fixed-header';
+
+            function stickyNav(){
+                if (!element.hasClass(fixedClass)) {
+                    if($window.pageYOffset > top + size) element.addClass(fixedClass);
+                } else if($window.pageYOffset <= top + size) {
+                    element.removeClass(fixedClass);
+                }
+            }
+
+            function resizeNav(){
+                element.removeClass(fixedClass);
+                top = element[0].getBoundingClientRect().top + $window.pageYOffset;
+                size = element[0].clientHeight;
+                stickyNav();
+            }
+
+            window.bind('resize', resizeNav);
+            window.bind('scroll', stickyNav);
+        }
+
+        return {
+            scope: {
+            },
+            restrict: 'A',
+            link: stickyNavLink
+        };
+    }])
 
   .run(function () {
     // placeholder

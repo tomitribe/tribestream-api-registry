@@ -118,6 +118,8 @@ public class ElasticsearchClient {
                     .resolveTemplate("index", index)
                     .resolveTemplate("type", endpointType)
                     .resolveTemplate("id", id)
+                    // refresh search results after deleting entry -> https://tomitribe.atlassian.net/browse/REG-367
+                    .queryParam("refresh", "true")
                     .request(APPLICATION_JSON_TYPE)
                     .delete(JsonObject.class);
         } catch (final NotFoundException nfe) {

@@ -12,10 +12,13 @@ angular.module('website-components-singleselect', [
                 originalGetOptionText: '=getOptionText',
                 newLabel: '@?',
                 placeholder: '@?',
-                disableActions: '=?'
+                disableActions: '=?',
+                onEditModeOn: '&?',
+                onEditModeOff: '&?'
             },
             template: require('../templates/component_singleselect.jade'),
             controller: ['$scope', '$timeout', ($scope, $timeout) => $timeout(() => {
+                $scope['uniqueId'] = _.uniqueId('tribeSingleselect_');
                 if($scope['disableActions'] === undefined) {
                     $scope['disableActions'] = true;
                 }
@@ -122,6 +125,12 @@ angular.module('website-components-singleselect', [
                     deactivatePromise = $timeout(() => {
                         el.removeClass('active');
                         scope.$apply(() => scope['optionsActivated'] = false);
+                        if (scope['fieldDirty']) {
+                            scope['onCommit'](true);
+                        }
+                        if (scope['onEditModeOff']) {
+                            scope['onEditModeOff']({'uniqueId': scope['uniqueId']});
+                        }
                     }, 500);
                 };
                 let inputField = el.find('input');
@@ -135,6 +144,9 @@ angular.module('website-components-singleselect', [
                     $timeout(() => scope.$apply(() => {
                         scope['fieldDirty'] = true;
                         scope['version'] = scope['version'] + 1;
+                        if (scope['onEditModeOn']) {
+                            scope['onEditModeOn']({'uniqueId': scope['uniqueId']});
+                        }
                     }));
                     inputField.select();
                 });

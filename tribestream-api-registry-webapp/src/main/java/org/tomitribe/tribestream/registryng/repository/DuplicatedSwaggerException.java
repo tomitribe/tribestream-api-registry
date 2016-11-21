@@ -16,9 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.tomitribe.tribestream.registryng;
+package org.tomitribe.tribestream.registryng.repository;
 
-public interface Version {
-    String VERSION = "${project.version}";
-    String REVISION = "${buildNumber}";
+public class DuplicatedSwaggerException extends RuntimeException {
+
+    public DuplicatedSwaggerException(Throwable cause) {
+        super(cause);
+    }
 }

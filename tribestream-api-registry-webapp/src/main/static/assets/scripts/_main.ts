@@ -6,6 +6,7 @@ import './_components_markdown.ts';
 import './_components_multiselect.ts';
 import './_components_singleselect.ts';
 import './_components_textfield.ts';
+import './_components_tip.ts';
 import './_service_alerts.ts';
 import './_services.ts';
 import './_services_browser.ts';

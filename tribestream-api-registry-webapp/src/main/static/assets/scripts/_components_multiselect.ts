@@ -10,10 +10,13 @@ angular.module('website-components-multiselect', [
                 originalSelectedOptions: '=selectedOptions',
                 originalGetOptionText: '=getOptionText',
                 newLabel: '@?',
-                autoShowOptions: '=?'
+                autoShowOptions: '=?',
+                onEditModeOn: '&?',
+                onEditModeOff: '&?'
             },
             template: require('../templates/component_multiselect.jade'),
             controller: ['$log', '$scope', '$timeout', ($log, $scope, $timeout) => $timeout(() => {
+                $scope['uniqueId'] = _.uniqueId('tribeMultiselect_');
                 if($scope['autoShowOptions'] === undefined) {
                     $scope['autoShowOptions'] = true;
                 }
@@ -63,12 +66,18 @@ angular.module('website-components-multiselect', [
                         $scope['optionsActivated'] = false;
                         $scope['originalSelectedOptions'] = _.clone($scope['selectedOptions']);
                         $log.debug('field committed. values: ' + $scope['selectedOptions']);
+                        if ($scope['onEditModeOff']) {
+                            $scope['onEditModeOff']({'uniqueId': $scope['uniqueId']});
+                        }
                     }
                 }));
                 $scope['fieldCanceled'] = () => {
                     $scope['fieldDirty'] = false;
                     $scope['selectedOptions'] = _.clone($scope['originalSelectedOptions']);
                     $scope.$broadcast('fieldCanceled');
+                    if ($scope['onEditModeOff']) {
+                        $scope['onEditModeOff']({'uniqueId': $scope['uniqueId']});
+                    }
                 };
                 $scope.onSelectTopDownOption = () => $timeout(() => $scope.$apply(() => {
                     $scope['optionsActivatedTopDown'] = $scope['optionsActivatedTopDown'] + 1;
@@ -107,6 +116,9 @@ angular.module('website-components-multiselect', [
                     el.addClass('active');
                     $timeout(() => scope.$apply(() => {
                         scope['fieldDirty'] = true;
+                        if (scope['onEditModeOn']) {
+                            scope['onEditModeOn']({'uniqueId': scope['uniqueId']});
+                        }
                         scope['inputFocused'] = true;
                         if(scope['autoShowOptions']) {
                             scope['optionsActivated'] = true;
