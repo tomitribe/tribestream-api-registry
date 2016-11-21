@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -403,6 +404,20 @@ public class Repository {
             searchEngine.deleteEndpoint(endpoint);
             em.remove(endpoint);
             return true;
+        }
+    }
+
+    public Optional<Endpoint> findEndpointByVerbAndPath(final String applicationId,
+                                                        final String verb,
+                                                        final String path) {
+        try {
+            return Optional.of(em.createNamedQuery(Endpoint.Queries.FIND_BY_APPLICATIONID_VERB_AND_PATH, Endpoint.class)
+                                 .setParameter("applicationId", applicationId)
+                                 .setParameter("verb", verb)
+                                 .setParameter("path", path)
+                                 .getSingleResult());
+        } catch (final NoResultException e) {
+            return Optional.empty();
         }
     }
 }
