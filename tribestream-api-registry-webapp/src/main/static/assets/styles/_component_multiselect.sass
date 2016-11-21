@@ -48,11 +48,6 @@ div[data-tribe-multiselect-selected]
             margin-right: 5px
           > i
             color: #707070
-        &.selected
-          background-color: $tomitribe-orange
-          > div
-            > span, > i
-              color: #ffffff
 
 [data-tribe-multiselect]
   display: inline-block
@@ -74,6 +69,7 @@ div[data-tribe-multiselect-selected]
 
 div.tribe-data-tribe-multiselect-available-body
   min-width: 300px
+  z-index: 4000
   .opts
     padding: 0
     > div
@@ -88,3 +84,10 @@ div.tribe-data-tribe-multiselect-available-body
     > span:first-of-type
       font-weight: 800
       margin-right: 5px
+
+[data-tribe-multiselect].active
+  div.items.selected
+    background-color: $tomitribe-orange
+    > div
+      > span, > i
+        color: #ffffff

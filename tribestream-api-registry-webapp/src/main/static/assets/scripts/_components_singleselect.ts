@@ -12,13 +12,16 @@ angular.module('website-components-singleselect', [
                 originalGetOptionText: '=getOptionText',
                 newLabel: '@?',
                 placeholder: '@?',
-                disableActions: '=',
+                disableActions: '=?',
                 onEditModeOn: '&?',
                 onEditModeOff: '&?'
             },
             template: require('../templates/component_singleselect.jade'),
             controller: ['$scope', '$timeout', ($scope, $timeout) => $timeout(() => {
                 $scope['uniqueId'] = _.uniqueId('tribeSingleselect_');
+                if($scope['disableActions'] === undefined) {
+                    $scope['disableActions'] = true;
+                }
                 $scope.$watch('originalGetOptionText', () => {
                     if ($scope.originalGetOptionText) {
                         $scope.getOptionText = $scope.originalGetOptionText;
@@ -121,6 +124,7 @@ angular.module('website-components-singleselect', [
                     cancelDeactivate();
                     deactivatePromise = $timeout(() => {
                         el.removeClass('active');
+                        scope.$apply(() => scope['optionsActivated'] = false);
                         if (scope['fieldDirty']) {
                             scope['onCommit'](true);
                         }
@@ -129,11 +133,14 @@ angular.module('website-components-singleselect', [
                         }
                     }, 500);
                 };
-                el.find('> div').on('focus', () => el.find('input').focus());
-                el.find('input').on('focus', () => {
+                let inputField = el.find('input');
+                el.find('> div').on('focus', () => inputField.focus());
+                inputField.on('focus', () => {
                     cancelDeactivate();
                     el.addClass('active');
-                    scope['onChange']();
+                    if(scope['disableActions']) {
+                        scope['onChange']();
+                    }
                     $timeout(() => scope.$apply(() => {
                         scope['fieldDirty'] = true;
                         scope['version'] = scope['version'] + 1;
@@ -141,10 +148,11 @@ angular.module('website-components-singleselect', [
                             scope['onEditModeOn']({'uniqueId': scope['uniqueId']});
                         }
                     }));
+                    inputField.select();
                 });
-                scope.$on('fieldCanceled', () => el.find('input').blur());
-                scope.$on('fieldCommitted', () => el.find('input').blur());
-                el.find('input').on('blur', deactivate);
+                scope.$on('fieldCanceled', () => inputField.blur());
+                scope.$on('fieldCommitted', () => inputField.blur());
+                inputField.on('blur', deactivate);
                 scope.$on('fieldDirty', () => {
                     if (scope['fieldDirty']) {
                         cancelDeactivate();
