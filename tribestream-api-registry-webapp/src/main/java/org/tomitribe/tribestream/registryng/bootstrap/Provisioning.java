@@ -26,6 +26,7 @@ import org.tomitribe.tribestream.registryng.cdi.Tribe;
 import org.tomitribe.tribestream.registryng.documentation.Description;
 import org.tomitribe.tribestream.registryng.entities.OpenApiDocument;
 import org.tomitribe.tribestream.registryng.repository.Repository;
+import org.tomitribe.tribestream.registryng.security.LoginContext;
 import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
 
 import javax.annotation.PostConstruct;
@@ -59,6 +60,9 @@ public class Provisioning {
     private static final Logger LOGGER = Logger.getLogger(Provisioning.class.getName());
 
     @Inject
+    private LoginContext loginContext;
+
+    @Inject
     private Repository repository;
 
     @Inject
@@ -80,6 +84,8 @@ public class Provisioning {
 
     @PostConstruct
     public void init() {
+        loginContext.setUsername("system");
+
         ofNullable(script).ifPresent(s -> {
             final ScriptEngine engine = new ScriptEngineManager().getEngineByExtension("js");
             final Bindings bindings = engine.createBindings();
