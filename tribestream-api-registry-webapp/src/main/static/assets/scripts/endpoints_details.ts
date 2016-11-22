@@ -287,7 +287,7 @@ angular.module('tribe-endpoints-details', [
                 $scope.responseFormatsOptions = [
                     'text/plain', 'application/json', 'application/xml'
                 ];
-                $scope.statusOptions = ['PROPOSAL', 'STUB', 'DRAFT', 'TEST', 'VALIDATION', 'ACCEPTED', 'CONFIDENTIAL'];
+                $scope.statusOptions = ['In Design', 'In Development', 'Released', 'Deprecated', 'Deferred'];
                 $scope.rateUnits = ['SECONDS', 'MINUTES', 'HOURS', 'DAYS'];
                 $scope.$watch('endpoint', function () {
                     if (!$scope['endpoint'] || !$scope['endpoint'].operation) {
