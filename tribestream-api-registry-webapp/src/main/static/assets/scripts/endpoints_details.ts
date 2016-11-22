@@ -628,6 +628,14 @@ angular.module('tribe-endpoints-details', [
                   let app = $scope['application'];
                   let appName = app['humanReadableName'];
                   $location.path(`endpoint/${appName}/${res.httpMethod}/${res.path}`);
+                },
+                function(errorResponse) {
+                  if(errorResponse['data'] && errorResponse['data']['key'] === "duplicated.endpoint.exception") {
+                      systemMessagesService.error(`There is an existing endpoint with the same Verb and
+                        Path combination. Please try it again with new data.`);
+                  } else {
+                      systemMessagesService.error("Unable to create endpoint.");
+                  }
                 }
               );
             }

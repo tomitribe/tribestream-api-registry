@@ -107,7 +107,11 @@ public class EndpointResource {
         endpoint.setOperation(endpointWrapper.getOperation());
 
         validate(endpoint);
-        validateAlreadyExists(endpoint, applicationId);
+        if(alreadyExists(endpoint, applicationId)) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"key\": \"duplicated.endpoint.exception\"}")
+                    .build();
+        }
 
         final Endpoint document = repository.insert(endpoint, applicationId);
 
@@ -170,12 +174,10 @@ public class EndpointResource {
         }
     }
 
-    private void validateAlreadyExists(final Endpoint endpoint, final String applicationId) {
+    private boolean alreadyExists(final Endpoint endpoint, final String applicationId) {
         final Optional<Endpoint> endpointExists =
                 repository.findEndpointByVerbAndPath(applicationId, endpoint.getVerb(), endpoint.getPath());
-        endpointExists.ifPresent(e -> {
-            throw new WebApplicationException("Endpoint already exists!", Response.Status.BAD_REQUEST);
-        });
+        return endpointExists.isPresent();
     }
 
     private void merge(Endpoint target, EndpointWrapper source) {
