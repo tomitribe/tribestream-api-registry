@@ -232,21 +232,21 @@ angular.module('website-components', [
             restrict: 'A',
             scope: {
                 value: '=',
-                adjust: '@?'
+                adjust: '@?',
+                placeholder: '@?'
             },
             template: require('../templates/component_editable_number.jade'),
             link: function (scope, el, attrs, controller) {
                 var activate = function () {
                     var span = el.find('span');
-                    var width = span.width();
                     el.addClass('edit');
                     var input = el.find('input');
                     if (scope['adjust'] !== 'false') {
-                        input.width(width);
+                        input.width(70);
                     }
                     input.focus();
                 };
-                el.on('click', activate);
+                el.on('focus', activate);
                 el.find('input').on('blur', function () {
                     el.removeClass('edit');
                 });
@@ -254,7 +254,28 @@ angular.module('website-components', [
             }
         };
     }])
-
+    .directive('tribeEditableText1', [function () {
+        return {
+            restrict: 'A',
+            scope: {
+                value: '=',
+                placeholder: '@?'
+            },
+            template: require('../templates/component_editable_text.jade'),
+            link: function (scope, el) {
+                var activate = function () {
+                    el.addClass('edit');
+                    var input = el.find('input');
+                    input.focus();
+                };
+                el.on('focus', activate);
+                el.find('> div').on('focus', activate);
+                el.find('input').on('blur', function () {
+                    el.removeClass('edit');
+                });
+            }
+        };
+    }])
     .directive('tribeEditableOption', ['$timeout', '$document', function ($timeout, $document) {
         return {
             restrict: 'A',

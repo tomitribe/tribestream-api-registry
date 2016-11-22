@@ -19,7 +19,10 @@
 package org.tomitribe.tribestream.registryng.entities;
 
 import io.swagger.models.Operation;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.envers.Audited;
@@ -40,6 +43,7 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import java.io.IOException;
 
+import static lombok.AccessLevel.PRIVATE;
 import static org.tomitribe.tribestream.registryng.entities.Normalizer.normalize;
 
 @Entity
@@ -75,9 +79,12 @@ import static org.tomitribe.tribestream.registryng.entities.Normalizer.normalize
 })
 @EntityListeners(OpenAPIDocumentSerializer.class)
 @Audited
+@NoArgsConstructor
+@AllArgsConstructor(access = PRIVATE)
 @Getter
 @Setter
 @ToString(of = {"verb", "path"})
+@Builder
 public class Endpoint extends AbstractEntity {
     public interface Queries {
         String FIND_ALL = "Endpoint.findAll";

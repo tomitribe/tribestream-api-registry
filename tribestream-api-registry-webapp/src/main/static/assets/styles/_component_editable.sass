@@ -1,7 +1,7 @@
 @import "variables"
 
-$color: #f2f0f0
-
+$border-color: #f2f0f0
+$width: 20px
 [data-tribe-editable-text], [data-tribe-editable-number]
   display: inline-block
   font-style: normal
@@ -47,7 +47,6 @@ $color: #f2f0f0
   > div
     min-height: 40px
     position: relative
-    $width: 20px
     min-width: $width * 2
     display: flex
     align-items: center
@@ -67,7 +66,7 @@ $color: #f2f0f0
         line-height: .6
   &:hover, &.empty
     > div
-      border-color: #f2f0f0
+      border-color: $border-color
   &:hover
     > div
       > div
@@ -75,7 +74,7 @@ $color: #f2f0f0
   &.edit
     display: block
     > div
-      border-color: #f2f0f0
+      border-color: $border-color
       > div
         display: none
 i[data-tribe-editable-text], i[data-tribe-editable-number]

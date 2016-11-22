@@ -10,12 +10,17 @@ angular.module('website-components-multiselect', [
                 originalSelectedOptions: '=selectedOptions',
                 originalGetOptionText: '=getOptionText',
                 newLabel: '@?',
+                autoShowOptions: '=?',
                 onEditModeOn: '&?',
                 onEditModeOff: '&?'
             },
             template: require('../templates/component_multiselect.jade'),
             controller: ['$log', '$scope', '$timeout', ($log, $scope, $timeout) => $timeout(() => {
                 $scope['uniqueId'] = _.uniqueId('tribeMultiselect_');
+                if($scope['autoShowOptions'] === undefined) {
+                    $scope['autoShowOptions'] = true;
+                }
+                $scope['inputFocused'] = false;
                 $scope.$watch('originalGetOptionText', () => {
                     if ($scope.originalGetOptionText) {
                         $scope.getOptionText = $scope.originalGetOptionText;
@@ -49,6 +54,7 @@ angular.module('website-components-multiselect', [
                 $scope['fieldChanged'] = () => $timeout(() => $scope.$apply(() => {
                     $scope['fieldDirty'] = true;
                     $scope['version'] = $scope['version'] + 1;
+                    $scope['optionsActivated'] = false;
                 }));
                 $scope['fieldCommitted'] = () => $timeout(() => $scope.$apply(() => {
                     $scope['onCommit']();
@@ -98,11 +104,15 @@ angular.module('website-components-multiselect', [
                     deactivatePromise = $timeout(() => {
                         scope['fieldCommitted']();
                         el.removeClass('active');
+                        scope.$apply(() => {
+                            scope['inputFocused'] = false;
+                            scope['optionsActivated'] = false;
+                        });
                     }, 500);
                 };
                 el.on('click', () => el.find('input').focus());
                 el.find('> div').on('focus', () => el.find('input').focus());
-                el.find('input').on('focus', () => {
+                let actiavionCb =  () => {
                     cancelDeactivate();
                     el.addClass('active');
                     $timeout(() => scope.$apply(() => {
@@ -110,9 +120,16 @@ angular.module('website-components-multiselect', [
                         if (scope['onEditModeOn']) {
                             scope['onEditModeOn']({'uniqueId': scope['uniqueId']});
                         }
+                        scope['inputFocused'] = true;
+                        if(scope['autoShowOptions']) {
+                            scope['optionsActivated'] = true;
+                        }
                     }));
-                });
-                el.find('input').on('blur', deactivate);
+                };
+                let inputEl = el.find('input');
+                inputEl.on('click', actiavionCb);
+                inputEl.on('focus', actiavionCb);
+                inputEl.on('blur', deactivate);
                 scope.$on('fieldDirty', () => {
                     if (scope['fieldDirty']) {
                         cancelDeactivate();
@@ -120,8 +137,8 @@ angular.module('website-components-multiselect', [
                     }
                 });
                 scope.$on('$destroy', () => el.remove());
-                scope.$on('fieldCanceled', () => $timeout(() => el.find('input').blur()));
-                scope.$on('fieldCommitted', () => $timeout(() => el.find('input').blur()));
+                scope.$on('fieldCanceled', () => $timeout(() => inputEl.blur()));
+                scope.$on('fieldCommitted', () => $timeout(() => inputEl.blur()));
             })
         };
     }])
@@ -139,7 +156,8 @@ angular.module('website-components-multiselect', [
                 inputText: '=',
                 selectedItem: '=selectedOption',
                 newLabel: '@?',
-                getOptionText: '='
+                getOptionText: '=',
+                version: '='
             },
             template: require('../templates/component_multiselect_available.jade'),
             controller: ['$scope', '$timeout', ($scope, $timeout) => {
@@ -166,6 +184,7 @@ angular.module('website-components-multiselect', [
                         }
                     }
                 }));
+                $scope.$watch('version', $timeout(() => $scope['showOptions']()));
                 $scope['selectedItem'] = null;
                 $scope.selectAvailableItem = (item) => $timeout(() => $scope.$apply(() => {
                     $scope['selectedItem'] = item;
@@ -213,8 +232,11 @@ angular.module('website-components-multiselect', [
                     }
                 }));
                 $scope.selectItem = (opt) => $timeout(() => $scope.$apply(() => {
-                    $scope['selectedOptions'].push(opt);
-                    $scope['active'] = false;
+                    if(!$scope['selectedOptions'].find((selected) => {
+                            return selected === opt;
+                        })) {
+                        $scope['selectedOptions'].push(opt);
+                    }
                     $scope['inputText'] = '';
                 }));
                 $scope.$watch('inputText', () => {
@@ -286,7 +308,9 @@ angular.module('website-components-multiselect', [
                 onSelectBottomUpOption: '&',
                 onOptionsDeactivated: '&',
                 selectedOption: '=',
-                inputText: '='
+                inputText: '=',
+                autoShowOptions: '=',
+                activated: '='
             },
             template: require('../templates/component_multiselect_selected.jade'),
             controller: ['$log', '$scope', '$timeout', ($log, $scope, $timeout) => {

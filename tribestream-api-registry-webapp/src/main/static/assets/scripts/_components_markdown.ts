@@ -40,17 +40,22 @@ angular.module('website-components-markdown', [
             scope: {
                 visible: '='
             },
+            controller: ['$timeout', '$scope', function($timeout, $scope) {
+                $scope.close = function() {
+                    $timeout(() => $scope.$apply(() => {
+                        $scope['visible'] = false;
+                    }));
+                }
+            }],
             template: require('../templates/component_markdown_help.jade'),
-            link: (scope, el) => {
+            link: (scope, el, attrs, controller) => {
                 let content = el.find('> div > div.markdown-help-content');
                 content.detach();
                 let body = $document.find('body');
                 let keyPress = (event) => {
                     console.log('event.keyCode -> ' + event.keyCode);
                     if (event.keyCode === 27 /* Escape */) {
-                        $timeout(() => scope.$apply(() => {
-                            scope['visible'] = false;
-                        }));
+                        scope['close']();
                     }
                 };
                 scope.$watch('visible', () => {
@@ -222,7 +227,39 @@ angular.module('website-components-markdown', [
                         title: "Numbered List"
                     }, {
                         name: "clean-block",
-                        action: (editor) => actionClick(editor, SimpleMDE.cleanBlock),
+                        // replace by this action block if this PR gets merged.
+                        // https://github.com/NextStepWebs/simplemde-markdown-editor/pull/463
+                        // action: (editor) => actionClick(editor, SimpleMDE.cleanBlock),
+                        action: (editor) => $timeout(() => scope.$apply(() => {
+                            cancelDeactivate();
+                            var cm = editor.codemirror;
+                            // split the selection in lines
+                            var selections = cm.getSelection().split("\n");
+                            var removeTags = function (selection) {
+                                var html = marked(selection);
+                                // create a div...
+                                var tmp = document.createElement("DIV");
+                                // .. with the new generated html code...
+                                tmp.innerHTML = html;
+                                // ... now read the text of the generated code.
+                                // This way the browser does the job of removing the tags.
+                                var result = selection;
+                                if(tmp.textContent) {
+                                    result = tmp.textContent;
+                                } else if (tmp.innerText) {
+                                    result = tmp.innerText;
+                                }
+                                // removing trailing "new line"
+                                return result.split("\n").join('');
+                            };
+                            var result = [];
+                            for(var i = 0; i < selections.length; i++) {
+                                result.push(removeTags(selections[i]));
+                            }
+                            // Add removed "new lines" back to the resulting string.
+                            // Replace the selection with the new clean selection.
+                            cm.replaceSelection(result.join("\n"));
+                        })),
                         className: "fa fa-eraser fa-clean-block",
                         title: "Clean block"
                     }, '|', {
