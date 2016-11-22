@@ -111,6 +111,7 @@ angular.module('website-components-text', [
                         }
                     }));
                 });
+                element.on('click', () => input.focus());
                 element.find('> div').on('focus', () => input.focus());
                 scope.$on('$destroy', () => element.remove());
                 scope.$watch('valid', () => {

@@ -143,6 +143,9 @@ angular.module('website-components-markdown', [
                 let deactivate = () => {
                     cancelDeactivate();
                     deactivatePromise = $timeout(() => {
+                        if(simplemde.codemirror.hasFocus()) {
+                            return;
+                        }
                         scope['onCommit']();
                         scope.$apply(() => {
                             scope['sidebyside'] = false;
@@ -345,10 +348,13 @@ angular.module('website-components-markdown', [
                     el.remove();
                     body.removeClass('noscroll');
                 });
-                el.find('> div').on('focus', () => {
+                let activate = () => {
+                    cancelDeactivate();
                     el.addClass('active');
                     $timeout(() => simplemde.codemirror.focus());
-                });
+                };
+                el.on('click', activate);
+                el.find('> div').on('focus', activate);
             })
         };
     }]);

@@ -110,6 +110,7 @@ angular.module('website-components-multiselect', [
                         });
                     }, 500);
                 };
+                el.on('click', () => el.find('input').focus());
                 el.find('> div').on('focus', () => el.find('input').focus());
                 let actiavionCb =  () => {
                     cancelDeactivate();

@@ -134,6 +134,7 @@ angular.module('website-components-singleselect', [
                     }, 500);
                 };
                 let inputField = el.find('input');
+                el.on('click', () => inputField.focus());
                 el.find('> div').on('focus', () => inputField.focus());
                 inputField.on('focus', () => {
                     cancelDeactivate();
