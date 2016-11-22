@@ -171,9 +171,9 @@ angular.module('website-components-multiselect', [
                     }
                     if ($scope['inputText'].trim()) {
                         $scope.availableOptions = _.filter($scope.availableOptions, (opt:string) => {
-                            return opt.startsWith($scope['inputText']);
+                            return opt.toLowerCase().startsWith($scope['inputText'].toLowerCase());
                         });
-                        $scope['selectedItem'] = _.find($scope.availableOptions, (opt:string) => opt.startsWith($scope['inputText'].trim()));
+                        $scope['selectedItem'] = _.find($scope.availableOptions, (opt:string) => opt.toLowerCase().startsWith($scope['inputText'].trim().toLowerCase()));
                         if (_.find($scope.availableOptions, (opt) => opt === $scope['inputText'].trim())) {
                             $scope.newOpt = null;
                         } else {

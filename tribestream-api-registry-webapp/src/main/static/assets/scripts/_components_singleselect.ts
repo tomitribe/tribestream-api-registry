@@ -194,9 +194,9 @@ angular.module('website-components-singleselect', [
                     $scope.availableOptions = _.clone($scope.originalAvailableOptions);
                     let text = $scope['inputText'] ? $scope['inputText'].trim() : '';
                     $scope.availableOptions = _.sortBy(_.filter($scope.availableOptions, (opt) => {
-                        return $scope.getOptionText(opt).startsWith(text);
+                        return $scope.getOptionText(opt).toLowerCase().startsWith(text.toLowerCase());
                     }), (item) => $scope.getOptionText(item));
-                    $scope['selectedItem'] = _.find($scope.availableOptions, (opt) => $scope.getOptionText(opt).startsWith(text));
+                    $scope['selectedItem'] = _.find($scope.availableOptions, (opt) => $scope.getOptionText(opt).toLowerCase().startsWith(text.toLowerCase()));
                     if ($scope.editable) {
                         if (_.find($scope.availableOptions, (opt) => $scope.getOptionText(opt) === text)) {
                             $scope.newOpt = null;
