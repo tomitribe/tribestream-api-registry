@@ -260,15 +260,28 @@ public class EndpointResourceTest {
                                           .resolveTemplate("applicationId", applicationId)
                                           .request(MediaType.APPLICATION_JSON_TYPE)
                                           .post(Entity.entity(endpoint, MediaType.APPLICATION_JSON_TYPE));
-
+        EndpointWrapper created = response.readEntity(EndpointWrapper.class);
+        assertNotNull("Missing entity id", created.getEndpointId());
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
         final Response duplicate = registry.target().path("api/application/{applicationId}/endpoint")
                                            .resolveTemplate("applicationId", applicationId)
                                            .request(MediaType.APPLICATION_JSON_TYPE)
                                            .post(Entity.entity(endpoint, MediaType.APPLICATION_JSON_TYPE));
-
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), duplicate.getStatus());
+        // creating the get version of the same path
+        endpoint.setHttpMethod("GET");
+        registry.target().path("api/application/{applicationId}/endpoint")
+                .resolveTemplate("applicationId", applicationId)
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .post(Entity.entity(endpoint, MediaType.APPLICATION_JSON_TYPE));
+        // Updating the existing 'post' into 'get'. This should trigger the validation.
+        final Response duplicatePost = registry.target().path("api/application/{applicationId}/endpoint/{endpointId}")
+                .resolveTemplate("applicationId", applicationId)
+                .resolveTemplate("endpointId", created.getEndpointId())
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .put(Entity.entity(endpoint, MediaType.APPLICATION_JSON_TYPE));
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), duplicatePost.getStatus());
     }
 
     private SearchPage getSearchPage() {
