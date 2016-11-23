@@ -599,6 +599,14 @@ angular.module('tribe-endpoints-details', [
               });
             });
           }
+          var handleError = function(errorResponse) {
+              if(errorResponse['data'] && errorResponse['data']['key'] === "duplicated.endpoint.exception") {
+                  systemMessagesService.error(`There is an existing endpoint with the same Verb and
+                        Path combination. Please try it again with new data.`);
+              } else {
+                  systemMessagesService.error("Unable to create endpoint.");
+              }
+          };
           $scope.save = () => {
             if (!!$scope.endpoint.endpointProtocol) {
               $scope.endpoint.operation.schemes = [$scope.endpoint.endpointProtocol];
@@ -613,7 +621,7 @@ angular.module('tribe-endpoints-details', [
                 function (saveResponse) {
                   systemMessagesService.info("Saved endpoint details!");
                   $scope.reloadHistory();
-                }
+                }, handleError
               );
             } else {
               srv.createEndpoint($scope.endpointsLink, {
@@ -628,15 +636,7 @@ angular.module('tribe-endpoints-details', [
                   let app = $scope['application'];
                   let appName = app['humanReadableName'];
                   $location.path(`endpoint/${appName}/${res.httpMethod}/${res.path}`);
-                },
-                function(errorResponse) {
-                  if(errorResponse['data'] && errorResponse['data']['key'] === "duplicated.endpoint.exception") {
-                      systemMessagesService.error(`There is an existing endpoint with the same Verb and
-                        Path combination. Please try it again with new data.`);
-                  } else {
-                      systemMessagesService.error("Unable to create endpoint.");
-                  }
-                }
+                }, handleError
               );
             }
           };

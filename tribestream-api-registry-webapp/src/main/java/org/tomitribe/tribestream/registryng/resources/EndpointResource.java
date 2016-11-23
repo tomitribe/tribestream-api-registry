@@ -139,6 +139,11 @@ public class EndpointResource {
         merge(oldEndpoint, endpointWrapper);
 
         validate(oldEndpoint);
+        if(alreadyExists(oldEndpoint, applicationId)) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"key\": \"duplicated.endpoint.exception\"}")
+                    .build();
+        }
 
         // TODO: Handle added/updated/removed paths
 
@@ -177,7 +182,10 @@ public class EndpointResource {
     private boolean alreadyExists(final Endpoint endpoint, final String applicationId) {
         final Optional<Endpoint> endpointExists =
                 repository.findEndpointByVerbAndPath(applicationId, endpoint.getVerb(), endpoint.getPath());
-        return endpointExists.isPresent();
+        if (endpointExists.isPresent()) {
+            return !endpointExists.get().getId().equals(endpoint.getId());
+        }
+        return false;
     }
 
     private void merge(Endpoint target, EndpointWrapper source) {
