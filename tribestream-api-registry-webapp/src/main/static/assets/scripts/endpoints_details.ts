@@ -666,11 +666,6 @@ angular.module('tribe-endpoints-details', [
           };
           // Triggered by selecting one revision, will load it and show it
           $scope.showHistoricEndpoint = function(historyItem) {
-            $timeout(function () {
-              $scope.$apply(function () {
-                $scope.history = null;
-              });
-            });
             srv.getHistoricItem(historyItem).then(function(response) {
               $timeout(function () {
                 $scope.$apply(function () {

@@ -146,11 +146,6 @@ angular.module('tribe-endpoints', [
                     };
                     // Triggered by selecting one revision, will load it and show it
                     $scope.showHistoricApplication = (historyItem) => {
-                      $timeout(() => {
-                        $scope.$apply(() => {
-                          $scope.history = null;
-                        });
-                      });
                       srv.getHistoricItem(historyItem).then((response) => {
                         $timeout(() => {
                           $scope.$apply(() => {
