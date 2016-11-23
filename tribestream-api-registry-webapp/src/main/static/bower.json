@@ -19,7 +19,7 @@
     "angular-marked": "1.2.2",
     "mocha": "3.0.2",
     "chai": "3.5.0",
-    "simplemde": "^1.11.2",
+    "simplemde": "https://github.com/Mummakill/simplemde-markdown-editor.git#b9071f0c91adb9239ce0ce974828683b04adccdb",
     "highlightjs": "9.6.0"
   },
   "resolutions": {
