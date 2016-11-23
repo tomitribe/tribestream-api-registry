@@ -49,6 +49,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
@@ -74,7 +75,10 @@ import static org.tomitribe.util.Join.join;
         @ContainerProperties.Property(name = "registryDatasource.JdbcDriver", value = "org.h2.Driver"),
         @ContainerProperties.Property(name = "registryDatasource.JdbcUrl", value = "jdbc:h2:mem:registry;DB_CLOSE_ON_EXIT=FALSE"),
         @ContainerProperties.Property(name = "tribe.registry.elasticsearch.base", value = "http://localhost:${test.elasticsearch.port}"),
-        @ContainerProperties.Property(name = "tribe.registry.monitoring.http.urls", value = "http://localhost:${test.elasticsearch.port}")
+        @ContainerProperties.Property(name = "tribe.registry.monitoring.http.urls", value = "http://localhost:${test.elasticsearch.port}"),
+        @ContainerProperties.Property(
+                name = "tribe.registry.security.filter.whitelist",
+                value = "/api/server/info,/api/login,/api/security/oauth2,/api/security/oauth2/status,/api/mock/oauth2/token")
         /* can help for debugging (dumps sql queries and ES client HTTP requests
         ,@ContainerProperties.Property(name = "registryDatasource.LogSql", value = "true"),
         @ContainerProperties.Property(name = "tribe.registry.elasticsearch.features", value = "org.apache.cxf.feature.LoggingFeature")
@@ -177,9 +181,13 @@ public class Registry {
         return client.register(new ClientRequestFilter() {
             @Override
             public void filter(final ClientRequestContext requestContext) throws IOException {
-                requestContext.getHeaders().put("Authorization", singletonList("Basic " + printBase64Binary(join(":", TESTUSER, TESTPASSWORD).getBytes("UTF-8"))));
+                requestContext.getHeaders().put("Authorization", singletonList(basicHeader()));
             }
         });
+    }
+
+    public String basicHeader() throws UnsupportedEncodingException {
+        return "Basic " + printBase64Binary(join(":", TESTUSER, TESTPASSWORD).getBytes("UTF-8"));
     }
 
     public void restoreData() {

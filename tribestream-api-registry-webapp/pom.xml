@@ -107,6 +107,12 @@
     </dependency>
 
     <dependency>
+      <groupId>org.tomitribe</groupId>
+      <artifactId>tomitribe-http-signatures</artifactId>
+      <version>1.0</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.apache.deltaspike.core</groupId>
       <artifactId>deltaspike-core-impl</artifactId>
       <version>${deltaspike.version}</version>
