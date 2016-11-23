@@ -566,7 +566,7 @@ angular.module('tribe-endpoints-details', [
                   $scope.$apply(function () {
                     let detailsData = detailsResponse['data'];
                     $scope['endpoint']['httpMethod'] = detailsData['httpMethod'];
-                    $scope['endpoint'].path = $filter('pathencode')(detailsData.path);
+                    $scope['endpoint'].path = detailsData.path;
                     $scope['endpoint'].operation = detailsData.operation;
                   });
                 });
@@ -677,7 +677,7 @@ angular.module('tribe-endpoints-details', [
                   let detailsData = response['data'];
                   $scope['historyItem'] = historyItem;
                   $scope['endpoint']['httpMethod'] = detailsData['httpMethod'];
-                  $scope['endpoint'].path = $filter('pathencode')(detailsData.path);
+                  $scope['endpoint'].path = detailsData.path;
                   $scope['endpoint'].operation = detailsData.operation;
                 });
               });
