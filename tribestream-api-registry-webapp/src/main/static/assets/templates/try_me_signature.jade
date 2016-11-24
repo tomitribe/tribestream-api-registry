@@ -1,0 +1,32 @@
+h2 Signature Header
+div Important: if you rely on other headers ensure to add them first
+div.fields
+  div.try-me-line
+    label Header name
+    input(placeholder="Header name", ng-model="signature.header")
+  div.try-me-line
+    label Algorithm
+    div(data-tribe-singleselect, data-placeholder="Algorithm", data-selected-option="signature.algorithm",
+        data-available-options="signatureAlgorithmOptions")
+  div.try-me-line
+    label Key
+    input(placeholder="Key ID", ng-model="signature.alias")
+    input(placeholder="Secret", ng-model="signature.secret", type="password")
+  div
+    h3.try-me-line
+      | Headers
+      div(ng-click="signature.headers.push(undefined);").try-me-button
+        i.fa.fa-add
+        span Add
+    div(ng-repeat="h in signature.headers track by $index")
+      div.try-me-line
+        ui-select(ng-model="h", placeholder="Header name", tagging, tagging-label="false", tagging-tokens="ENTER|,")
+          ui-select-match(placeholder="Header name") {{$select.selected}}
+          ui-select-choices(repeat="p in headerOptions | filter: $select.search track by $index")
+            div {{p}}
+        div
+          div(ng-click="headers.splice($index, 1)")
+            i.fa.fa-trash-o
+            span Remove
+  div.try-me-line
+    button(ng-click="closeThisDialog(signature);").orange Add

@@ -19,6 +19,8 @@
 package org.tomitribe.tribestream.registryng.security;
 
 import org.apache.catalina.User;
+import org.apache.deltaspike.core.api.config.ConfigProperty;
+import org.tomitribe.tribestream.registryng.documentation.Description;
 import org.tomitribe.tribestream.registryng.entities.AccessToken;
 import org.tomitribe.tribestream.registryng.security.oauth2.AccessTokenService;
 import org.tomitribe.tribestream.registryng.security.oauth2.InvalidTokenException;
@@ -63,9 +65,14 @@ public class SecurityWebFilter implements Filter {
      */
     private Set<String> urlWhiteList;
 
+    @Inject
+    @Description("The comma separated list of URL not requiring any valid logged in user. Defaults match server expectation, it is not recommanded to remove them.")
+    @ConfigProperty(name = "tribe.registry.security.filter.whitelist", defaultValue = "/api/server/info,/api/login,/api/security/oauth2,/api/security/oauth2/status")
+    private String whitelistConfig;
+
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        urlWhiteList = Stream.of("/api/server/info", "/api/login", "/api/security/oauth2", "/api/security/oauth2/status")
+        urlWhiteList = Stream.of(whitelistConfig.split(","))
                 .map(p -> filterConfig.getServletContext().getContextPath() + p)
                 .collect(toSet());
     }

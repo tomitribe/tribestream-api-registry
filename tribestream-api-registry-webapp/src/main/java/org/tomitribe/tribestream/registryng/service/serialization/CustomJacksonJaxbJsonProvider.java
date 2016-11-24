@@ -21,6 +21,7 @@ package org.tomitribe.tribestream.registryng.service.serialization;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import org.tomitribe.tribestream.registryng.resources.ClientResource;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
@@ -43,14 +44,12 @@ import java.util.logging.Logger;
 public class CustomJacksonJaxbJsonProvider extends JacksonJaxbJsonProvider {
 
     private static final Logger LOGGER = Logger.getLogger(CustomJacksonJaxbJsonProvider.class.getName());
-
-    protected CustomJacksonJaxbJsonProvider(final ObjectMapper mapper) {
-        super(SwaggerJsonMapperProducer.lookup(), JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
-        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
-    }
+    private final ObjectMapper mapperIgnoringUnknownProperties;
 
     public CustomJacksonJaxbJsonProvider() {
-        this(SwaggerJsonMapperProducer.lookup());
+        super(SwaggerJsonMapperProducer.lookup(), JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
+        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
+        mapperIgnoringUnknownProperties = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     @Override
@@ -61,7 +60,9 @@ public class CustomJacksonJaxbJsonProvider extends JacksonJaxbJsonProvider {
                            MultivaluedMap<String, String> httpHeaders,
                            InputStream entityStream) throws IOException {
         try {
-            return super.readFrom(type, genericType, annotations, mediaType, httpHeaders, entityStream);
+            return type.getName().startsWith(ClientResource.class.getName())?
+                    mapperIgnoringUnknownProperties.readValue(entityStream, type) :
+                    super.readFrom(type, genericType, annotations, mediaType, httpHeaders, entityStream);
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Reading entity failed!", e);
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
