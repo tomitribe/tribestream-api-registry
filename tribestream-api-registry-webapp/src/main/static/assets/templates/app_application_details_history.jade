@@ -21,6 +21,6 @@ div(x-ng-if="historyLink")
         td
           i.fa.fa-history(x-ng-click="showHistoricApplication(historyItem)")
   button(x-ng-click="doDiff()", ng-disabled="selected.length !== 2 || showDiff") Show Difference
-  div(data-tribe-diff, x-ng-show="showDiff && selected.length == 2", data-value-a="valueA", data-value-b="valueB")
+  div(data-tribe-diff, x-ng-show="showDiff && selected.length == 2", data-value-a="valueA", data-value-b="valueB", data-title-a="titleA", data-title-b="titleB")
   button(x-ng-click="doDiff()", x-ng-show="showDiff") Hide Diff
   button(x-ng-click="saveMerge()", x-ng-show="showDiff") Save left pane as endpoint
