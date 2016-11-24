@@ -22,31 +22,3 @@ describe('it tests our tribeHtml custom filter', () => {
     });
 
 });
-
-describe('it tests our encodepath filter', () => {
-    let expect = chai.expect;
-    var filter;
-
-    beforeEach(() => module('website-components'));
-
-    beforeEach(() => inject(function (_$filter_) {
-        filter = _$filter_('pathencode');
-    }));
-
-    it('should convert root to root', () => {
-        expect(filter('/')).to.equal('/');
-    });
-
-    it('should convert single path with braces to colon', () => {
-        expect(filter('/{foo}')).to.equal('/:foo');
-    });
-
-    it('should convert mixed path with braces to colon', () => {
-        expect(filter('/{foo}/bar')).to.equal('/:foo/bar');
-    });
-
-    it('should convert mixed path with trailing braces to colon', () => {
-        expect(filter('/foo/{bar}')).to.equal('/foo/:bar');
-    });
-
-});

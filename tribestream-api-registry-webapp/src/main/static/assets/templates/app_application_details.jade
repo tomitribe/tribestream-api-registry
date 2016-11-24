@@ -38,8 +38,8 @@ div
           ul.endpoint-info
             li(x-ng-repeat="endpoint in endpoints")
               a(x-ng-href="endpoint/{{applicationName}}/{{endpoint.operation}}/{{endpoint.humanReadablePath}}?version={{swagger.info.version}}")
-                span {{endpoint.operation | pathencode}}
-                span {{endpoint.path | pathencode}}
+                span {{endpoint.operation}}
+                span {{endpoint.path}}
                 span {{endpoint.summary}}
       div(data-app-application-details-history)
   div(data-app-footer)
