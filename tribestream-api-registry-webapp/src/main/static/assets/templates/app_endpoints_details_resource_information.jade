@@ -3,11 +3,11 @@ div
   div
     div
       div(data-submenu="true", app-endpoints-details-toc-anchor="API Versions")
-        span API Versions
-        div(data-tribe-multiselect,
-          data-on-edit-mode-on="onEditModeOn(uniqueId)",
-          data-on-edit-mode-off="onEditModeOff(uniqueId)",
-          data-selected-options="endpoint.operation['x-tribestream-api-registry']['api-versions']", data-available-options="[]")
+        span API Version
+        div(data-tribe-text,
+            data-on-edit-mode-on="onEditModeOn(uniqueId)",
+            data-on-edit-mode-off="onEditModeOff(uniqueId)",
+            data-value="endpoint.operation['x-tribestream-api-registry'].apiVersion")
       div(data-submenu="true", app-endpoints-details-toc-anchor="Status")
         span Status
         div(data-tribe-singleselect,
