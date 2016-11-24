@@ -634,7 +634,8 @@ angular.module('tribe-endpoints-details', [
                   let res = saveResponse.data;
                   let app = $scope['application'];
                   let appName = app['humanReadableName'];
-                  $location.path(`endpoint/${appName}/${res.httpMethod}/${res.path}`);
+                  let path = $filter('pathencode')(res.path)
+                  $location.path(`endpoint/${appName}/${res.httpMethod}${path}`);
                 }, handleError
               );
             }
