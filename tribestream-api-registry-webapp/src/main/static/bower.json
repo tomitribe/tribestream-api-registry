@@ -22,7 +22,9 @@
     "simplemde": "https://github.com/Mummakill/simplemde-markdown-editor.git#b9071f0c91adb9239ce0ce974828683b04adccdb",
     "highlightjs": "9.6.0",
     "ng-dialog": "0.6.4",
-    "v-accordion": "v1.6.0"
+    "v-accordion": "v1.6.0",
+    "angular-ui-select": "0.19.6",
+    "selectize": "0.12.4"
   },
   "resolutions": {
     "angular": "1.5.5"

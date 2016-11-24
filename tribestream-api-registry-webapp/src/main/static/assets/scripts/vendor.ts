@@ -23,6 +23,8 @@ import "../../../static/node_modules/angular-animate/angular-animate.js";
 
 import '../../../static/bower_components/ng-dialog/js/ngDialog.js';
 import '../../../static/bower_components/v-accordion/dist/v-accordion.js';
+import '../../../static/bower_components/angular-ui-select/dist/select.js';
+
 
 // styles
 import '../../../static/bower_components/ng-dialog/css/ngDialog.css';
@@ -39,3 +41,6 @@ import '../../../static/bower_components/codemirror/lib/codemirror.css';
 import '../../../static/bower_components/simplemde/dist/simplemde.min.css';
 import '../../../static/bower_components/highlightjs/styles/default.css';
 import '../../../static/bower_components/codemirror/addon/merge/merge.css';
+
+import '../../../static/bower_components/selectize/dist/css/selectize.css';
+import '../../../static/bower_components/angular-ui-select/dist/select.min.css';

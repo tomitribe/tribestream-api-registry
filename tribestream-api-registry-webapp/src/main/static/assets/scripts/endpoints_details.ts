@@ -9,7 +9,8 @@ angular.module('tribe-endpoints-details', [
     'ngDialog',
     'ngAnimate',
     'vAccordion',
-    'ui.codemirror'
+    'ui.codemirror',
+    'ui.select'
 ])
 
     .factory('appEndpointsDetailsHeaderService', [($location) => {
@@ -538,59 +539,79 @@ angular.module('tribe-endpoints-details', [
           return !$scope['isOnEdit'] && $scope['endpoint'] && !!$scope['endpoint']['httpMethod'] && !!$scope['endpoint']['path'] && !!$scope['endpoint']['path'].trim();
         };
 
+        const sampleValue = type => {
+          switch(type) {
+            case 'boolean':
+              return 'true';
+            case 'integer':
+            case 'long':
+            case 'int32':
+            case 'int64':
+            case 'number':
+              return '10';
+            case 'float':
+            case 'double':
+              return '10.0';
+            default:
+              return 'value';
+          }
+        };
+
         $scope.tryMeModal = () => {
           let newScope = $scope.$new();
           const swagger = $scope.application.swagger;
           const url = ($scope.endpoint.endpointProtocol || 'http') + '://' + swagger.host + (swagger.basePath === '/' ? '' : swagger.basePath) + $scope.endpoint.path;
+          const parameters = (($scope.endpoint.operation || {}).parameters || {});
+          const querySample = parameters.filter(p => p['in'] === 'query' && !!p['name'])
+            .reduce((acc, param) => acc + (!!acc ? '&' : '?') + param['name'] + '=' + sampleValue(param['type'] || 'string'), '');
 
           // TODO: using $scope.application.swagger definitions, for now just hardcode something
           const payload = $scope.endpoint.httpMethod === 'post' || $scope.endpoint.httpMethod === 'put' ? '{}' : undefined;
 
           newScope.endpoint = $scope.endpoint;
           newScope.payloadOptions = {lineNumbers: true, mode: 'javascript'};
-          newScope.headers = [];
           newScope.request = {
             ignoreSsl: url.indexOf('https') == 0,
             method: $scope.endpoint.httpMethod.toUpperCase(),
-            url: url,
-            headers: {},
+            url: url + querySample,
             payload: payload,
             digest: {
               header: 'Digest'
             }
           };
 
-          newScope.headerOptions = [ 'Content-Type', 'Accept' ].map(name => { return {text:name, value:name}; });
+          newScope.headers = parameters.filter(p => p['in'] === 'header' && !!p['name']).map(p => {
+            return { name: p['name'], value: sampleValue(p['type'] || 'string') };
+          });
+          newScope.headerOptions = [ 'Content-Type', 'Accept' ];
+          newScope.headers.forEach(h => newScope.headerOptions.push(h.name));
 
-          newScope.addHeader = () => {
-            let header = {
-              $$proposals: []
-            };
-            header['changed'] = function /*"this" is important there*/() {
-              if (!this.name) {
-                if (!!this.$$proposals) {
-                  this.$$proposals = [];
-                }
-                return;
+          newScope.onHeaderChange = (name, header) => {
+            if (!name) {
+              if (!!header.$$proposals) {
+                header.$$proposals = [];
               }
-              if (this.name == 'Content-Type' || this.name == 'Accept') {
-                this.$$proposals = ['application/json', 'application/xml', 'application/x-www-form-urlencoded', 'text/plain'];
-              } else if (!!this.$$proposals) {
-                this.$$proposals = [];
-              }
+              return;
             }
-            newScope.headers.push(header);
+            if ((name == 'Content-Type' || name == 'Accept') && !header.$$proposals) {
+              header.$$proposals = ['application/json', 'application/xml', 'application/x-www-form-urlencoded', 'text/plain'];
+            } else if (!!this.$$proposals) {
+              header.$$proposals = [];
+            }
+          };
+          newScope.addHeader = () => {
+            newScope.headers.push({});
           };
 
           newScope.addDigest = () => {
             let digestScope = $scope.$new();
             digestScope.digest = {
               header: 'Digest',
-              algorithm: 'SHA256'
+              algorithm: 'sha-256'
             };
-            digestScope.digestAlgorithmOptions = ['MD2', 'MD4', 'MD5', 'SHA1', 'SHA224', 'SHA256', 'SHA384', 'SHA512']
+            digestScope.digestAlgorithmOptions = ['md2', 'md4', 'md5', 'sha-1', 'sha-224', 'sha-256', 'sha-384', 'sha-512']
               .map(name => {
-                return {text: (name.indexOf('SHA') == 0 ? 'sha-' + name.substring(3) : ('md' + name.substring(2))), value:name};
+                return {text: name, value:name};
               });
             ngDialog.open({ template: require('../templates/try_me_digest.jade'), plain: true, scope: digestScope }).closePromise.then(digest => {
               if ('$closeButton' === digest.value) {
@@ -628,9 +649,14 @@ angular.module('tribe-endpoints-details', [
               headers: ['(request-target)'],
               algorithm: 'hmac-sha256',
               method: newScope.request.method,
-              url: url,
-              requestHeaders: newScope.headers.reduce((accumulator, e) => accumulator[e.name] = e.value, {})
+              url: newScope.request.url,
+              requestHeaders: newScope.headers.reduce((accumulator, e) => {
+                accumulator[e.name] = e.value;
+                return accumulator;
+              }, {})
             };
+            signatureScope.headerOptions = newScope.headers.map(h => h.name);
+            signatureScope.headerOptions.push('(request-target)');
             ngDialog.open({ template: require('../templates/try_me_signature.jade'), plain: true, scope: signatureScope }).closePromise.then(signature => {
               if ('$closeButton' === signature.value) {
                 return;
@@ -664,7 +690,10 @@ angular.module('tribe-endpoints-details', [
 
           newScope.tryIt = () => {
             // convert headers, better than watching it which would be slow for no real reason
-            newScope.request.headers = newScope.headers.filter(h => !!h.name && !!h.value).reduce((accumulator, e) => accumulator[e.name] = e.value, {});
+            newScope.request.headers = newScope.headers.filter(h => !!h.name && !!h.value).reduce((accumulator, e) => {
+              accumulator[e.name] = e.value;
+              return accumulator;
+            }, {});
             tryMeService.request(newScope.request)
               .success(result => {
                 let responseScope = $scope.$new();
@@ -885,5 +914,9 @@ angular.module('tribe-endpoints-details', [
             restrict: 'A',
             link: stickyNavLink
         };
-    }]);
+    }])
+
+  .config(['uiSelectConfig', function(uiSelectConfig) {
+    uiSelectConfig.theme = 'selectize';
+  }]);
 }

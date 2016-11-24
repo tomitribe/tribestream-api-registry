@@ -11,7 +11,7 @@ div.fields
   div.try-me-line
     label Key
     input(placeholder="Key ID", ng-model="signature.alias")
-    input(placeholder="Secret", ng-model="signature.secret")
+    input(placeholder="Secret", ng-model="signature.secret", type="password")
   div
     h3.try-me-line
       | Headers
@@ -20,7 +20,10 @@ div.fields
         span Add
     div(ng-repeat="h in signature.headers track by $index")
       div.try-me-line
-        input(placeholder="Header name", ng-model="h")
+        ui-select(ng-model="h", placeholder="Header name", tagging, tagging-label="false", tagging-tokens="ENTER|,")
+          ui-select-match(placeholder="Header name") {{$select.selected}}
+          ui-select-choices(repeat="p in headerOptions | filter: $select.search track by $index")
+            div {{p}}
         div
           div(ng-click="headers.splice($index, 1)")
             i.fa.fa-trash-o
