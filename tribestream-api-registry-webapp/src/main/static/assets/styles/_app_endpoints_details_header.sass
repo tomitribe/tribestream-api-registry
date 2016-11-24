@@ -27,12 +27,12 @@ div[data-app-endpoints-details-header]
             flex-grow: 1
           > div
             input, span
-              color: #000000
+              color: $app-placeholder-color
         > div[data-tribe-singleselect]
           input, span
             text-transform: capitalize
             font-style: normal
-            color: #000000
+            color: $app-placeholder-color
             font-size: 25px !important
         div.value span, a, div[data-tribe-text] input, div[data-tribe-text] span
           font-size: 25px !important
@@ -82,8 +82,7 @@ div[data-app-endpoints-details-header]
         font-size: $app-font-size-h2
         color: $text-color
     span.empty
-      $color: $app-placeholder-color
-      color: lighten($color, 50%) !important
+      color: lighten($app-placeholder-color, 50%)
       font-weight: 100 !important
       font-style: italic !important
 
