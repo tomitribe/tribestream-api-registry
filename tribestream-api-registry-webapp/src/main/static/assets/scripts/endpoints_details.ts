@@ -580,9 +580,18 @@ angular.module('tribe-endpoints-details', [
             }
           };
 
-          newScope.headers = parameters.filter(p => p['in'] === 'header' && !!p['name']).map(p => {
-            return { name: p['name'], value: sampleValue(p['type'] || 'string') };
-          });
+          // we pre-fill all headers of the operation + accept/content-type if consumes/produces are there
+          newScope.headers = parameters.filter(p => p['in'] === 'header' && !!p['name'])
+            .filter(p => 'content-type' !== p['name'] && 'accept' !== p['name'])
+            .map(p => {
+              return { name: p['name'], value: sampleValue(p['type'] || 'string') };
+            });
+          if ($scope.endpoint.operation.consumes && $scope.endpoint.operation.consumes.length) {
+            newScope.headers.push({ name: 'Content-Type', value: $scope.endpoint.operation.consumes[0] });
+          }
+          if ($scope.endpoint.operation.produces && $scope.endpoint.operation.produces.length) {
+            newScope.headers.push({ name: 'Accept', value: $scope.endpoint.operation.produces[0] });
+          }
           newScope.headerOptions = [ 'Content-Type', 'Accept' ];
           newScope.headers.forEach(h => newScope.headerOptions.push(h.name));
 
