@@ -18,10 +18,6 @@
  */
 package org.tomitribe.tribestream.registryng.test;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.util.DeserializationModule;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.catalina.realm.RealmBase;
 import org.apache.openejb.testing.ContainerProperties;
@@ -168,12 +164,7 @@ public class Registry {
     public Client client(final boolean secured) { // TODO: close them somehow, not a big deal for tests
         final Client client = ClientBuilder.newBuilder()
                 .property("skip.default.json.provider.registration", true)
-                .register(new CustomJacksonJaxbJsonProvider(new ObjectMapper() {{
-                    registerModule(new DeserializationModule(true, true));
-                    setSerializationInclusion(JsonInclude.Include.NON_NULL);
-                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
-                }}) {
-                })
+                .register(new CustomJacksonJaxbJsonProvider())
                 .build();
         if (!secured) {
             return client;

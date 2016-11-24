@@ -1,0 +1,37 @@
+div.ngdialog-content
+  background-color: #fff !important
+  div.try-me-line
+    display: flex
+    align-items: center
+  div.try-me-button
+    display: flex
+    align-items: center
+    margin-left: 20px
+    background-color: #f0f0f0
+    padding: 5px 15px
+    $color: #464748
+    border: solid $color 1px
+    border-radius: 3px
+    > *, > a > span, > div .trigger > *
+      color: $color
+      text-decoration: none
+    > span, > a, > div .trigger > span, > div .trigger >  a
+      font-weight: 400
+    > i, > div .trigger > i
+      margin-right: 5px
+      font-size: 13px
+    &:hover
+      cursor: pointer
+    &[disabled]
+      > *, > a > span, > div .trigger > *
+        color: lighten($color, 50%)
+      &:hover
+        cursor: default
+  label
+    width: 20%
+  input
+    padding: 0 !important
+    width: 80%
+
+div.tribe-data-tribe-singleselect-available-body
+  z-index: 14000

@@ -186,11 +186,7 @@ public class GenericClientService {
     }
 
     public Response invoke(final Request request) {
-        final Client client = newClient(request.isIgnoreSsl() && request.getUrl() != null && request.getUrl().startsWith("https"))
-                .property("http.connection.timeout", timeout)
-                .property("http.receive.timeout", timeout)
-                .property("jersey.config.client.connectTimeout", timeout)
-                .property("jersey.config.client.readTimeout", timeout);
+        final Client client = newClient(request.isIgnoreSsl() && request.getUrl() != null && request.getUrl().startsWith("https"));
 
         final javax.ws.rs.core.Response response;
         try {
@@ -225,7 +221,11 @@ public class GenericClientService {
         if (ignoreSsl) {
             builder.sslContext(getSSLContext()).hostnameVerifier((s, session) -> true);
         }
-        return builder.build();
+        return builder.build()
+                .property("http.connection.timeout", timeout)
+                .property("http.receive.timeout", timeout)
+                .property("jersey.config.client.connectTimeout", timeout)
+                .property("jersey.config.client.readTimeout", timeout);
     }
 
     private SSLContext getSSLContext() {

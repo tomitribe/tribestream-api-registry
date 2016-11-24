@@ -1,0 +1,12 @@
+h2 Signature Header
+div Important: if you use a payload, ensure to set it before computing this header.
+div.fields
+  div.try-me-line
+    label Header name
+    input(placeholder="Header name", ng-model="digest.header")
+  div.try-me-line
+    label Algorithm
+    div(data-tribe-singleselect, data-placeholder="Algorithm", data-selected-option="digest.algorithm",
+        data-available-options="digestAlgorithmOptions")
+  div.try-me-line
+    button(ng-click="closeThisDialog(digest);").orange Add

@@ -26,10 +26,14 @@ import org.tomitribe.tribestream.registryng.service.client.GenericClientService;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -53,34 +57,12 @@ public class ClientResource {
         try {
             final GenericClientService.Request req = new GenericClientService.Request();
 
-            // passthrough setup
             req.setMethod(request.getMethod());
             req.setUrl(request.getUrl());
             req.setPayload(request.getPayload());
             req.setIgnoreSsl(request.isIgnoreSsl());
             req.setHeaders(new HashMap<>(ofNullable(request.getHeaders()).orElse(emptyMap())));
 
-            // specific headers
-            ofNullable(request.getBasic())
-                    .filter(b -> b.getUsername() != null)
-                    .ifPresent(o -> {
-                        if (req.getHeaders().put(
-                                ofNullable(o.getHeader()).orElse("Authorization"),
-                                service.basicHeader(o.getUsername(), o.getPassword())) != null) {
-                            throw new IllegalArgumentException("You already have a " + o.getHeader() + " header, basic would overwrite it, please fix the request");
-                        }
-                    });
-            ofNullable(request.getOauth2())
-                    .filter(o -> o.getUsername() != null || o.getRefreshToken() != null)
-                    .ifPresent(o -> {
-                        if (req.getHeaders().put(
-                                ofNullable(o.getHeader()).orElse("Authorization"),
-                                service.oauth2Header(
-                                        o.getGrantType(), o.getUsername(), o.getPassword(), o.getRefreshToken(), o.getClientId(), o.getClientSecret(),
-                                        o.getEndpoint(), request.isIgnoreSsl())) != null) {
-                            throw new IllegalArgumentException("You already have a " + o.getHeader() + " header, oauth2 would overwrite it, please fix the request");
-                        }
-                    });
             ofNullable(request.getDigest())
                     .filter(o -> o.getAlgorithm() != null)
                     .ifPresent(o -> {
@@ -90,26 +72,6 @@ public class ClientResource {
                             throw new IllegalArgumentException("You already have a " + o.getHeader() + " header, oauth2 would overwrite it, please fix the request");
                         }
                     });
-            ofNullable(request.getHttpSignature()) // last one cause can depend on other headers
-                    .filter(o -> o.getHeaders() != null && !o.getHeaders().isEmpty())
-                    .ifPresent(o -> {
-                        final URL url;
-                        try {
-                            url = new URL(request.getUrl());
-                        } catch (final MalformedURLException e) {
-                            throw new IllegalArgumentException(e);
-                        }
-                        if (req.getHeaders().put(
-                                ofNullable(o.getHeader()).orElse("Authorization"),
-                                service.httpSign(
-                                        ofNullable(o.getHeaders()).orElseGet(() -> singletonList("(request-target)")), request.getMethod(),
-                                        url.getPath() + ofNullable(url.getQuery()).filter(q -> q != null && !q.isEmpty()).map(q -> "?" + q).orElse(""),
-                                        o.getAlias(), o.getSecret(),
-                                        ofNullable(o.getAlgorithm()).orElse("hmac-sha256"),
-                                        req.getHeaders())) != null) {
-                            throw new IllegalArgumentException("You already have a " + o.getHeader() + " header, signature would overwrite it, please fix the request");
-                        }
-                    });
 
 
             final GenericClientService.Response response = service.invoke(req);
@@ -117,6 +79,58 @@ public class ClientResource {
         } catch (final RuntimeException re) {
             return new HttpResponse(-1, emptyMap(), null, re.getMessage() /*TODO: analyze it?*/);
         }
+    }
+
+    @POST
+    @Path("header/oauth2")
+    public ComputedHeader getOAuth2(final OAuth2Header request, @QueryParam("ignore-ssl") @DefaultValue("false") final boolean ignoreSsl) {
+        return ofNullable(request)
+                .filter(o -> o.getUsername() != null || o.getRefreshToken() != null)
+                .map(o -> new ComputedHeader(request.getHeader(), service.oauth2Header(
+                        o.getGrantType(), o.getUsername(), o.getPassword(), o.getRefreshToken(), o.getClientId(), o.getClientSecret(),
+                        o.getEndpoint(), ignoreSsl)))
+                .orElseThrow(() -> new WebApplicationException(Response.Status.BAD_REQUEST));
+    }
+
+    @POST
+    @Path("header/basic")
+    public ComputedHeader getBasic(final BasicHeader request) {
+        return ofNullable(request)
+                .filter(b -> b.getUsername() != null)
+                .map(o -> new ComputedHeader(request.getHeader(), service.basicHeader(o.getUsername(), o.getPassword())))
+                .orElseThrow(() -> new WebApplicationException(Response.Status.BAD_REQUEST));
+    }
+
+    @POST
+    @Path("header/signature")
+    public ComputedHeader getSignature(final HttpSignatureHeader request) {
+        return ofNullable(request) // should be the last one cause can depend on other headers potentially
+                .filter(o -> o.getHeaders() != null && !o.getHeaders().isEmpty() && o.getAlias() != null && o.getSecret() != null)
+                .map(o -> {
+                    final URL url;
+                    try {
+                        url = new URL(request.getUrl());
+                    } catch (final MalformedURLException e) {
+                        throw new IllegalArgumentException(e);
+                    }
+                    return new ComputedHeader(
+                            request.getHeader(),
+                            service.httpSign(
+                                    ofNullable(o.getHeaders()).orElseGet(() -> singletonList("(request-target)")), request.getMethod(),
+                                    url.getPath() + ofNullable(url.getQuery()).filter(q -> q != null && !q.isEmpty()).map(q -> "?" + q).orElse(""),
+                                    o.getAlias(), o.getSecret(),
+                                    ofNullable(o.getAlgorithm()).orElse("hmac-sha256"),
+                                    request.getRequestHeaders()));
+                })
+                .orElseThrow(() -> new WebApplicationException(Response.Status.BAD_REQUEST));
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ComputedHeader {
+        private String name;
+        private String value;
     }
 
     @Data
@@ -134,6 +148,9 @@ public class ClientResource {
     @Data
     public static class HttpSignatureHeader {
         private String header;
+        private String method;
+        private String url;
+        private Map<String, String> requestHeaders;
         private List<String> headers;
         private String algorithm;
         private String alias;
@@ -159,9 +176,6 @@ public class ClientResource {
         private String method;
         private String url;
         private Map<String, String> headers;
-        private OAuth2Header oauth2;
-        private HttpSignatureHeader httpSignature;
-        private BasicHeader basic;
         private DigestHeader digest;
         private String payload;
     }

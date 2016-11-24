@@ -20,7 +20,9 @@
     "mocha": "3.0.2",
     "chai": "3.5.0",
     "simplemde": "^1.11.2",
-    "highlightjs": "9.6.0"
+    "highlightjs": "9.6.0",
+    "ng-dialog": "0.6.4",
+    "v-accordion": "v1.6.0"
   },
   "resolutions": {
     "angular": "1.5.5"
