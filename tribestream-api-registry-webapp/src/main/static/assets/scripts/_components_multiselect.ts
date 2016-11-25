@@ -392,10 +392,17 @@ angular.module('website-components-multiselect', [
                             $scope['selectedItem'] = null;
                             $scope['onCommit']();
                         } else {
-                            addItem();
-                            releaseSelection();
-                            $scope.onOptionsDeactivated();
-                            $scope.onChange();
+                            if($scope['inputText']) {
+                                addItem();
+                                releaseSelection();
+                                $scope.onOptionsDeactivated();
+                                $scope.onChange();
+                            }
+                            else {
+                                releaseSelection();
+                                $scope.onOptionsDeactivated();
+                                $scope.onChange();
+                            }
                         }
                     } else if (event.keyCode === 27 /* Escape */) {
                         let isCancelChanges = !$scope['inputText'];
