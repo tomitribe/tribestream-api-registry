@@ -162,7 +162,7 @@ public class Provisioning {
         if (location == null) {
             return;
         }
-        final List<OpenApiDocument> apps = repository.findAllApplicationsWithEndpoints();
+        final List<OpenApiDocument> apps = repository.findAllApplications();
         apps.forEach(d -> repository.deleteApplication(d.getId()));
         seedDatabase();
     }

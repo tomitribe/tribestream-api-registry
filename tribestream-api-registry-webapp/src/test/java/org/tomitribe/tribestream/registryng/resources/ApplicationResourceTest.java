@@ -33,9 +33,9 @@ import org.tomitribe.tribestream.registryng.domain.ApplicationWrapper;
 import org.tomitribe.tribestream.registryng.domain.EndpointWrapper;
 import org.tomitribe.tribestream.registryng.domain.EntityLink;
 import org.tomitribe.tribestream.registryng.domain.SearchPage;
-import org.tomitribe.tribestream.registryng.domain.search.EndpointSearchResult;
 import org.tomitribe.tribestream.registryng.domain.TribestreamOpenAPIExtension;
 import org.tomitribe.tribestream.registryng.domain.search.ApplicationSearchResult;
+import org.tomitribe.tribestream.registryng.domain.search.EndpointSearchResult;
 import org.tomitribe.tribestream.registryng.domain.search.SearchResult;
 import org.tomitribe.tribestream.registryng.entities.Normalizer;
 import org.tomitribe.tribestream.registryng.service.search.SearchEngine;
@@ -50,7 +50,6 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -64,7 +63,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(TomEEEmbeddedSingleRunner.class)
 public class ApplicationResourceTest {
@@ -102,7 +100,6 @@ public class ApplicationResourceTest {
 
         assertThat(applicationNames, hasItems("Swagger Petstore", "Uber API"));
     }
-
 
     @Test
     public void shouldImportOpenAPIDocument() throws Exception {

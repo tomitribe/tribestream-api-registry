@@ -104,7 +104,7 @@ public class Registry {
 
     public <T> T withRetries(final Supplier<T> task, final String... description) {
         Throwable lastErr = null;
-        final int max = Integer.getInteger("test.registry.retries", 60);
+        final int max = Integer.getInteger("test.registry.retries", 3);
         final Client client = ClientBuilder.newClient();
         try {
             for (int i = 0; i < max; i++) {

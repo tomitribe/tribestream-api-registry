@@ -33,6 +33,7 @@ public class ApplicationSearchResult {
     private String application;      // plain name
     private String applicationVersion;
     private String link;
+    private boolean empty;
 
     public ApplicationSearchResult(final String applicationId) {
         this.applicationId = applicationId;
