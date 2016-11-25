@@ -34,10 +34,17 @@ div[data-app-endpoints-details-header]
             font-style: normal
             color: #000000
             font-size: 25px !important
+            &.mandatory
+              vertical-align: super !important
+              font-size: 9px !important
+              margin-left: 2px
+              align-self: flex-start
         div.value span, a, div[data-tribe-text] input, div[data-tribe-text] span
           font-size: 25px !important
           font-weight: 600 !important
           margin-right: 5px
+          &.empty
+            margin-right: 0
           max-width: none !important
           &:last-of-type
             margin-right: 0
@@ -52,6 +59,11 @@ div[data-app-endpoints-details-header]
             input
               margin: 12px 0
         div[data-tribe-text]
+          span.mandatory
+            vertical-align: super !important
+            font-size: 9px !important
+            margin-left: 2px
+            align-self: flex-start
           &.active
             input
               margin: 4px 0

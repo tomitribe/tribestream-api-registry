@@ -14,7 +14,8 @@ angular.module('website-components-singleselect', [
                 placeholder: '@?',
                 disableActions: '=?',
                 onEditModeOn: '&?',
-                onEditModeOff: '&?'
+                onEditModeOff: '&?',
+                mandatory: '@?'
             },
             template: require('../templates/component_singleselect.jade'),
             controller: ['$scope', '$timeout', ($scope, $timeout) => $timeout(() => {
@@ -316,7 +317,8 @@ angular.module('website-components-singleselect', [
                 onSelectTopDownOption: '&',
                 onSelectBottomUpOption: '&',
                 inputText: '=',
-                placeholder: '='
+                placeholder: '=',
+                mandatory: '='
             },
             template: require('../templates/component_singleselect_selected.jade'),
             controller: ['$scope', '$timeout', ($scope, $timeout) => {
