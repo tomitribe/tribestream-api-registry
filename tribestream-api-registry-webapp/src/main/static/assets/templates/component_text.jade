@@ -1,10 +1,9 @@
-div(tabindex=0, title="{{title}}")
+div(tabindex=0, x-ng-attr-title="{{mandatory && !value ? '' : title}}")
     div
         .text
             input(type="{{type ? type : 'text'}}", x-ng-keyup="keyEntered($event);", x-ng-model="value")
             span(x-ng-if="value") {{value}}
-            span.empty(x-ng-if="!value") {{placeholder ? placeholder : Empty}}
-            span.mandatory(x-ng-if="!value && mandatory") *
+            span.empty(x-ng-show="!value || value.trim() === ''", x-ng-class="{mandatory: mandatory}") {{placeholder ? placeholder : Empty}}
         .edit-icon
             i.fa.fa-pencil
     div(data-tribe-field-actions,
@@ -14,3 +13,4 @@ div(tabindex=0, title="{{title}}")
         data-on-cancel="onCancel()",
         data-valid-value="valid")
     div(data-tribe-tip, data-message="{{regexTip}}", data-visible="(valid === false)")
+    div(data-tribe-tip, data-message="This is a mandatory field", data-visible="mandatory && (!value || value.trim() === '') && emptyHover")

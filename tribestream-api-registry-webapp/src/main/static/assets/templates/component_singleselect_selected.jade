@@ -2,7 +2,7 @@ div
   .text
     input(type="text", x-ng-keyup="keyEntered($event);", x-ng-model="inputText")
     span {{inputText}}
-    span.empty(x-ng-if="!inputText") {{placeholder !== null &&  placeholder !== undefined ? placeholder : 'Empty'}}
-    span.mandatory(x-ng-if="!inputText && mandatory") *
+    span.empty(x-ng-show="!inputText", x-ng-class="{mandatory: mandatory}") {{placeholder !== null &&  placeholder !== undefined ? placeholder : 'Empty'}}
+    div(data-tribe-tip, data-message="This is a mandatory field", data-visible="mandatory && !inputText && emptyHover")
   .edit-icon
     i.fa.fa-pencil

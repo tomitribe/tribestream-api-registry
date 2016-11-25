@@ -26,6 +26,7 @@ angular.module('website-components-tip', [])
                 var adjustPromise = null;
                 scope.$watch('visible', () => {
                     if (scope['visible']) {
+                        adjust();
                         adjustPromise = $interval(adjust, 1000);
                     } else {
                         if (adjustPromise) {

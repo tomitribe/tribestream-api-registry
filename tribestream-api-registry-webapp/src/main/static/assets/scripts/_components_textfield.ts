@@ -124,6 +124,13 @@ angular.module('website-components-text', [
                         }
                     }
                 });
+                let emptySpan = element.find('span.empty');
+                emptySpan.on('mouseover', () => $timeout(() => scope.$apply(() => {
+                    scope['emptyHover'] = true;
+                })));
+                emptySpan.on('mouseout', () => $timeout(() => scope.$apply(() => {
+                    scope['emptyHover'] = false;
+                })));
             })
         };
     }]);
