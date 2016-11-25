@@ -158,9 +158,7 @@ angular.module('website-components-singleselect', [
                     deactivate();
                     scope['fieldDirty'] = false;
                     scope['optionsActivated'] = false;
-                    el.removeClass('active');
                 });
-
                 scope.$on('fieldDirty', () => {
                     if (scope['fieldDirty']) {
                         cancelDeactivate();
