@@ -102,11 +102,10 @@ angular.module('website-components-multiselect', [
                 let deactivate = () => {
                     cancelDeactivate();
                     deactivatePromise = $timeout(() => {
-                        scope['fieldCommitted']();
+                        // scope['fieldCommitted']();
                         el.removeClass('active');
                         scope.$apply(() => {
                             scope['inputFocused'] = false;
-                            scope['optionsActivated'] = false;
                         });
                     }, 500);
                 };
@@ -129,7 +128,13 @@ angular.module('website-components-multiselect', [
                 let inputEl = el.find('input');
                 inputEl.on('click', actiavionCb);
                 inputEl.on('focus', actiavionCb);
-                inputEl.on('blur', deactivate);
+                inputEl.on('blur', () => {
+                    deactivate();
+                    scope['fieldDirty'] = false;
+                    scope['optionsActivated'] = false;
+                    scope['selectedOptions'] = [];
+                });
+
                 scope.$on('fieldDirty', () => {
                     if (scope['fieldDirty']) {
                         cancelDeactivate();
