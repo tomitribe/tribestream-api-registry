@@ -150,9 +150,27 @@ angular.module('tribe-endpoints', [
                         $timeout(() => {
                           $scope.$apply(() => {
                             let detailsData = response.data;
+                            let links = tribeLinkHeaderService.parseLinkHeader(response['data']['swagger']['x-tribestream-api-registry']['links']);
                             $scope.historyItem = historyItem;
                             $scope.swagger = detailsData.swagger;
                             $scope.humanReadableName = detailsData.humanReadableName;
+                            $scope.endpoints = [];
+                            var endpoints = $scope.endpoints;
+                            if (detailsData.swagger.paths) {
+                              for (let pathName in detailsData.swagger.paths) {
+                                let ops = detailsData.swagger.paths[pathName];
+                                for (let opname in ops) {
+                                  if (opname.match('^x-.*')) {
+                                      continue;
+                                  }
+                                  let operationObject = {
+                                    path: pathName,
+                                    operation: opname
+                                  };
+                                  endpoints.push(operationObject);
+                                }
+                              }
+                            }
                           });
                         });
                       });
