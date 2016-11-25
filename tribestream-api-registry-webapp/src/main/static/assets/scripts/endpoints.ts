@@ -476,17 +476,26 @@ angular.module('tribe-endpoints', [
                 var params = $location.search();
                 $timeout(function () {
                     $scope.$apply(function () {
+                        $scope.choose = "";
                         if (params.a) {
                             $scope.selectedApps = params.a.split(',');
+                            if($scope.choose.length > 0) $scope.choose += ", ";
+                            $scope.choose += "applications";
                         }
                         if (params.c) {
                             $scope.selectedCategories = params.c.split(',');
+                            if($scope.choose.length > 0) $scope.choose += ", ";
+                            $scope.choose += "categories";
                         }
                         if (params.t) {
                             $scope.selectedTags = params.t.split(',');
+                            if($scope.choose.length > 0) $scope.choose += ", ";
+                            $scope.choose += "tags";
                         }
                         if (params.r) {
                             $scope.selectedRoles = params.r.split(',');
+                            if($scope.choose.length > 0) $scope.choose += ", ";
+                            $scope.choose += "roles";
                         }
                     });
                 });
