@@ -307,7 +307,7 @@ angular.module('website-components-singleselect', [
         };
     }])
 
-    .directive('tribeSingleselectSelected', ['$timeout', ($timeout) => {
+    .directive('tribeSingleselectSelected', [() => {
         return {
             restrict: 'A',
             scope: {
@@ -321,7 +321,7 @@ angular.module('website-components-singleselect', [
                 mandatory: '='
             },
             template: require('../templates/component_singleselect_selected.jade'),
-            controller: ['$scope', ($scope) => {
+            controller: ['$scope', '$timeout', ($scope, $timeout) => {
                 $scope.keyEntered = (event) =>  $timeout(() => $scope.$apply(() => {
                     if (event.keyCode === 27 /* Escape */) {
                         $scope['onCancel']();
@@ -335,15 +335,6 @@ angular.module('website-components-singleselect', [
                         // this is a tab key. no-op for now.
                     }
                 }));
-            }],
-            link: (scope, el) => $timeout(() => {
-                let emptySpan = el.find('span.empty');
-                emptySpan.on('mouseover', () => $timeout(() => scope.$apply(() => {
-                    scope['emptyHover'] = true;
-                })));
-                emptySpan.on('mouseout', () => $timeout(() => scope.$apply(() => {
-                    scope['emptyHover'] = false;
-                })));
-            })
+            }]
         };
     }]);
