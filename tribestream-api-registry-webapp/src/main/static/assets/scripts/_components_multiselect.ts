@@ -102,7 +102,6 @@ angular.module('website-components-multiselect', [
                 let deactivate = () => {
                     cancelDeactivate();
                     deactivatePromise = $timeout(() => {
-                        // scope['fieldCommitted']();
                         el.removeClass('active');
                         scope.$apply(() => {
                             scope['inputFocused'] = false;
