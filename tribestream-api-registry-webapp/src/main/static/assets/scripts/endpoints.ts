@@ -150,9 +150,27 @@ angular.module('tribe-endpoints', [
                         $timeout(() => {
                           $scope.$apply(() => {
                             let detailsData = response.data;
+                            let links = tribeLinkHeaderService.parseLinkHeader(response['data']['swagger']['x-tribestream-api-registry']['links']);
                             $scope.historyItem = historyItem;
                             $scope.swagger = detailsData.swagger;
                             $scope.humanReadableName = detailsData.humanReadableName;
+                            $scope.endpoints = [];
+                            var endpoints = $scope.endpoints;
+                            if (detailsData.swagger.paths) {
+                              for (let pathName in detailsData.swagger.paths) {
+                                let ops = detailsData.swagger.paths[pathName];
+                                for (let opname in ops) {
+                                  if (opname.match('^x-.*')) {
+                                      continue;
+                                  }
+                                  let operationObject = {
+                                    path: pathName,
+                                    operation: opname
+                                  };
+                                  endpoints.push(operationObject);
+                                }
+                              }
+                            }
                           });
                         });
                       });
@@ -476,17 +494,26 @@ angular.module('tribe-endpoints', [
                 var params = $location.search();
                 $timeout(function () {
                     $scope.$apply(function () {
+                        $scope.choose = "";
                         if (params.a) {
                             $scope.selectedApps = params.a.split(',');
+                            if($scope.choose.length > 0) $scope.choose += ", ";
+                            $scope.choose += "applications";
                         }
                         if (params.c) {
                             $scope.selectedCategories = params.c.split(',');
+                            if($scope.choose.length > 0) $scope.choose += ", ";
+                            $scope.choose += "categories";
                         }
                         if (params.t) {
                             $scope.selectedTags = params.t.split(',');
+                            if($scope.choose.length > 0) $scope.choose += ", ";
+                            $scope.choose += "tags";
                         }
                         if (params.r) {
                             $scope.selectedRoles = params.r.split(',');
+                            if($scope.choose.length > 0) $scope.choose += ", ";
+                            $scope.choose += "roles";
                         }
                     });
                 });

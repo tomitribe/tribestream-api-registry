@@ -7,11 +7,13 @@ div
         data-on-edit-mode-on="onEditModeOn(uniqueId)",
         data-on-edit-mode-off="onEditModeOff(uniqueId)",
         data-available-options="[{text:'DELETE', value:'delete'}, {text:'HEAD', value:'head'}, {text:'GET', value:'get'}, {text:'OPTIONS', value:'options'}, {text:'POST', value:'post'}, {text:'PUT', value:'put'}, {text:'PATCH', value:'patch'}]",
-        data-selected-option="endpoint.httpMethod")
+        data-selected-option="endpoint.httpMethod",
+        data-mandatory="true")
       div(data-tribe-text,
         data-on-edit-mode-on="onEditModeOn(uniqueId)",
         data-on-edit-mode-off="onEditModeOff(uniqueId)",
-        data-regex="{{regex}}", data-regex-tip="{{regexTip}}", data-value="endpoint.path", data-placeholder="Path")
+        data-regex="{{regex}}", data-regex-tip="{{regexTip}}", data-value="endpoint.path", data-placeholder="Path",
+        data-mandatory="true")
   div(data-tribe-markdown,
     data-on-edit-mode-on="onEditModeOn(uniqueId)",
     data-on-edit-mode-off="onEditModeOff(uniqueId)",

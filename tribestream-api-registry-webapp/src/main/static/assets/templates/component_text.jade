@@ -1,9 +1,10 @@
-div(tabindex=0, title="{{title}}")
+div(tabindex=0, x-ng-attr-title="{{mandatory && !value ? '' : title}}")
     div
         .text
             input(type="{{type ? type : 'text'}}", x-ng-keyup="keyEntered($event);", x-ng-model="value")
             span(x-ng-if="value") {{value}}
             span.empty(x-ng-if="!value") {{placeholder ? placeholder : Empty}}
+            span.empty.mandatory(x-ng-if="!value && mandatory") mandatory
         .edit-icon
             i.fa.fa-pencil
     div(data-tribe-field-actions,

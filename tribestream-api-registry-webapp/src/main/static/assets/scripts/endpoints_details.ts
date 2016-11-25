@@ -610,6 +610,10 @@ angular.module('tribe-endpoints-details', [
             if (!!$scope.endpoint.endpointProtocol) {
               $scope.endpoint.operation.schemes = [$scope.endpoint.endpointProtocol];
             }
+            if(!!$scope.endpoint.operation['x-tribestream-api-registry'] && !!$scope.endpoint.operation['x-tribestream-api-registry'].sees) {
+              $scope.endpoint.operation['x-tribestream-api-registry'].sees =
+                  $scope.endpoint.operation['x-tribestream-api-registry'].sees.filter(v=>!!v.href);
+            }
             if ($scope.endpointLink) {
               srv.saveEndpoint($scope.endpointLink, {
                 // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
@@ -634,7 +638,8 @@ angular.module('tribe-endpoints-details', [
                   let res = saveResponse.data;
                   let app = $scope['application'];
                   let appName = app['humanReadableName'];
-                  $location.path(`endpoint/${appName}/${res.httpMethod}/${res.path}`);
+                  let path = $filter('pathencode')(res.path)
+                  $location.path(`endpoint/${appName}/${res.httpMethod}${path}`);
                 }, handleError
               );
             }
