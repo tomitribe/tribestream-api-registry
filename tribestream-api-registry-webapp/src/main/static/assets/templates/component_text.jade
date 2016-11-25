@@ -4,6 +4,7 @@ div(tabindex=0, title="{{title}}")
             input(type="{{type ? type : 'text'}}", x-ng-keyup="keyEntered($event);", x-ng-model="value")
             span(x-ng-if="value") {{value}}
             span.empty(x-ng-if="!value") {{placeholder ? placeholder : Empty}}
+            span.mandatory(x-ng-if="!value && mandatory") *
         .edit-icon
             i.fa.fa-pencil
     div(data-tribe-field-actions,

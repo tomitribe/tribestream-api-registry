@@ -12,7 +12,8 @@ angular.module('website-components-text', [
                 regex: '@?',
                 regexTip: '@?',
                 onEditModeOn: '&?',
-                onEditModeOff: '&?'
+                onEditModeOff: '&?',
+                mandatory: '@?'
             },
             template: require('../templates/component_text.jade'),
             controller: ['$log', '$scope', ($log, $scope) => $timeout(() => {
