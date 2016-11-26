@@ -229,6 +229,10 @@ public class Repository {
         }
     }
 
+    public List<OpenApiDocument> findAllApplications() {
+        return em.createNamedQuery(OpenApiDocument.Queries.FIND_ALL, OpenApiDocument.class).getResultList();
+    }
+
     public List<OpenApiDocument> findAllApplicationsMetadata() {
         List<OpenApiDocument> result = em.createNamedQuery(OpenApiDocument.Queries.FIND_ALL_METADATA, OpenApiDocument.class)
                 .getResultList();
@@ -291,7 +295,8 @@ public class Repository {
             for (Map.Entry<String, Path> stringPathEntry : swagger.getPaths().entrySet()) {
                 final String path = stringPathEntry.getKey();
                 final Path pathObject = stringPathEntry.getValue();
-                for (Map.Entry<HttpMethod, Operation> httpMethodOperationEntry : pathObject.getOperationMap().entrySet()) {
+                for (Map.Entry<HttpMethod, Operation> httpMethodOperationEntry : pathObject.getOperationMap()
+                                                                                           .entrySet()) {
                     final String verb = httpMethodOperationEntry.getKey().name().toUpperCase();
                     final Operation operation = httpMethodOperationEntry.getValue();
 
@@ -306,7 +311,10 @@ public class Repository {
                     searchEngine.indexEndpoint(endpoint);
                 }
             }
+        } else {
+            searchEngine.indexApplication(document);
         }
+
         return document;
     }
 
@@ -315,11 +323,9 @@ public class Repository {
     }
 
     public Endpoint insert(final Endpoint endpoint, final String applicationId) {
-        OpenApiDocument application = findByApplicationId(applicationId);
-        application.getEndpoints().add(endpoint);
-
+        final OpenApiDocument application = findByApplicationId(applicationId);
         endpoint.setApplication(application);
-        Date now = new Date();
+        final Date now = new Date();
         endpoint.setCreatedAt(now);
         endpoint.setUpdatedAt(now);
         endpoint.setCreatedBy(getUser());
@@ -328,6 +334,8 @@ public class Repository {
         application.setUpdatedAt(now);
         application.setUpdatedBy(getUser());
         em.persist(endpoint);
+        searchEngine.deleteApplication(application);
+        application.setElasticsearchId(null);
         update(application);
 
         em.flush();
@@ -391,6 +399,7 @@ public class Repository {
             return false;
         } else {
             ofNullable(document.getEndpoints()).ifPresent(e -> e.forEach(searchEngine::deleteEndpoint));
+            searchEngine.deleteApplication(document);
             em.remove(document);
             return true;
         }

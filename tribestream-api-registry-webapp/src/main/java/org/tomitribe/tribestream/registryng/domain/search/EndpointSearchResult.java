@@ -42,5 +42,5 @@ public class EndpointSearchResult {
     private Set<String> roles;
     private double score;
     private String link;
-
+    private boolean empty;
 }

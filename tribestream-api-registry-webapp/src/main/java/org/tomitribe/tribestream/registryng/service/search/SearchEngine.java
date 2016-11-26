@@ -91,8 +91,6 @@ public class SearchEngine {
                 .add("roles", term("role"))
                 .add("applications", term("applicationName"));
 
-        final boolean showAll;
-
         final JsonObjectBuilder query = jsonFactory.createObjectBuilder().add("aggs", aggs);
         if ((request.getQuery() != null && !"*".equals(request.getQuery()) && !request.getQuery().isEmpty())
                 || (request.getCategories() != null && !request.getCategories().isEmpty())
@@ -115,20 +113,14 @@ public class SearchEngine {
             query.add("query", jsonFactory.createObjectBuilder()
                     .add("bool", jsonFactory.createObjectBuilder()
                             .add("must", must)));
-
-            showAll = false;
-        } else {
-            showAll = true;
         }
 
         final JsonObject object = elasticsearch.search(query.build(), request.getPage() * pageSize, pageSize);
-
         final JsonObject hits = object.getJsonObject("hits");
         final JsonObject aggregations = object.getJsonObject("aggregations");
         final int total = hits.getInt("total");
 
-
-        List<EndpointSearchResult> allEndpointsSearchResults = total == 0 ? new ArrayList<>() : hits.getJsonArray("hits").stream()
+        final List<EndpointSearchResult> allEndpointsSearchResults = total == 0 ? new ArrayList<>() : hits.getJsonArray("hits").stream()
                 .map(json -> JsonObject.class.cast(json).getJsonObject("_source"))
                 .map(source -> new EndpointSearchResult(
                         getString(source, APPLICATION_ID_FIELD),
@@ -144,47 +136,38 @@ public class SearchEngine {
                         getStrings(source, "tag"),
                         getStrings(source, "role"),
                         getDouble(source, "_score"),
-                        null))
+                        null,
+                        getBoolean(source, "empty")))
                 .collect(toList());
 
         final Stream<ApplicationSearchResult> applicationSearchResults;
-        if (showAll) {
-
-            applicationSearchResults = repository.findAllApplicationsMetadata().stream()
-                    .map(openApiDocument ->
-                            new ApplicationSearchResult(
-                                    openApiDocument.getId(),
-                                    openApiDocument.getHumanReadableName(),
-                                    openApiDocument.getName(),
-                                    openApiDocument.getVersion(), null));
-
-        } else if (total > 0) {
-
-            applicationSearchResults = allEndpointsSearchResults.stream()
-                    .map(searchResult ->
-                            new ApplicationSearchResult(
-                                    searchResult.getApplicationId(),
-                                    searchResult.getApplicationName(),
-                                    searchResult.getApplication(),
-                                    searchResult.getApplicationVersion(),
-                                    null))
+        if (total > 0) {
+            applicationSearchResults = allEndpointsSearchResults
+                    .stream()
+                    .map(searchResult -> new ApplicationSearchResult(searchResult.getApplicationId(),
+                                                                     searchResult.getApplicationName(),
+                                                                     searchResult.getApplication(),
+                                                                     searchResult.getApplicationVersion(),
+                                                                     null,
+                                                                     searchResult.isEmpty()))
                     .distinct();
 
         } else {
             applicationSearchResults = Stream.empty();
         }
 
-        List<SearchResult> searchResults = applicationSearchResults
+        final List<SearchResult> searchResults = applicationSearchResults
                 .map(applicationSearchResult ->
                         new SearchResult(
                                 applicationSearchResult,
-                                allEndpointsSearchResults.stream()
+                                allEndpointsSearchResults
+                                        .stream()
+                                        .filter(endpointSearchResult -> !endpointSearchResult.isEmpty())
                                         .filter(endpointSearchResult -> endpointSearchResult.getApplicationId().equals(applicationSearchResult.getApplicationId()))
                                         .collect(toList())
                         )
                 )
                 .collect(toList());
-
 
         return new SearchPage(
                 searchResults,
@@ -194,6 +177,23 @@ public class SearchEngine {
                 aggregationToSet(aggregations, "categories", request.getCategories()),
                 aggregationToSet(aggregations, "tags", request.getTags()),
                 aggregationToSet(aggregations, "roles", request.getRoles()));
+    }
+
+    public void indexApplication(final OpenApiDocument application) {
+        LOGGER.info(() -> String.format("Indexing %s", application.getSwagger().getInfo().getTitle()));
+        final JsonObjectBuilder applicationJson = jsonFactory.createObjectBuilder();
+
+        applicationJson.add("empty", "true");
+        applicationJson.add(APPLICATION_ID_FIELD, application.getId());
+        applicationJson.add(APPLICATION_NAME, application.getSwagger().getInfo().getTitle());
+        applicationJson.add(APPLICATION_HUMAN_READABLE_NAME, application.getHumanReadableName());
+        applicationJson.add(APPLICATION_VERSION, application.getSwagger().getInfo().getVersion());
+
+        Optional.ofNullable(application.getSwagger().getInfo().getDescription())
+                .ifPresent(d -> applicationJson.add("applicationDoc", d));
+
+        final String id = elasticsearch.create(applicationJson.build()).getString("_id");
+        application.setElasticsearchId(id);
     }
 
     public void indexEndpoint(final Endpoint endpoint) {
@@ -206,6 +206,11 @@ public class SearchEngine {
         } else {
             endpoint.setElasticsearchId(elasticsearch.create(document).getString("_id"));
         }
+    }
+
+    public void deleteApplication(final OpenApiDocument application) {
+        LOGGER.info(() -> String.format("Deleting Index %s", application.getSwagger().getInfo().getTitle()));
+        ofNullable(application.getElasticsearchId()).ifPresent(elasticsearch::delete);
     }
 
     public void deleteEndpoint(final Endpoint endpoint) {
@@ -294,6 +299,10 @@ public class SearchEngine {
 
     private String getString(final JsonObject object, final String key) {
         return object.containsKey(key) ? object.getString(key) : null;
+    }
+
+    private boolean getBoolean(final JsonObject object, final String key) {
+        return object.containsKey(key) && Boolean.valueOf(object.getString(key));
     }
 
     private void addDrillDown(final List<String> values, final JsonArrayBuilder builder, final String... names) {

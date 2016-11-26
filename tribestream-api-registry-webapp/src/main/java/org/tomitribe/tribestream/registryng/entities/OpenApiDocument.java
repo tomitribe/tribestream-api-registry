@@ -113,6 +113,9 @@ public class OpenApiDocument extends AbstractEntity {
     @Column(nullable = false)
     private String version;
 
+    @Column(name = "EXTERNAL_INDEX_ID")
+    private String elasticsearchId;
+
     @Column(length = 1024 * 1024)
     @Lob
     private String document;
