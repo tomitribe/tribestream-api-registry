@@ -102,6 +102,13 @@ angular.module('website-components-singleselect', [
                         });
                         $scope['inputText'] = $scope.getOptionText(existing);
                         $scope['selectedItem'] = _.clone(existing);
+                    } else {
+                        $scope['fieldDirty'] = false;
+                        $scope['optionsActivated'] = false;
+                        $scope['originalSelectedOption'] = null;
+                        $scope['inputText'] = '';
+                        $scope['activeBottomUp'] = null;
+                        $scope.$broadcast('fieldCommitted');
                     }
                 }));
                 $scope['onSelectTopDownOption'] = () => $timeout(() => $scope.$apply(() => {
@@ -127,7 +134,7 @@ angular.module('website-components-singleselect', [
                         el.removeClass('active');
                         scope.$apply(() => scope['optionsActivated'] = false);
                         if (scope['fieldDirty']) {
-                            scope['onCommit'](true);
+                            scope['onCommit']();
                         }
                         if (scope['onEditModeOff']) {
                             scope['onEditModeOff']({'uniqueId': scope['uniqueId']});
@@ -197,7 +204,12 @@ angular.module('website-components-singleselect', [
                     $scope.availableOptions = _.sortBy(_.filter($scope.availableOptions, (opt) => {
                         return $scope.getOptionText(opt).toLowerCase().startsWith(text.toLowerCase());
                     }), (item) => $scope.getOptionText(item));
-                    $scope['selectedItem'] = _.find($scope.availableOptions, (opt) => $scope.getOptionText(opt).toLowerCase().startsWith(text.toLowerCase()));
+                    $scope['selectedItem'] = _.find($scope.availableOptions, (opt) => {
+                        if(text) {
+                            return $scope.getOptionText(opt).toLowerCase().startsWith(text.toLowerCase());
+                        }
+                        return false;
+                    });
                     if ($scope.editable) {
                         if (_.find($scope.availableOptions, (opt) => $scope.getOptionText(opt) === text)) {
                             $scope.newOpt = null;
@@ -208,9 +220,6 @@ angular.module('website-components-singleselect', [
                             $scope['selectedItem'] = $scope.newOpt;
                         }
                     }
-                }));
-                $scope.selectAvailableItem = (item) => $timeout(() => $scope.$apply(() => {
-                    $scope['selectedItem'] = item;
                 }));
                 $scope.selectNext = () => $timeout(() => $scope.$apply(() => {
                     let ordered = _.sortBy($scope.availableOptions, (item) => $scope.getOptionText(item).toLowerCase());
