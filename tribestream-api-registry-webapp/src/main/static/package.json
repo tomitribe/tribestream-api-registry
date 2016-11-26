@@ -4,7 +4,7 @@
   "description": "Frontend for tribestream-api-registry",
   "scripts": {
     "build": "rimraf ../../target/static-resources && webpack --config webpack.config.js --progress --profile --bail",
-    "buildnwatch": "webpack --config webpack.config.dev.js --progress --profile --bail --watch",
+    "buildnwatch": "webpack --config webpack.config.dev.js --progress --profile --watch",
     "test": "karma start karma.continuous.conf.js",
     "test-once": "karma start karma.once.conf.js",
     "postinstall": "typings install && bower install"
@@ -19,6 +19,7 @@
     "angular-cookies": "1.5.8",
     "angular-resource": "1.5.8",
     "angular-route": "1.5.8",
+    "angular-animate": "1.5.8",
     "ngstorage": "0.3.11"
   },
   "devDependencies": {

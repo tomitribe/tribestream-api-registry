@@ -1,0 +1,25 @@
+h2 OAuth2 Header
+div.fields
+  div.try-me-line
+    label Token Endpoint URL
+    input(placeholder="Token Endpoint, https://.../oauth/token", ng-model="oauth2.endpoint")
+  div.try-me-line
+    label Header name
+    input(placeholder="Header name", ng-model="oauth2.header")
+  div.try-me-line
+    label Grant Type
+    div(data-tribe-singleselect, data-placeholder="Grant Type", data-selected-option="oauth2.grantType",
+        data-available-options="[{text:'Password', value:'password'},{text:'Refresh Token', value:'refresh_token'}]")
+  div(ng-if="oauth2.grantType == 'password'").try-me-line
+    label Credentials
+    input(placeholder="Username", ng-model="oauth2.username")
+    input(placeholder="Password", ng-model="oauth2.password", type="password")
+  div(ng-if="oauth2.grantType == 'refresh_token'").try-me-line
+    label Refresh Token
+    input(placeholder="Refresh Token", ng-model="oauth2.refreshToken")
+  div.try-me-line
+    label Client (optional)
+    input(placeholder="Client ID", ng-model="oauth2.clientId")
+    input(placeholder="Client Secret", ng-model="oauth2.clientSecret", type="password")
+  div.try-me-line
+    button(ng-click="closeThisDialog(oauth2);").orange Add

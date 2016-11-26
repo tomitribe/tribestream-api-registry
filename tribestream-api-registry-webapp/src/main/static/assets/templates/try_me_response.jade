@@ -1,0 +1,20 @@
+h2 Response
+v-accordion(multiple="").vAccordion--default
+  v-pane(ng-if="response.status > 0")
+    v-pane-header HTTP Status
+    v-pane-content {{response.status}}
+  v-pane(ng-if="response.status > 0")
+    v-pane-header Headers
+    v-pane-content
+      div(ng-repeat="h in response.headers track by $index")
+        div.try-me-line
+          label {{h.name}}
+          div label {{h.value}}
+  v-pane(ng-if="response.status > 0 && !!response.payload")
+    v-pane-header Payload
+    v-pane-content
+      ui-codemirror(ng-model="response.payload", ui-codemirror-opts="payloadOptions")
+  v-pane(ng-if="!!response.error")
+    v-pane-header Client Error
+    v-pane-content
+      ui-codemirror(ng-model="response.error", ui-codemirror-opts="payloadOptions")

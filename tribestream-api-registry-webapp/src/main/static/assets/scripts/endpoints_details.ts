@@ -1,9 +1,16 @@
+import {TryMeService} from './tryme.service';
+
 module endpointdetails {
 let HistoryCommonController = require("./endpoints_common.ts").controllerEndpoint;
 
 angular.module('tribe-endpoints-details', [
     'website-services',
-    'website-services-endpoints'
+    'website-services-endpoints',
+    'ngDialog',
+    'ngAnimate',
+    'vAccordion',
+    'ui.codemirror',
+    'ui.select'
 ])
 
     .factory('appEndpointsDetailsHeaderService', [($location) => {
@@ -14,6 +21,8 @@ angular.module('tribe-endpoints-details', [
             }
         };
     }])
+
+    .service('TryMeService', ['$http', $http => new TryMeService($http)])
 
     .directive('appEndpointsDetailsHeader', ['$window', '$timeout', '$filter', function ($window, $timeout, $filter) {
         return {
@@ -523,8 +532,192 @@ angular.module('tribe-endpoints-details', [
       'requestMetadata': '='
     },
     controller: [
-      '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', '$location', 'systemMessagesService', 'tribeLinkHeaderService',
-      function ($scope, srv, tribeFilterService, $timeout, $filter, $log, $location, systemMessagesService, tribeLinkHeaderService) {
+      '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', '$location', 'systemMessagesService', 'tribeLinkHeaderService', 'ngDialog', 'TryMeService',
+      function ($scope, srv, tribeFilterService, $timeout, $filter, $log, $location, systemMessagesService, tribeLinkHeaderService, ngDialog, tryMeService) {
+        $scope.isSaveable = () => {
+          return !$scope['isOnEdit'] && $scope['endpoint'] && !!$scope['endpoint']['httpMethod'] && !!$scope['endpoint']['path'] && !!$scope['endpoint']['path'].trim();
+        };
+
+        const sampleValue = type => {
+          switch(type) {
+            case 'boolean':
+              return 'true';
+            case 'integer':
+            case 'long':
+            case 'int32':
+            case 'int64':
+            case 'number':
+              return '10';
+            case 'float':
+            case 'double':
+              return '10.0';
+            default:
+              return 'value';
+          }
+        };
+
+        $scope.tryMeModal = () => {
+          let newScope = $scope.$new();
+          const swagger = $scope.application.swagger;
+          const url = ($scope.endpoint.endpointProtocol || 'http') + '://' + swagger.host + (swagger.basePath === '/' ? '' : swagger.basePath) + $scope.endpoint.path;
+          const parameters = (($scope.endpoint.operation || {}).parameters || {});
+          const querySample = parameters.filter(p => p['in'] === 'query' && !!p['name'])
+            .reduce((acc, param) => acc + (!!acc ? '&' : '?') + param['name'] + '=' + sampleValue(param['type'] || 'string'), '');
+
+          // TODO: using $scope.application.swagger definitions, for now just hardcode something
+          const payload = $scope.endpoint.httpMethod === 'post' || $scope.endpoint.httpMethod === 'put' ? '{}' : undefined;
+
+          newScope.endpoint = $scope.endpoint;
+          newScope.payloadOptions = {lineNumbers: true, mode: 'javascript'};
+          newScope.request = {
+            ignoreSsl: url.indexOf('https') == 0,
+            method: $scope.endpoint.httpMethod.toUpperCase(),
+            url: url + querySample,
+            payload: payload,
+            digest: {
+              header: 'Digest'
+            }
+          };
+
+          // we pre-fill all headers of the operation + accept/content-type if consumes/produces are there
+          newScope.headers = parameters.filter(p => p['in'] === 'header' && !!p['name'])
+            .filter(p => 'content-type' !== p['name'] && 'accept' !== p['name'])
+            .map(p => {
+              return { name: p['name'], value: sampleValue(p['type'] || 'string') };
+            });
+          if ($scope.endpoint.operation.consumes && $scope.endpoint.operation.consumes.length) {
+            newScope.headers.push({ name: 'Content-Type', value: $scope.endpoint.operation.consumes[0] });
+          }
+          if ($scope.endpoint.operation.produces && $scope.endpoint.operation.produces.length) {
+            newScope.headers.push({ name: 'Accept', value: $scope.endpoint.operation.produces[0] });
+          }
+          newScope.headerOptions = [ 'Content-Type', 'Accept' ];
+          newScope.headers.forEach(h => newScope.headerOptions.push(h.name));
+
+          newScope.onHeaderChange = (name, header) => {
+            if (!name) {
+              if (!!header.$$proposals) {
+                header.$$proposals = [];
+              }
+              return;
+            }
+            if ((name == 'Content-Type' || name == 'Accept') && !header.$$proposals) {
+              header.$$proposals = ['application/json', 'application/xml', 'application/x-www-form-urlencoded', 'text/plain'];
+            } else if (!!this.$$proposals) {
+              header.$$proposals = [];
+            }
+          };
+          newScope.addHeader = () => {
+            newScope.headers.push({});
+          };
+
+          newScope.addDigest = () => {
+            let digestScope = $scope.$new();
+            digestScope.digest = {
+              header: 'Digest',
+              algorithm: 'sha-256'
+            };
+            digestScope.digestAlgorithmOptions = ['md2', 'md4', 'md5', 'sha-1', 'sha-224', 'sha-256', 'sha-384', 'sha-512']
+              .map(name => {
+                return {text: name, value:name};
+              });
+            ngDialog.open({ template: require('../templates/try_me_digest.jade'), plain: true, scope: digestScope }).closePromise.then(digest => {
+              if ('$closeButton' === digest.value) {
+                return;
+              }
+              newScope.request.digest = digest.value;
+            });
+          };
+
+          newScope.addOAuth2 = () => {
+            let oauth2Scope = $scope.$new();
+            oauth2Scope.oauth2 = {
+              header: 'Authorization',
+              grantType: 'password'
+            };
+            ngDialog.open({ template: require('../templates/try_me_oauth2.jade'), plain: true, scope: oauth2Scope }).closePromise.then(oauth2 => {
+              if ('$closeButton' === oauth2.value) {
+                return;
+              }
+              tryMeService.getOAuth2Header(oauth2.value, newScope.request.ignoreSsl)
+                .success(result => newScope.headers.push(result))
+                .error(err => systemMessagesService.error('Can\'t get the OAuth2 token with these informations'));
+            });
+          };
+
+          newScope.addSignature = () => {
+            let signatureScope = $scope.$new();
+            signatureScope.signatureAlgorithmOptions = [
+              'hmac-sha1', 'hmac-sha224', 'hmac-sha256', 'hmac-sha384', 'hmac-sha512',
+              'rsa-sha1', 'rsa-sha256', 'rsa-sha384', 'rsa-sha512',
+              'dsa-sha1', 'dsa-sha224', 'dsa-sha256'
+            ].map(name => { return {text:name, value:name}; });
+            signatureScope.signature = {
+              header: 'Authorization',
+              headers: ['(request-target)'],
+              algorithm: 'hmac-sha256',
+              method: newScope.request.method,
+              url: newScope.request.url,
+              requestHeaders: newScope.headers.reduce((accumulator, e) => {
+                accumulator[e.name] = e.value;
+                return accumulator;
+              }, {})
+            };
+            signatureScope.headerOptions = newScope.headers.map(h => h.name);
+            signatureScope.headerOptions.push('(request-target)');
+            ngDialog.open({ template: require('../templates/try_me_signature.jade'), plain: true, scope: signatureScope }).closePromise.then(signature => {
+              if ('$closeButton' === signature.value) {
+                return;
+              }
+              // remove if any header is null
+              signature.value.headers = signature.value.headers.filter(h => !!h);
+              tryMeService.getSignatureHeader(signature.value)
+                .success(result => newScope.headers.push(result))
+                .error(err => systemMessagesService.error('Can\'t get the Signature header with these informations'));
+            });
+          };
+
+          newScope.addBasic = () => {
+            let basicScope = $scope.$new();
+            basicScope.basic = {
+              header: 'Authorization'
+            };
+            ngDialog.open({ template: require('../templates/try_me_basic.jade'), plain: true, scope: basicScope }).closePromise.then(basic => {
+              if ('$closeButton' === basic.value) {
+                return;
+              }
+              tryMeService.getBasicHeader(basic.value)
+                .success(result => newScope.headers.push(result))
+                .error(err => systemMessagesService.error('Can\'t get the Basic header with these informations'));
+            });
+          };
+
+          newScope.addDate = () => {
+            newScope.headers.push({name: 'Date', value: new Date().toUTCString()});
+          };
+
+          newScope.tryIt = () => {
+            // convert headers, better than watching it which would be slow for no real reason
+            newScope.request.headers = newScope.headers.filter(h => !!h.name && !!h.value).reduce((accumulator, e) => {
+              accumulator[e.name] = e.value;
+              return accumulator;
+            }, {});
+            tryMeService.request(newScope.request)
+              .success(result => {
+                let responseScope = $scope.$new();
+                responseScope.payloadOptions = newScope.payloadOptions;
+                responseScope.response = result;
+                responseScope.response.headers = Object.keys(responseScope.response.headers).map(key => {
+                   return {name: key, value: responseScope.response.headers[key]};
+                });
+                ngDialog.open({ template: require('../templates/try_me_response.jade'), plain: true, scope: responseScope });
+              })
+              .error(err => systemMessagesService.error('Can\'t execute the request, check the information please'));
+          };
+
+          ngDialog.open({ template: require('../templates/try_me.jade'), plain: true, scope: newScope, width: '80%' });
+        };
+
         $scope['onEditCount'] = {};
         $scope['onEditModeOn'] = (uniqueId) => $timeout(() => $scope.$apply(() => {
             $scope['onEditCount'][uniqueId] = {};
@@ -736,8 +929,7 @@ angular.module('tribe-endpoints-details', [
         };
     }])
 
-  .run(function () {
-    // placeholder
-  });
-
+  .config(['uiSelectConfig', function(uiSelectConfig) {
+    uiSelectConfig.theme = 'selectize';
+  }]);
 }

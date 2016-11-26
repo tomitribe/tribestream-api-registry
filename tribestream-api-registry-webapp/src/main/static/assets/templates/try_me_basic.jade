@@ -1,0 +1,11 @@
+h2 Basic Header
+div.fields
+  div.try-me-line
+    label Header name
+    input(placeholder="Header name", ng-model="basic.header")
+  div.try-me-line
+    label Credentials
+    input(placeholder="Username", ng-model="basic.username")
+    input(placeholder="Password", ng-model="basic.password", type="password")
+  div.try-me-line
+    button(ng-click="closeThisDialog(basic);").orange Add
