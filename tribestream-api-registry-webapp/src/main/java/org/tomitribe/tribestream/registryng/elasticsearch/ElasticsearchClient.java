@@ -109,6 +109,7 @@ public class ElasticsearchClient {
                 .resolveTemplate("index", index)
                 .resolveTemplate("type", endpointType)
                 .resolveTemplate("id", id)
+                .queryParam("refresh", "true")
                 .request(APPLICATION_JSON_TYPE)
                 .post(entity(data, APPLICATION_JSON_TYPE), JsonObject.class);
     }

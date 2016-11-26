@@ -334,6 +334,9 @@ public class Repository {
         application.setUpdatedAt(now);
         application.setUpdatedBy(getUser());
         em.persist(endpoint);
+
+        // Deletes Empty Application from ES, because the Endpoint is going to replace it.
+        // Only needed when adding the first Endpoint.
         searchEngine.deleteApplication(application);
         application.setElasticsearchId(null);
         update(application);
@@ -364,12 +367,20 @@ public class Repository {
         return result;
     }
 
-    public OpenApiDocument update(OpenApiDocument document) {
+    public OpenApiDocument update(final OpenApiDocument document) {
         document.setUpdatedAt(new Date());
         document.setUpdatedBy(loginContext.getUsername());
         if (document.getSwagger() != null) {
             document.setDocument(convertToJson(document.getSwagger()));
         }
+        // Only need to reindex when the Application is Empty. The Application is Empty when exists in ES,
+        // meaning that the elasticSearchId is not null.
+        if (document.getElasticsearchId() != null) {
+            searchEngine.indexApplication(document);
+        } else {
+            document.getEndpoints().stream().forEach(endpoint -> searchEngine.indexEndpoint(endpoint));
+        }
+
         return em.merge(document);
     }
 

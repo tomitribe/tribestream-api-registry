@@ -183,7 +183,8 @@ public class SearchEngine {
         LOGGER.info(() -> String.format("Indexing %s", application.getSwagger().getInfo().getTitle()));
         final JsonObjectBuilder applicationJson = jsonFactory.createObjectBuilder();
 
-        applicationJson.add("empty", "true");
+        applicationJson.add("empty", Optional.ofNullable(application.getEndpoints())
+                                             .map(Collection::isEmpty).orElse(Boolean.FALSE).toString());
         applicationJson.add(APPLICATION_ID_FIELD, application.getId());
         applicationJson.add(APPLICATION_NAME, application.getSwagger().getInfo().getTitle());
         applicationJson.add(APPLICATION_HUMAN_READABLE_NAME, application.getHumanReadableName());
@@ -192,8 +193,11 @@ public class SearchEngine {
         Optional.ofNullable(application.getSwagger().getInfo().getDescription())
                 .ifPresent(d -> applicationJson.add("applicationDoc", d));
 
-        final String id = elasticsearch.create(applicationJson.build()).getString("_id");
-        application.setElasticsearchId(id);
+        if (application.getElasticsearchId() == null) {
+            application.setElasticsearchId(elasticsearch.create(applicationJson.build()).getString("_id"));
+        } else {
+            elasticsearch.update(application.getElasticsearchId(), applicationJson.build());
+        }
     }
 
     public void indexEndpoint(final Endpoint endpoint) {
