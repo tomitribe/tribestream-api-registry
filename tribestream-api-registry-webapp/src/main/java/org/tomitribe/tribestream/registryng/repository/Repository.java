@@ -423,6 +423,13 @@ public class Repository {
         } else {
             searchEngine.deleteEndpoint(endpoint);
             em.remove(endpoint);
+            em.flush();
+
+            final OpenApiDocument document = findByApplicationIdWithEndpoints(applicationId);
+            if (document.getEndpoints().isEmpty()) {
+                searchEngine.indexApplication(document);
+            }
+
             return true;
         }
     }
