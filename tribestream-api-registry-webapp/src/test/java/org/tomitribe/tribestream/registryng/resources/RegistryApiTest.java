@@ -43,13 +43,15 @@ import javax.json.JsonReader;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
+import static javax.ws.rs.client.Entity.entity;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
+import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -81,9 +83,10 @@ public class RegistryApiTest {
 
     @Test
     public void testDeleteApplication() throws Exception {
-        insertApplication("empty");
+        final String name = UUID.randomUUID().toString();
+        insertApplication(name);
 
-        final OpenApiDocument document = findApplicationByName("empty").orElseThrow(IllegalStateException::new);
+        final OpenApiDocument document = findApplicationByName(name).orElseThrow(IllegalStateException::new);
 
         final Response response = registry.target()
                                           .path("api/application/{id}")
@@ -91,17 +94,18 @@ public class RegistryApiTest {
                                           .request()
                                           .delete();
         assertEquals(OK.getStatusCode(), response.getStatus());
-        assertFalse(findApplicationByName("empty").isPresent());
+        assertFalse(findApplicationByName(name).isPresent());
 
-        final JsonObject hits = findApplicationIndex("empty");
+        final JsonObject hits = findApplicationIndex(name);
         assertEquals(0, hits.getInt("total"));
     }
 
     @Test
     public void testInsertAndFindEmptyApplication() throws Exception {
-        insertApplication("empty");
+        final String name = UUID.randomUUID().toString();
+        insertApplication(name);
 
-        final SearchRequest searchRequest = new SearchRequest("empty", null, null, null, null, 0, 10);
+        final SearchRequest searchRequest = new SearchRequest(name, null, null, null, null, 0, 10);
         final SearchPage searchPage = engine.search(searchRequest);
         assertNotNull(searchPage);
 
@@ -110,34 +114,20 @@ public class RegistryApiTest {
         assertEquals(1, searchResults.size());
 
         final SearchResult searchResult = searchResults.get(0);
-        assertEquals("empty", searchResult.getApplication().getApplicationName());
+        assertEquals(name, searchResult.getApplication().getApplicationName());
         assertTrue(searchResult.getEndpoints().isEmpty());
     }
 
     @Test
     public void testInsertAndAddEndpoint() throws Exception {
-        testInsertAndFindEmptyApplication();
+        final String name = UUID.randomUUID().toString();
+        insertApplication(name);
 
-        final OpenApiDocument document = findApplicationByName("empty").orElseThrow(IllegalStateException::new);
-
-        final EndpointWrapper endpoint = new EndpointWrapper();
-        endpoint.setHttpMethod("POST");
-        endpoint.setPath("/test");
-        final Operation operation = new Operation();
-        operation.setDescription("Description");
-        operation.setSummary("Summary");
-        endpoint.setOperation(operation);
-
-        final Response response = registry.target().path("api/application/{applicationId}/endpoint")
-                                          .resolveTemplate("applicationId", document.getId())
-                                          .request(MediaType.APPLICATION_JSON_TYPE)
-                                          .post(Entity.entity(endpoint, MediaType.APPLICATION_JSON_TYPE));
+        final Response response = addEndpointToApplication(name, "endpoint");
         final EndpointWrapper persistedEndpoint = response.readEntity(EndpointWrapper.class);
         assertNotNull(persistedEndpoint.getEndpointId());
-        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
-        final SearchRequest searchRequest = new SearchRequest("empty", null, null, null, null, 0, 10);
-        final SearchPage searchPage = engine.search(searchRequest);
+        final SearchPage searchPage = engine.search(new SearchRequest(name, null, null, null, null, 0, 10));
         assertNotNull(searchPage);
 
         final List<SearchResult> searchResults = searchPage.getResults();
@@ -145,8 +135,53 @@ public class RegistryApiTest {
         assertEquals(1, searchResults.size());
 
         final SearchResult searchResult = searchResults.get(0);
-        assertEquals("empty", searchResult.getApplication().getApplicationName());
+        assertEquals(name, searchResult.getApplication().getApplicationName());
         assertFalse(searchResult.getEndpoints().isEmpty());
+    }
+
+    @Test
+    public void testRenameAndSearchEmptyApplication() throws Exception {
+        final String name = UUID.randomUUID().toString();
+        insertApplication(name);
+
+        final SearchPage searchPage = engine.search(new SearchRequest(name, null, null, null, null, 0, 10));
+        assertNotNull(searchPage);
+
+        final List<SearchResult> searchResults = searchPage.getResults();
+        assertNotNull(searchResults);
+        assertEquals(1, searchResults.size());
+
+        final SearchResult searchResult = searchResults.get(0);
+        assertEquals(name, searchResult.getApplication().getApplicationName());
+        assertTrue(searchResult.getEndpoints().isEmpty());
+
+        updateApplication(name, UUID.randomUUID().toString());
+    }
+
+    @Test
+    public void testRenameAndSearchApplicationWithEndpoints() throws Exception {
+        final String name = UUID.randomUUID().toString();
+        insertApplication(name);
+        assertEquals(1, findApplicationIndex(name).getInt("total"));
+
+        addEndpointToApplication(name, "endpoint");
+        assertEquals(1, findApplicationIndex(name).getInt("total"));
+
+        final String newName = UUID.randomUUID().toString();
+        updateApplication(name, newName);
+
+        final SearchPage searchPageOld = engine.search(new SearchRequest(name, null, null, null, null, 0, 10));
+        assertNotNull(searchPageOld);
+        final List<SearchResult> searchResultsOld = searchPageOld.getResults();
+        assertNotNull(searchResultsOld);
+        assertEquals(0, searchResultsOld.size());
+
+        final SearchPage searchPageNew = engine.search(new SearchRequest(newName, null, null, null, null, 0, 10));
+        assertNotNull(searchPageNew);
+        final List<SearchResult> searchResultsNew = searchPageNew.getResults();
+        assertNotNull(searchResultsNew);
+        assertEquals(1, searchResultsNew.size());
+        assertFalse(searchResultsNew.get(0).getEndpoints().isEmpty());
     }
 
     private void insertApplication(final String applicationName) {
@@ -157,8 +192,9 @@ public class RegistryApiTest {
 
         final Response response = registry.target()
                                           .path("api/application")
-                                          .request(MediaType.APPLICATION_JSON_TYPE)
-                                          .post(Entity.entity(application, MediaType.APPLICATION_JSON_TYPE));
+                                          .request(APPLICATION_JSON_TYPE)
+                                          .post(entity(application, APPLICATION_JSON_TYPE));
+        assertEquals(CREATED.getStatusCode(), response.getStatus());
 
         final ApplicationWrapper persistedApplication = response.readEntity(ApplicationWrapper.class);
         assertNotNull(persistedApplication);
@@ -177,6 +213,27 @@ public class RegistryApiTest {
                                                  .findFirst();
         assertTrue(indexedName.isPresent());
         assertEquals(applicationName, indexedName.get());
+    }
+
+    private void updateApplication(final String applicationName, final String newApplicationName) {
+        final OpenApiDocument originalDocument =
+                findApplicationByName(applicationName).orElseThrow(IllegalStateException::new);
+
+        final ApplicationWrapper application = new ApplicationWrapper();
+        application.setHumanReadableName(newApplicationName);
+        application.setSwagger(
+                new Swagger().info(new Info().title(newApplicationName).description(newApplicationName).version("2")));
+
+        final Response response = registry.target()
+                                          .path("api/application/{id}")
+                                          .resolveTemplate("id", originalDocument.getId())
+                                          .request(APPLICATION_JSON_TYPE)
+                                          .put(entity(application, APPLICATION_JSON_TYPE));
+        assertEquals(OK.getStatusCode(), response.getStatus());
+        assertFalse(findApplicationByName(applicationName).isPresent());
+        assertTrue(findApplicationByName(newApplicationName).isPresent());
+        assertEquals(0, findApplicationIndex(applicationName).getInt("total"));
+        assertEquals(1, findApplicationIndex(newApplicationName).getInt("total"));
     }
 
     private Optional<OpenApiDocument> findApplicationByName(final String applicationName) {
@@ -199,5 +256,24 @@ public class RegistryApiTest {
                                  "  }\n" +
                                  "}"));
         return elasticsearch.search(query.readObject(), 0, 0).getJsonObject("hits");
+    }
+
+    private Response addEndpointToApplication(final String applicationName, final String path) {
+        final OpenApiDocument document = findApplicationByName(applicationName).orElseThrow(IllegalStateException::new);
+
+        final EndpointWrapper endpoint = new EndpointWrapper();
+        endpoint.setHttpMethod("POST");
+        endpoint.setPath("/" + path);
+        final Operation operation = new Operation();
+        operation.setDescription("Description");
+        operation.setSummary("Summary");
+        endpoint.setOperation(operation);
+
+        final Response response = registry.target().path("api/application/{applicationId}/endpoint")
+                                          .resolveTemplate("applicationId", document.getId())
+                                          .request(APPLICATION_JSON_TYPE)
+                                          .post(entity(endpoint, APPLICATION_JSON_TYPE));
+        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        return response;
     }
 }
