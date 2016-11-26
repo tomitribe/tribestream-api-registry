@@ -53,7 +53,8 @@ class OAuth2HeaderProvider implements AuthenticationHeaderProvider {
   private retry = 0;
 
   constructor(private $http: angular.IHttpService,
-              private $q: angular.IQService) {
+              private $q: angular.IQService,
+              private $localStorage) {
   }
 
   login(username: string, password: string) {
@@ -123,6 +124,7 @@ class OAuth2HeaderProvider implements AuthenticationHeaderProvider {
     this.retry = 0;
     this.token = response.data;
     this.expiration = start + (1000 * (this.token['expires_in'] || 3600))
+    this.$localStorage.tribe.security = this.getState();
   }
 }
 
@@ -148,6 +150,6 @@ class HeaderProviderSelector {
 
 // register them all as angular services
 angular.module('tribe-services-header-providers', ['website-browser'])
-  .service('tribeOauth2HeaderProvider', ['$http',  '$q', OAuth2HeaderProvider])
+  .service('tribeOauth2HeaderProvider', ['$http',  '$q', '$localStorage', OAuth2HeaderProvider])
   .service('tribeBasicHeaderProvider', ['$http', '$q', BasicHeaderProvider])
   .service('tribeHeaderProviderSelector', ['tribeOauth2HeaderProvider', 'tribeBasicHeaderProvider', HeaderProviderSelector]);
