@@ -57,6 +57,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.tomitribe.tribestream.registryng.entities.OpenApiDocument.Queries
+        .FIND_BY_APPLICATIONID_WITH_ENDPOINTS;
+import static org.tomitribe.tribestream.registryng.entities.OpenApiDocument.Queries.FIND_BY_NAME;
 
 /**
  * Description.
@@ -184,6 +187,32 @@ public class RegistryApiTest {
         assertFalse(searchResultsNew.get(0).getEndpoints().isEmpty());
     }
 
+    @Test
+    public void testFindApplicationWithNoMoreEndpoints() throws Exception {
+        final String name = UUID.randomUUID().toString();
+        insertApplication(name);
+
+        final Response response = addEndpointToApplication(name, "endpoint");
+        final EndpointWrapper persistedEndpoint = response.readEntity(EndpointWrapper.class);
+        assertNotNull(persistedEndpoint.getEndpointId());
+        assertEquals(1, findApplicationIndex(name).getInt("total"));
+
+        deleteAllEndpointsFromApplication(name);
+        assertEquals(1, findApplicationIndex(name).getInt("total"));
+
+        final SearchRequest searchRequest = new SearchRequest(name, null, null, null, null, 0, 10);
+        final SearchPage searchPage = engine.search(searchRequest);
+        assertNotNull(searchPage);
+
+        final List<SearchResult> searchResults = searchPage.getResults();
+        assertNotNull(searchResults);
+        assertEquals(1, searchResults.size());
+
+        final SearchResult searchResult = searchResults.get(0);
+        assertEquals(name, searchResult.getApplication().getApplicationName());
+        assertTrue(searchResult.getEndpoints().isEmpty());
+    }
+
     private void insertApplication(final String applicationName) {
         final ApplicationWrapper application = new ApplicationWrapper();
         application.setHumanReadableName(applicationName);
@@ -238,7 +267,7 @@ public class RegistryApiTest {
 
     private Optional<OpenApiDocument> findApplicationByName(final String applicationName) {
         try {
-            return Optional.of(em.createNamedQuery(OpenApiDocument.Queries.FIND_BY_NAME, OpenApiDocument.class)
+            return Optional.of(em.createNamedQuery(FIND_BY_NAME, OpenApiDocument.class)
                                  .setParameter("name", applicationName)
                                  .getSingleResult());
         } catch (final NoResultException e) {
@@ -275,5 +304,24 @@ public class RegistryApiTest {
                                           .post(entity(endpoint, APPLICATION_JSON_TYPE));
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
         return response;
+    }
+
+    private void deleteAllEndpointsFromApplication(final String applicationName) {
+        final OpenApiDocument document =
+                em.createNamedQuery(FIND_BY_APPLICATIONID_WITH_ENDPOINTS, OpenApiDocument.class)
+                  .setParameter("applicationId",
+                                findApplicationByName(applicationName).orElseThrow(IllegalStateException::new).getId())
+                  .getSingleResult();
+        assertNotNull(document.getEndpoints());
+        assertFalse(document.getEndpoints().isEmpty());
+
+        document.getEndpoints().stream().forEach(endpoint -> {
+            final Response response = registry.target().path("api/application/{applicationId}/endpoint/{endpointId}")
+                                              .resolveTemplate("applicationId", document.getId())
+                                              .resolveTemplate("endpointId", endpoint.getId())
+                                              .request()
+                                              .delete();
+            assertEquals(OK.getStatusCode(), response.getStatus());
+        });
     }
 }
