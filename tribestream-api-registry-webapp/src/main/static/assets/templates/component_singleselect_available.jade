@@ -8,5 +8,5 @@
         span(x-ng-if="newLabel") {{newLabel}}:
         span(x-ng-if="!newLabel") New:
         span {{inputText}}
-    .new-opt(x-ng-if="!newOpt && !editable && !selectedItem")
+    .new-opt(x-ng-if="!newOpt && !editable && !selectedItem && inputText")
         span No matches
