@@ -261,12 +261,8 @@ angular.module('tribe-endpoints-details', [
                     }
                     $timeout(function () {
                         $scope.$apply(function () {
-                            params.unshift({
-                                type: 'string',
-                                style: 'query',
-                                sampleValues: '',
-                                required: false
-                            });
+                            // add empry object
+                            params.unshift({});
                             $scope.params = params;
                         });
                     });
@@ -523,8 +519,8 @@ angular.module('tribe-endpoints-details', [
       'requestMetadata': '='
     },
     controller: [
-      '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', '$location', 'systemMessagesService', 'tribeLinkHeaderService',
-      function ($scope, srv, tribeFilterService, $timeout, $filter, $log, $location, systemMessagesService, tribeLinkHeaderService) {
+      '$scope', 'tribeEndpointsService', 'tribeFilterService', '$timeout', '$filter', '$log', '$location', '$route', 'systemMessagesService', 'tribeLinkHeaderService',
+      function ($scope, srv, tribeFilterService, $timeout, $filter, $log, $location, $route, systemMessagesService, tribeLinkHeaderService) {
         $scope['onEditCount'] = {};
         $scope['onEditModeOn'] = (uniqueId) => $timeout(() => $scope.$apply(() => {
             $scope['onEditCount'][uniqueId] = {};
@@ -614,6 +610,15 @@ angular.module('tribe-endpoints-details', [
               $scope.endpoint.operation['x-tribestream-api-registry'].sees =
                   $scope.endpoint.operation['x-tribestream-api-registry'].sees.filter(v=>!!v.href);
             }
+            let reload = (resp) => {
+              let res = resp.data;
+              let app = $scope['application'];
+              let appName = app['humanReadableName'];
+              let path = $filter('pathencode')(res.path);
+              $location.path(`endpoint/${appName}/${res.httpMethod}${path}`);
+              // force page refresh
+              $route.reload();
+            };
             if ($scope.endpointLink) {
               srv.saveEndpoint($scope.endpointLink, {
                 // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
@@ -623,7 +628,7 @@ angular.module('tribe-endpoints-details', [
               }).then(
                 function (saveResponse) {
                   systemMessagesService.info("Saved endpoint details!");
-                  $scope.reloadHistory();
+                  reload(saveResponse);
                 }, handleError
               );
             } else {
@@ -635,11 +640,7 @@ angular.module('tribe-endpoints-details', [
               }).then(
                 function (saveResponse) {
                   systemMessagesService.info("Created new endpoint! " + saveResponse.status);
-                  let res = saveResponse.data;
-                  let app = $scope['application'];
-                  let appName = app['humanReadableName'];
-                  let path = $filter('pathencode')(res.path)
-                  $location.path(`endpoint/${appName}/${res.httpMethod}${path}`);
+                  reload(saveResponse);
                 }, handleError
               );
             }
