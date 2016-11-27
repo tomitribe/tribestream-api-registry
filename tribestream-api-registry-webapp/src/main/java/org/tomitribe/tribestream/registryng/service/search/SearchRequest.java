@@ -18,7 +18,11 @@
  */
 package org.tomitribe.tribestream.registryng.service.search;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 public class SearchRequest {
     private final String query;
@@ -49,22 +53,34 @@ public class SearchRequest {
     }
 
     public String getQuery() {
-        return query;
+        return encode(query);
     }
 
     public List<String> getTags() {
-        return tags;
+        return encodeList(tags);
     }
 
     public List<String> getCategories() {
-        return categories;
+        return encodeList(categories);
     }
 
     public List<String> getRoles() {
-        return roles;
+        return encodeList(roles);
     }
 
     public List<String> getApps() {
-        return apps;
+        return encodeList(apps);
+    }
+
+    private static String encode(final String s) {
+        try {
+            return URLEncoder.encode(s, "UTF-8");
+        } catch (final UnsupportedEncodingException e) {
+            return s;
+        }
+    }
+
+    private static List<String> encodeList(final List<String> list) {
+        return list != null ? list.stream().map(SearchRequest::encode).collect(toList()) : null;
     }
 }
