@@ -45,6 +45,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.ws.rs.core.Response;
 import java.io.StringReader;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -211,6 +212,24 @@ public class RegistryApiTest {
         final SearchResult searchResult = searchResults.get(0);
         assertEquals(name, searchResult.getApplication().getApplicationName());
         assertTrue(searchResult.getEndpoints().isEmpty());
+    }
+
+    @Test
+    public void testFindApplicationWithInvalidCharacters() throws Exception {
+        assertEquals(5, findApplicationIndex("uber").getInt("total"));
+        assertEquals(5, findApplicationIndex(URLEncoder.encode("uber!", "UTF-8")).getInt("total"));
+        assertEquals(0, findApplicationIndex(URLEncoder.encode("!<>{}[]=@#$%&()^~_:;", "UTF-8")).getInt("total"));
+
+        final SearchRequest searchRequest = new SearchRequest("uber!", null, null, null, null, 0, 10);
+        final SearchPage searchPage = engine.search(searchRequest);
+        assertNotNull(searchPage);
+
+        final List<SearchResult> searchResults = searchPage.getResults();
+        assertNotNull(searchResults);
+        assertEquals(1, searchResults.size());
+
+        final SearchResult searchResult = searchResults.get(0);
+        assertEquals(5, searchResult.getEndpoints().size());
     }
 
     private void insertApplication(final String applicationName) {
