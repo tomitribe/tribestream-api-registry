@@ -19,6 +19,8 @@ div[data-app-application-details]
         color: $tomitribe-orange
       span, a
         font-weight: 700 !important
+        &.empty
+          font-weight: 100 !important
         white-space: nowrap
       a
         text-decoration: none
@@ -40,6 +42,8 @@ div[data-app-application-details]
           text-decoration: none
         > span, > a, > div .trigger > span, > div .trigger >  a
           font-weight: 700
+          &.empty
+            font-weight: 100 !important
         > i, > div .trigger > i
           margin-right: 5px
           font-size: 13px
@@ -69,6 +73,8 @@ div[data-app-application-details]
       h1, h1 input, h1 span
         font-size: 25px !important
         font-weight: $app-font-weight-h1 !important
+        &.empty
+          font-weight: 100 !important
         &.mandatory
           vertical-align: super !important
           font-size: 9px !important
