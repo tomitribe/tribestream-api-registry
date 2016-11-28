@@ -124,6 +124,7 @@ class OAuth2HeaderProvider implements AuthenticationHeaderProvider {
     this.retry = 0;
     this.token = response.data;
     this.expiration = start + (1000 * (this.token['expires_in'] || 3600))
+    this.$localStorage.tribe = this.$localStorage.tribe || {};
     this.$localStorage.tribe.security = this.getState();
   }
 }
