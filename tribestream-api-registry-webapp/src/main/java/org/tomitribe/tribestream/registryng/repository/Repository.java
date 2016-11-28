@@ -23,6 +23,7 @@ import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.Swagger;
+import io.swagger.models.parameters.Parameter;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
@@ -50,6 +51,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
@@ -322,6 +324,18 @@ public class Repository {
         return loginContext.getUsername();
     }
 
+    private void cleanup(Endpoint endpoint) {
+        // Semoving empty elements from list.
+        // Sometimes the json cannot be translated to an known object. For example,
+        // the json parser does not know what type of parametert "{}" represents,
+        // so it converts the empty json object into null.
+        final List<Parameter> parameters = endpoint.getOperation().getParameters();
+        if(parameters != null) {
+            endpoint.getOperation().setParameters(parameters.stream().filter(p -> p != null)
+                    .collect(Collectors.toList()));
+        }
+    }
+
     public Endpoint insert(final Endpoint endpoint, final String applicationId) {
         final OpenApiDocument application = findByApplicationId(applicationId);
         endpoint.setApplication(application);
@@ -330,7 +344,7 @@ public class Repository {
         endpoint.setUpdatedAt(now);
         endpoint.setCreatedBy(getUser());
         endpoint.setUpdatedBy(getUser());
-
+        cleanup(endpoint);
         application.setUpdatedAt(now);
         application.setUpdatedBy(getUser());
         em.persist(endpoint);
@@ -388,6 +402,7 @@ public class Repository {
         endpoint.setUpdatedAt(new Date());
         endpoint.setUpdatedBy(loginContext.getUsername());
         if (endpoint.getOperation() != null) {
+            cleanup(endpoint);
             endpoint.setDocument(convertToJson(endpoint.getOperation()));
         }
         searchEngine.indexEndpoint(endpoint);
