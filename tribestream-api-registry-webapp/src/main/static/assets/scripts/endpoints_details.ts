@@ -1,5 +1,6 @@
 module endpointdetails {
 let HistoryCommonController = require("./endpoints_common.ts").controllerEndpoint;
+let STICKY_MENU_UPDATE_INTERVAL = 1000; // millisseconds
 
 angular.module('tribe-endpoints-details', [
     'website-services',
@@ -706,7 +707,7 @@ angular.module('tribe-endpoints-details', [
     };
   }])
 
-    .directive('setClassWhenAtTop', ['$window', function($window) {
+    .directive('setClassWhenAtTop', ['$window', '$interval', function($window, $interval) {
         function stickyNavLink(scope, element){
             var window = angular.element($window),
                 size = element[0].clientHeight,
@@ -730,6 +731,12 @@ angular.module('tribe-endpoints-details', [
 
             window.bind('resize', resizeNav);
             window.bind('scroll', stickyNav);
+            let stickyNavPromise = $interval(stickyNav, STICKY_MENU_UPDATE_INTERVAL);
+            scope.$on('$destroy', () => {
+                window.unbind('resize', resizeNav);
+                window.unbind('scroll', stickyNav);
+                $interval.cancel(stickyNavPromise);
+            });
         }
 
         return {

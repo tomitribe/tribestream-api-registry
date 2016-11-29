@@ -279,11 +279,12 @@ angular.module('tribe-endpoints', [
             }],
             link: (scope, el) => {
                 let valueDiv = el.find('.button-applications');
+                let createButton = el.find('.create-endpoint-btn > div');
                 let clear = () => {
                     valueDiv.removeClass('visible');
                 };
                 let elWin = angular.element($document);
-                el.on('click', () => {
+                createButton.on('click', () => {
                     if (valueDiv.hasClass('visible')) {
                         valueDiv.removeClass('visible');
                         elWin.off('click', clear);
