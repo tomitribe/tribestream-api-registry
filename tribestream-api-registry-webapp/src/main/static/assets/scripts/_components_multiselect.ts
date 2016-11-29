@@ -374,7 +374,6 @@ angular.module('website-components-multiselect', [
                     $scope['selectedOption'] = null;
                     $scope['inputText'] = '';
                 };
-                $scope['addItem'] = addItem;
                 $scope.keyEntered = (event) =>  $timeout(() => $scope.$apply(() => {
                     if (event.keyCode === 13 /* Enter */) {
                         let isCommitChanges = !$scope['inputText'] && !$scope['selectedOption'];

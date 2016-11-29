@@ -1,4 +1,4 @@
-.tribe-data-tribe-multiselect-available-body.floating-menu
+.tribe-data-tribe-multiselect-available-body.floating-menu(x-ng-show="newOpt || (availableOptions && availableOptions.length > 0)")
     .opts
         .option(x-ng-repeat="opt in availableOptions | orderBy:getOptionText",
                 x-ng-click="selectItem(opt)",
