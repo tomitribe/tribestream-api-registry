@@ -74,7 +74,7 @@ public class Provisioning {
 
     @Inject // allow to switch it off or to use an external source for testing
     @Description("Where automatic seeding takes the swagger documents, either at classpath or a directory path")
-    @ConfigProperty(name = "tribe.registry.seeding.location", defaultValue = "seed-db")
+    @ConfigProperty(name = "tribe.registry.seeding.location")
     private String location;
 
     @Inject
@@ -132,6 +132,12 @@ public class Provisioning {
     }
 
     private void doSeeding(final File f) {
+
+        // before seeding, start wiping out all the applications and endpoints
+        final List<OpenApiDocument> apps = repository.findAllApplications();
+        apps.forEach(d -> repository.deleteApplication(d.getId()));
+
+
         Stream.of(ofNullable(f.listFiles((dir, name) -> name.endsWith(".json"))).orElseGet(() -> new File[0])).forEach(this::seedFile);
     }
 
@@ -159,11 +165,10 @@ public class Provisioning {
     }
 
     public void restore() {
-        if (location == null) {
+        if (location == null || location.trim().isEmpty()) {
             return;
         }
-        final List<OpenApiDocument> apps = repository.findAllApplications();
-        apps.forEach(d -> repository.deleteApplication(d.getId()));
+
         seedDatabase();
     }
 }
