@@ -40,8 +40,8 @@ angular.module('tribe-endpoints', [
                 app: '=application'
             },
             controller: [
-                '$timeout', '$scope', '$filter', '$location', 'tribeEndpointsService', 'tribeFilterService', 'tribeLinkHeaderService', 'systemMessagesService',
-                function ($timeout, $scope, $filter, $location, srv, tribeFilterService, tribeLinkHeaderService, systemMessagesService) {
+                '$timeout', '$scope', '$filter', '$location', '$route', 'tribeEndpointsService', 'tribeFilterService', 'tribeLinkHeaderService', 'systemMessagesService',
+                function ($timeout, $scope, $filter, $location, $route, srv, tribeFilterService, tribeLinkHeaderService, systemMessagesService) {
                     if (!!$scope.app) {
                       srv.getApplicationDetailsFromName($scope.app).then(function (response) {
                           $timeout(function () {
@@ -111,13 +111,15 @@ angular.module('tribe-endpoints', [
                               $timeout(() => $scope.$apply(() => $scope.history = response['data']['items']));
                           });
                       }
-                    }
+                    };
                     $scope.save = () => {
                       if ($scope.applicationLink) {
                         srv.saveApplication($scope.applicationLink, $scope.swagger).then(
                           (saveResponse) => {
                             systemMessagesService.info("Saved application details!");
-                            $scope.reloadHistory();
+                            // force page reload after updating an item.
+                            // with the good existing backend data.
+                            $route.reload();
                           }
                         );
                       } else {
@@ -126,6 +128,9 @@ angular.module('tribe-endpoints', [
                             systemMessagesService.info("Created application details!");
                             let res = saveResponse.data;
                             $location.url(`/application/${res.humanReadableName}?version=${res.swagger.info.version}`);
+                            // force page reload after updating an item.
+                            // with the good existing backend data.
+                            $route.reload();
                           },
                           function(errorResponse) {
                               if(errorResponse['data'] && errorResponse['data']['key'] === 'duplicated.swagger.exception') {
@@ -142,6 +147,9 @@ angular.module('tribe-endpoints', [
                       srv.delete($scope.applicationLink).then((response) => {
                           systemMessagesService.info("Deleted application!");
                           $location.path("/");
+                          // force page reload after removing an item. This way we make sure to reload the application page
+                          // with the good existing endpoints.
+                          $route.reload();
                       });
                     };
                     // Triggered by selecting one revision, will load it and show it

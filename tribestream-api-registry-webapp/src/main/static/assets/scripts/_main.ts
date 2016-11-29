@@ -38,6 +38,7 @@ angular.module('tribe-main', [
     'tribe-endpoints-details'
 ])
 
+
     .config([
         '$locationProvider', '$routeProvider', '$httpProvider', '$logProvider',
         function ($locationProvider, $routeProvider, $httpProvider, $logProvider) {
@@ -124,6 +125,10 @@ angular.module('tribe-main', [
         function ($q, $window, $location, currentAuthProvider) {
             return {
                 'request': function(config) {
+                    // avoiding rest api caching [from http://stackoverflow.com/a/19771501]
+                    config.headers['If-Modified-Since'] = 'Mon, 26 Jul 1997 05:00:00 GMT';
+                    config.headers['Cache-Control'] = 'no-cache';
+                    config.headers['Pragma'] = 'no-cache';
                     if (config.url != 'api/security/oauth2' && currentAuthProvider.isActive()) {
                         return currentAuthProvider.get().getAuthorizationHeader().then(function(token) {
                             config.headers['Authorization'] = token;
