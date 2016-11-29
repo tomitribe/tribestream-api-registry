@@ -7,6 +7,12 @@ div[data-app-application-details]
     display: flex
     justify-content: space-between
     align-items: center
+    &.fixed-header
+      background-color: #ffffff
+      position: fixed
+      top: 0
+      width: 100%
+      z-index: 1
     .breadcrumb
       *
         margin: 0 10px 0 0
@@ -39,7 +45,7 @@ div[data-app-application-details]
           color: $color
           text-decoration: none
         > span, > a, > div .trigger > span, > div .trigger >  a
-          font-weight: 700
+          font-weight: 400
         > i, > div .trigger > i
           margin-right: 5px
           font-size: 13px
@@ -58,6 +64,8 @@ div[data-app-application-details]
       > h1
         display: flex
         transform: translate(-10px, 0)
+        span
+          line-height: normal !important
       > div
         transform: translate(-10px, 0)
     > div:nth-of-type(1), > div:nth-of-type(2)
