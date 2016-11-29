@@ -102,8 +102,10 @@ angular.module('website-components-text', [
                 input.on('blur', () => deactivate());
                 input.on('focus', () => {
                     cancelDeactivate();
-                    element.addClass('active');
-                    input.select();
+                    if(!element.hasClass('active')) {
+                        element.addClass('active');
+                        input.select();
+                    }
                     $timeout(() => scope.$apply(() => {
                         scope['version'] = scope['version'] + 1;
                         scope['fieldDirty'] = true;

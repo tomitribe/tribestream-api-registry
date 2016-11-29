@@ -248,6 +248,7 @@ angular.module('website-components', [
                     }
                     input.focus();
                 };
+                el.on('click', activate);
                 el.find('> div').on('focus', activate);
                 el.find('input').on('blur', function () {
                     el.removeClass('edit');
