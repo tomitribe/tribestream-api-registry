@@ -1,5 +1,6 @@
 module endpointdetails {
 let HistoryCommonController = require("./endpoints_common.ts").controllerEndpoint;
+let STICKY_MENU_UPDATE_INTERVAL = 1000; // millisseconds
 
 angular.module('tribe-endpoints-details', [
     'website-services',
@@ -730,7 +731,7 @@ angular.module('tribe-endpoints-details', [
 
             window.bind('resize', resizeNav);
             window.bind('scroll', stickyNav);
-            let stickyNavPromise = $interval(stickyNav, 1000);
+            let stickyNavPromise = $interval(stickyNav, STICKY_MENU_UPDATE_INTERVAL);
             scope.$on('$destroy', () => {
                 window.unbind('resize', resizeNav);
                 window.unbind('scroll', stickyNav);
