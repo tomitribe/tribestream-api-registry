@@ -102,11 +102,9 @@ angular.module('website-components-multiselect', [
                 let deactivate = () => {
                     cancelDeactivate();
                     deactivatePromise = $timeout(() => {
-                        scope['fieldCommitted']();
                         el.removeClass('active');
                         scope.$apply(() => {
                             scope['inputFocused'] = false;
-                            scope['optionsActivated'] = false;
                         });
                     }, 500);
                 };
@@ -129,7 +127,13 @@ angular.module('website-components-multiselect', [
                 let inputEl = el.find('input');
                 inputEl.on('click', actiavionCb);
                 inputEl.on('focus', actiavionCb);
-                inputEl.on('blur', deactivate);
+                inputEl.on('blur', () => {
+                    deactivate();
+                    scope['fieldDirty'] = false;
+                    scope['optionsActivated'] = false;
+                    scope['selectedOptions'] = [];
+                });
+
                 scope.$on('fieldDirty', () => {
                     if (scope['fieldDirty']) {
                         cancelDeactivate();
@@ -385,10 +389,17 @@ angular.module('website-components-multiselect', [
                             $scope['selectedItem'] = null;
                             $scope['onCommit']();
                         } else {
-                            addItem();
-                            releaseSelection();
-                            $scope.onOptionsDeactivated();
-                            $scope.onChange();
+                            if($scope['inputText']) {
+                                addItem();
+                                releaseSelection();
+                                $scope.onOptionsDeactivated();
+                                $scope.onChange();
+                            }
+                            else {
+                                releaseSelection();
+                                $scope.onOptionsDeactivated();
+                                $scope.onChange();
+                            }
                         }
                     } else if (event.keyCode === 27 /* Escape */) {
                         let isCancelChanges = !$scope['inputText'];

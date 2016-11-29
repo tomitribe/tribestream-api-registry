@@ -161,7 +161,12 @@ angular.module('website-components-singleselect', [
                 });
                 scope.$on('fieldCanceled', () => inputField.blur());
                 scope.$on('fieldCommitted', () => inputField.blur());
-                inputField.on('blur', deactivate);
+
+                inputField.on('blur', () => {
+                    deactivate();
+                    scope['fieldDirty'] = false;
+                    scope['optionsActivated'] = false;
+                });
                 scope.$on('fieldDirty', () => {
                     if (scope['fieldDirty']) {
                         cancelDeactivate();
