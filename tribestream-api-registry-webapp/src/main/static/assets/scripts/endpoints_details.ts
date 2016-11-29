@@ -649,6 +649,9 @@ angular.module('tribe-endpoints-details', [
             srv.delete($scope.endpointLink).then((response) => {
                 systemMessagesService.info("Deleted endpoint!");
                 $location.path("/application/" + $scope.requestMetadata.applicationName);
+                // force page reload after removing an item. This way we make sure to reload the application page
+                // with the good existing endpoints.
+                $route.reload();
             });
           };
           $scope.reloadHistory = () => {
