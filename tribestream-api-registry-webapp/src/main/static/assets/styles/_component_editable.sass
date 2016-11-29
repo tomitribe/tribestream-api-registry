@@ -9,7 +9,10 @@ $width: 20px
   *
     outline: none
   > div
-    display: inline-block
+    display: flex
+    flex-direction: column
+    justify-content: center
+    align-items: center
     border: solid transparent 1px
     input
       flex-grow: 1
@@ -45,7 +48,7 @@ $width: 20px
 
 [data-tribe-editable-text], [data-tribe-editable-number]
   > div
-    min-height: 40px
+    padding: 10px 0
     position: relative
     min-width: $width * 2
     display: flex
