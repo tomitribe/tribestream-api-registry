@@ -90,6 +90,16 @@ angular.module('website-components-multiselect', [
                 $scope.onOptionsDeactivated = () => $timeout(() => $scope.$apply(() => {
                     $scope['optionsActivated'] = false;
                 }));
+                $scope['addItem'] = () => {
+                    if ($scope['selectedOption']) {
+                        let existing = _.find($scope['selectedOptions'], (selected) => selected === $scope['selectedOption']);
+                        if (!existing) {
+                            $scope['selectedOptions'].push($scope['selectedOption']);
+                        }
+                    }
+                    $scope['selectedOption'] = null;
+                    $scope['inputText'] = '';
+                };
             })],
             link: (scope, el) => $timeout(() => {
                 var deactivatePromise = null;
@@ -107,6 +117,7 @@ angular.module('website-components-multiselect', [
                         scope.$apply(() => {
                             scope['inputFocused'] = false;
                             scope['optionsActivated'] = false;
+                            scope['addItem']();
                         });
                     }, 500);
                 };
@@ -307,7 +318,8 @@ angular.module('website-components-multiselect', [
                 selectedOption: '=',
                 inputText: '=',
                 autoShowOptions: '=',
-                activated: '='
+                activated: '=',
+                addItem: '='
             },
             template: require('../templates/component_multiselect_selected.jade'),
             controller: ['$log', '$scope', '$timeout', ($log, $scope, $timeout) => {
@@ -364,17 +376,6 @@ angular.module('website-components-multiselect', [
                         $scope['selectedItem'] = ordered[next];
                     }
                 }));
-                let addItem = () => {
-                    if ($scope['selectedOption']) {
-                        let existing = _.find($scope['selectedOptions'], (selected) => selected === $scope['selectedOption']);
-                        if (!existing) {
-                            $scope['selectedOptions'].push($scope['selectedOption']);
-                        }
-                    }
-                    $scope['selectedOption'] = null;
-                    $scope['inputText'] = '';
-                };
-                $scope['addItem'] = addItem;
                 $scope.keyEntered = (event) =>  $timeout(() => $scope.$apply(() => {
                     if (event.keyCode === 13 /* Enter */) {
                         let isCommitChanges = !$scope['inputText'] && !$scope['selectedOption'];
@@ -385,7 +386,7 @@ angular.module('website-components-multiselect', [
                             $scope['selectedItem'] = null;
                             $scope['onCommit']();
                         } else {
-                            addItem();
+                            $scope['addItem']();
                             releaseSelection();
                             $scope.onOptionsDeactivated();
                             $scope.onChange();
