@@ -706,7 +706,7 @@ angular.module('tribe-endpoints-details', [
     };
   }])
 
-    .directive('setClassWhenAtTop', ['$window', function($window) {
+    .directive('setClassWhenAtTopEndpoint', ['$window', function($window) {
         function stickyNavLink(scope, element){
             var window = angular.element($window),
                 size = element[0].clientHeight,
