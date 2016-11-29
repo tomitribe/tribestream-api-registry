@@ -20,7 +20,7 @@ package org.tomitribe.tribestream.registryng.test;
 
 import org.apache.openejb.loader.Files;
 import org.apache.openejb.loader.IO;
-import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
+import org.apache.tomee.embedded.LifecycleTask;
 
 import java.io.Closeable;
 import java.io.File;
@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 import static org.junit.Assert.fail;
 
 // our webapp resource build doesn't respect much docbase philosophy so let's fake one
-public class PrepareResources implements TomEEEmbeddedSingleRunner.LifecycleTask {
+public class PrepareResources implements LifecycleTask {
     @Override
     public Closeable beforeContainerStartup() {
         final File out = new File("target/tests-webapp/");

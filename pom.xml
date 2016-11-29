@@ -80,7 +80,7 @@
 
 
     <version.tomcat>8.5.3</version.tomcat>
-    <version.tomee>7.0.1</version.tomee>
+    <version.tomee>7.0.2</version.tomee>
 
     <version.tomitribe-util>1.2.1</version.tomitribe-util>
 

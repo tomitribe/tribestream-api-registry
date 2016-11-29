@@ -447,7 +447,7 @@ Therefore the connection to the OAuth2 server has to be configured with these pr
 To start the Tribestream API Registry with the TomEE Maven plugin that authenticates against your OAuth2 server pass you can pass the above properties to Maven:
 
 ```
-mvn tomee-embedded:run -pl :tribestream-api-registry-webapp -Dregistry.oauth2.authorizationServerUrl=https://tribe.tomitribe.com/user/oauth/token
+MAVEN_OPTS="-Dregistry.oauth2.authorizationServerUrl=https://security.company.com/oauth/token" mvn tomee-embedded:run -pl :tribestream-api-registry-webapp
 ```
 
 

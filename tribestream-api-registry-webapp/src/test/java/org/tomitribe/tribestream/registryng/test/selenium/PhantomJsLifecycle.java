@@ -19,7 +19,7 @@
 package org.tomitribe.tribestream.registryng.test.selenium;
 
 import org.apache.openejb.util.JarExtractor;
-import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
+import org.apache.tomee.embedded.LifecycleTask;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -93,7 +93,7 @@ public class PhantomJsLifecycle {
         return ""; // fine if a single impl is there
     }
 
-    public static class Task implements TomEEEmbeddedSingleRunner.LifecycleTask {
+    public static class Task implements LifecycleTask {
         @Override
         public Closeable beforeContainerStartup() { // allows to ensure we close it with the container automatically
             return () -> {

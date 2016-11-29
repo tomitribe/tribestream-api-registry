@@ -18,11 +18,11 @@
  */
 package org.tomitribe.tribestream.registryng.test.logging;
 
-import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
+import org.apache.tomee.embedded.LifecycleTask;
 
 import java.io.Closeable;
 
-public class LoggingSetup implements TomEEEmbeddedSingleRunner.LifecycleTask {
+public class LoggingSetup implements LifecycleTask {
     @Override
     public Closeable beforeContainerStartup() {
         System.setProperty("java.util.logging.SimpleFormatter.format", "[TOMEE  SERVER][%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS,%1$tL][%4$5s][%3$25s] %5$s%6$s%n");
