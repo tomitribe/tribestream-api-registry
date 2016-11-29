@@ -437,14 +437,17 @@ describe('it tests our custom multiselect component', () => {
             timeoutTryCatch(100, done, () => {
                 let selected = angular.element(element.find('div[data-tribe-multiselect-selected]'));
                 let selectedScope = angular.element(selected.find('> div')).scope();
-                selectedScope['selectedOption'] = 'aaa';
-                selectedScope['addItem']();
+                selectedScope['inputText'] = 'aaa';
                 timeoutTryCatch(100, done, () => {
-                    let lastSelected = selected.find('.items').last();
-                    expect(selected.find('.items').length).toEqual(1);
-                    expect(angular.element(lastSelected).scope()['opt']).toEqual('aaa');
-                    done();
+                    selectedScope['addItem']();
+                    timeoutTryCatch(100, done, () => {
+                        let lastSelected = selected.find('.items').last();
+                        expect(selected.find('.items').length).toEqual(1);
+                        expect(angular.element(lastSelected).scope()['opt']).toEqual('aaa');
+                        done();
+                    });
                 });
+
             });
         });
     });
