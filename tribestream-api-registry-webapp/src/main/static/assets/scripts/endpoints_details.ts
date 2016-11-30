@@ -620,12 +620,23 @@ angular.module('tribe-endpoints-details', [
               // force page refresh
               $route.reload();
             };
+            let operation = $scope['endpoint'].operation;
+            if(operation['parameters'] && operation['parameters'].length) {
+              operation['parameters'].forEach(param => {
+                if(!param['type'] || param['type'].trim() === '') {
+                  param['type'] = 'string';
+                }
+                if(!param['in']) {
+                  param['in'] = 'query';
+                }
+              });
+            }
             if ($scope.endpointLink) {
               srv.saveEndpoint($scope.endpointLink, {
                 // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
                 httpMethod: $scope['endpoint']['httpMethod'],
                 path: $scope['endpoint'].path,
-                operation: $scope['endpoint'].operation
+                operation: operation
               }).then(
                 function (saveResponse) {
                   systemMessagesService.info("Saved endpoint details!");
@@ -637,7 +648,7 @@ angular.module('tribe-endpoints-details', [
                 // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
                 httpMethod: $scope['endpoint']['httpMethod'],
                 path: $scope['endpoint'].path,
-                operation: $scope['endpoint'].operation
+                operation: operation
               }).then(
                 function (saveResponse) {
                   systemMessagesService.info("Created new endpoint! " + saveResponse.status);

@@ -26,18 +26,21 @@ div
                 data-placeholder="",
                 data-available-options="['Authorization', 'Date', 'Content-Type', 'Accept']")
             td
+              div(x-ng-hide="param.in !== 'body'")
+                span.not-applicable N/A
               div(data-tribe-singleselect,
+                x-ng-hide="param.in === 'body'",
                 data-on-edit-mode-on="onEditModeOn(uniqueId)",
                 data-on-edit-mode-off="onEditModeOff(uniqueId)",
                 data-selected-option="param.type",
-                data-placeholder="",
+                data-placeholder="string",
                 data-available-options="['integer', 'long', 'float', 'double', 'string', 'byte', 'binary', 'boolean', 'date', 'dateTime', 'password']")
             td
               div(data-tribe-singleselect,
                   data-on-edit-mode-on="onEditModeOn(uniqueId)",
                   data-on-edit-mode-off="onEditModeOff(uniqueId)",
                   data-selected-option="param.in",
-                  data-placeholder="",
+                  data-placeholder="Query",
                   data-available-options="[{text:'Query', value:'query'}, {text:'Header', value:'header'}, {text:'Path', value:'path'}, {text:'Form data', value:'formData'}, {text:'Body', value:'body'}]")
             td
               div(data-tribe-singleselect,
