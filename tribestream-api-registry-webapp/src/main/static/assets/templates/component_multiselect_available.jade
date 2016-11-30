@@ -1,10 +1,10 @@
-.tribe-data-tribe-multiselect-available-body.floating-menu(x-ng-show="newOpt || (availableOptions && availableOptions.length > 0)")
+.tribe-data-tribe-multiselect-available-body.floating-menu(x-ng-class="{ hidden: availableOptions.length === 0 && (!newOpt || !newOpt.trim() )}")
     .opts
         .option(x-ng-repeat="opt in availableOptions | orderBy:getOptionText",
                 x-ng-click="selectItem(opt)",
                 x-ng-class="{selected: opt === selectedItem}")
             span {{opt}}
-    .new-opt(x-ng-if="newOpt", x-ng-class="{selected: newOpt === selectedItem}")
+    .new-opt(x-ng-hide="!newOpt", x-ng-class="{selected: newOpt === selectedItem}")
         span(x-ng-if="newLabel") {{newLabel}}:
         span(x-ng-if="!newLabel") New:
         span {{newOpt}}

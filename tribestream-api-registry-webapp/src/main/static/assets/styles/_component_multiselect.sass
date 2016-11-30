@@ -33,7 +33,9 @@ div[data-tribe-multiselect-selected]
           border-width: 0
           padding: 0
           height: auto !important
-
+          &:focus
+            min-width: 10px
+            width: 100%
       > div.items
         display: inline-block
         border: solid #cccccc 1px
@@ -46,12 +48,6 @@ div[data-tribe-multiselect-selected]
             margin-right: 5px
           > i
             color: #707070
-
-div[data-tribe-multiselect]
-  &.active
-    input
-      min-width: 30px
-      width: 100%
 
 [data-tribe-multiselect]
   display: inline-block
@@ -75,6 +71,8 @@ div.tribe-data-tribe-multiselect-available-body
   min-width: 300px
   max-width: 500px
   z-index: 4000
+  &.hidden
+    display: none
   .opts
     padding: 0
     > div
