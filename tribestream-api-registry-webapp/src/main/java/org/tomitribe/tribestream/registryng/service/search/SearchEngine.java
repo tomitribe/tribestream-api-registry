@@ -36,7 +36,6 @@ import javax.json.JsonBuilderFactory;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -117,46 +116,41 @@ public class SearchEngine {
 
         final JsonObject object = elasticsearch.search(query.build(), request.getPage() * pageSize, pageSize);
         final JsonObject hits = object.getJsonObject("hits");
-        final JsonObject aggregations = object.getJsonObject("aggregations");
         final int total = hits.getInt("total");
-
-        final List<EndpointSearchResult> allEndpointsSearchResults = total == 0 ? new ArrayList<>() : hits.getJsonArray("hits").stream()
-                .map(json -> JsonObject.class.cast(json).getJsonObject("_source"))
-                .map(source -> new EndpointSearchResult(
-                        getString(source, APPLICATION_ID_FIELD),
-                        getString(source, ENDPOINT_ID_FIELD),
-                        getString(source, APPLICATION_HUMAN_READABLE_NAME),
-                        getString(source, ENDPOINT_HUMAN_READABLE_NAME),
-                        getString(source, APPLICATION_NAME),
-                        getString(source, APPLICATION_VERSION),
-                        getString(source, VERB),
-                        getString(source, PATH),
-                        getString(source, SUMMARY),
-                        getStrings(source, "category"),
-                        getStrings(source, "tag"),
-                        getStrings(source, "role"),
-                        getDouble(source, "_score"),
-                        null,
-                        getBoolean(source, "empty")))
-                .collect(toList());
-
-        final Stream<ApplicationSearchResult> applicationSearchResults;
-        if (total > 0) {
-            applicationSearchResults = allEndpointsSearchResults
-                    .stream()
-                    .map(searchResult -> new ApplicationSearchResult(searchResult.getApplicationId(),
-                                                                     searchResult.getApplicationName(),
-                                                                     searchResult.getApplication(),
-                                                                     searchResult.getApplicationVersion(),
-                                                                     null,
-                                                                     searchResult.isEmpty()))
-                    .distinct();
-
-        } else {
-            applicationSearchResults = Stream.empty();
+        if (total == 0) {
+            return SearchPage.empty();
         }
 
-        final List<SearchResult> searchResults = applicationSearchResults
+        final List<EndpointSearchResult> allEndpointsSearchResults =
+                hits.getJsonArray("hits").stream()
+                    .map(json -> JsonObject.class.cast(json).getJsonObject("_source"))
+                    .map(source -> new EndpointSearchResult(
+                            getString(source, APPLICATION_ID_FIELD),
+                            getString(source, ENDPOINT_ID_FIELD),
+                            getString(source, APPLICATION_HUMAN_READABLE_NAME),
+                            getString(source, ENDPOINT_HUMAN_READABLE_NAME),
+                            getString(source, APPLICATION_NAME),
+                            getString(source, APPLICATION_VERSION),
+                            getString(source, VERB),
+                            getString(source, PATH),
+                            getString(source, SUMMARY),
+                            getStrings(source, "category"),
+                            getStrings(source, "tag"),
+                            getStrings(source, "role"),
+                            getDouble(source, "_score"),
+                            null,
+                            getBoolean(source, "empty")))
+                    .collect(toList());
+
+        final List<SearchResult> searchResults = allEndpointsSearchResults
+                .stream()
+                .map(searchResult -> new ApplicationSearchResult(searchResult.getApplicationId(),
+                                                                 searchResult.getApplicationName(),
+                                                                 searchResult.getApplication(),
+                                                                 searchResult.getApplicationVersion(),
+                                                                 null,
+                                                                 searchResult.isEmpty()))
+                .distinct()
                 .map(applicationSearchResult ->
                         new SearchResult(
                                 applicationSearchResult,
@@ -169,6 +163,7 @@ public class SearchEngine {
                 )
                 .collect(toList());
 
+        final JsonObject aggregations = object.getJsonObject("aggregations");
         return new SearchPage(
                 searchResults,
                 total,
