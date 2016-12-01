@@ -631,6 +631,21 @@ angular.module('tribe-endpoints-details', [
                 }
               });
             }
+            if(operation['x-tribestream-api-registry'] && operation['x-tribestream-api-registry']['rates']) {
+              operation['x-tribestream-api-registry']['rates'] = _.filter(operation['x-tribestream-api-registry']['rates'], (rl) => {
+                return rl['rateLimit'] && rl['rateWindow'] && rl['rateUnit'];
+              });
+            }
+            if(operation['x-tribestream-api-registry'] && operation['x-tribestream-api-registry']['expected-values']) {
+              operation['x-tribestream-api-registry']['expected-values'] = _.filter(operation['x-tribestream-api-registry']['expected-values'], (val) => {
+                return val['name'] && val['type'] && val['values'];
+              });
+            }
+            if(operation['x-tribestream-api-registry'] && operation['x-tribestream-api-registry']['response-codes']) {
+              operation['x-tribestream-api-registry']['response-codes'] = _.filter(operation['x-tribestream-api-registry']['response-codes'], (val) => {
+                return val['http_status'] && val['error_code'];
+              });
+            }
             if ($scope.endpointLink) {
               srv.saveEndpoint($scope.endpointLink, {
                 // Cannot simply send the endpoint object because it's polluted with errors and expectedValues
