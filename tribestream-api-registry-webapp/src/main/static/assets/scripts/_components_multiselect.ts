@@ -1,3 +1,5 @@
+let ADJUST_MENU_POSITION_INTERVAL = 1000; // milisseconds
+
 angular.module('website-components-multiselect', [
     'website-components-field-actions'
 ])
@@ -90,6 +92,16 @@ angular.module('website-components-multiselect', [
                 $scope.onOptionsDeactivated = () => $timeout(() => $scope.$apply(() => {
                     $scope['optionsActivated'] = false;
                 }));
+                $scope['addItem'] = () => {
+                    if ($scope['selectedOption']) {
+                        let existing = _.find($scope['selectedOptions'], (selected) => selected === $scope['selectedOption']);
+                        if (!existing) {
+                            $scope['selectedOptions'].push($scope['selectedOption']);
+                        }
+                    }
+                    $scope['selectedOption'] = null;
+                    $scope['inputText'] = '';
+                };
             })],
             link: (scope, el) => $timeout(() => {
                 var deactivatePromise = null;
@@ -107,6 +119,7 @@ angular.module('website-components-multiselect', [
                         scope.$apply(() => {
                             scope['inputFocused'] = false;
                             scope['optionsActivated'] = false;
+                            scope['addItem']();
                         });
                     }, 500);
                 };
@@ -143,7 +156,7 @@ angular.module('website-components-multiselect', [
         };
     }])
 
-    .directive('tribeMultiselectAvailable', ['$document', '$window', '$timeout', ($document, $window, $timeout) => {
+    .directive('tribeMultiselectAvailable', ['$interval', '$log', '$document', '$window', '$timeout', ($interval, $log, $document, $window, $timeout) => {
         return {
             restrict: 'A',
             scope: {
@@ -241,9 +254,15 @@ angular.module('website-components-multiselect', [
                         if (!$scope['inputText']) {
                             $scope['selectedItem'] = null;
                             $scope['active'] = false;
+                            $scope.newOpt = '';
+                            $log.info('newOpt empty');
                         } else {
                             $scope['selectedItem'] = _.find($scope.availableOptions, (opt:string) => opt.startsWith($scope['inputText']));
                             $scope['active'] = true;
+                            if(!$scope['selectedItem']) {
+                                $scope.newOpt = $scope['inputText'].trim();
+                                $log.info('newOpt -> ' + $scope.newOpt);
+                            }
                             $scope['showOptions']();
                         }
                     }));
@@ -253,13 +272,20 @@ angular.module('website-components-multiselect', [
                 let floatingBody = angular.element(element.find('> div'));
                 floatingBody.detach();
                 var body = $document.find('body');
+                var attached = false;
                 let adjustOffset = () => {
+                    if(!attached || floatingBody.hasClass('hidden')) {
+                        return;
+                    }
                     let position = element.offset();
                     floatingBody.offset(position);
                 };
+                adjustOffset();
+                let adjustInterval = $interval(adjustOffset, ADJUST_MENU_POSITION_INTERVAL);
                 scope.$watch('active', () => {
                     if (scope['active']) {
                         body.append(floatingBody);
+                        attached = true;
                         adjustOffset();
                         scope['showOptions']();
                         element.addClass('active');
@@ -268,6 +294,7 @@ angular.module('website-components-multiselect', [
                             scope['selectedItem'] = null;
                         }));
                         floatingBody.detach();
+                        attached = false;
                         element.removeClass('active');
                     }
                 });
@@ -286,6 +313,7 @@ angular.module('website-components-multiselect', [
                 eWin.bind('resize', adjustOffset);
                 scope.$on('$destroy', () => {
                     eWin.unbind('resize', adjustOffset);
+                    $interval.cancel(adjustInterval);
                     floatingBody.remove();
                     element.remove();
                 });
@@ -307,7 +335,8 @@ angular.module('website-components-multiselect', [
                 selectedOption: '=',
                 inputText: '=',
                 autoShowOptions: '=',
-                activated: '='
+                activated: '=',
+                addItem: '='
             },
             template: require('../templates/component_multiselect_selected.jade'),
             controller: ['$log', '$scope', '$timeout', ($log, $scope, $timeout) => {
@@ -364,17 +393,6 @@ angular.module('website-components-multiselect', [
                         $scope['selectedItem'] = ordered[next];
                     }
                 }));
-                let addItem = () => {
-                    if ($scope['selectedOption']) {
-                        let existing = _.find($scope['selectedOptions'], (selected) => selected === $scope['selectedOption']);
-                        if (!existing) {
-                            $scope['selectedOptions'].push($scope['selectedOption']);
-                        }
-                    }
-                    $scope['selectedOption'] = null;
-                    $scope['inputText'] = '';
-                };
-                $scope['addItem'] = addItem;
                 $scope.keyEntered = (event) =>  $timeout(() => $scope.$apply(() => {
                     if (event.keyCode === 13 /* Enter */) {
                         let isCommitChanges = !$scope['inputText'] && !$scope['selectedOption'];
@@ -385,7 +403,7 @@ angular.module('website-components-multiselect', [
                             $scope['selectedItem'] = null;
                             $scope['onCommit']();
                         } else {
-                            addItem();
+                            $scope['addItem']();
                             releaseSelection();
                             $scope.onOptionsDeactivated();
                             $scope.onChange();

@@ -170,6 +170,8 @@ angular.module('website-components', [
                             editor.focus();
                         };
                         el.on('click', activate);
+                        el.find('> div').on('click', activate);
+                        el.find('span').on('click', activate);
                         el.find('> div').on('focus', activate);
                         editor.on('blur', function () {
                             el.removeClass('edit');
@@ -246,7 +248,8 @@ angular.module('website-components', [
                     }
                     input.focus();
                 };
-                el.on('focus', activate);
+                el.on('click', activate);
+                el.find('> div').on('focus', activate);
                 el.find('input').on('blur', function () {
                     el.removeClass('edit');
                 });
@@ -320,6 +323,7 @@ angular.module('website-components', [
             link: (scope, el) => $timeout(() => {
                 var optionsDiv = el.find('.options');
                 optionsDiv.detach();
+                optionsDiv.addClass('tribe_editable_option');
                 let body = $document.find('body');
                 var detachPromise = null;
                 let detachOptions = () => {

@@ -117,6 +117,8 @@ angular.module('tribe-endpoints', [
                         srv.saveApplication($scope.applicationLink, $scope.swagger).then(
                           (saveResponse) => {
                             systemMessagesService.info("Saved application details!");
+                            let res = saveResponse.data;
+                            $location.url(`/application/${res.humanReadableName}?version=${res.swagger.info.version}`);
                             // force page reload after updating an item.
                             // with the good existing backend data.
                             $route.reload();

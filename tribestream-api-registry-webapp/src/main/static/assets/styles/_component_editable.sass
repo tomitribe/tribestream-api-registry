@@ -9,7 +9,10 @@ $width: 20px
   *
     outline: none
   > div
-    display: inline-block
+    display: flex
+    flex-direction: column
+    justify-content: center
+    align-items: center
     border: solid transparent 1px
     input
       flex-grow: 1
@@ -19,6 +22,9 @@ $width: 20px
   > div
     max-width: 100%
     overflow: hidden
+    padding: 10px 10px 10px 0
+    &:hover
+      padding: 10px 25px 10px 5px
     > span
       white-space: nowrap
       margin-left: 5px
@@ -38,6 +44,7 @@ $width: 20px
         -webkit-appearance: none
   &.edit
     > div
+      padding: 10px 25px 10px 5px
       > span
         display: none
       > input
@@ -45,7 +52,7 @@ $width: 20px
 
 [data-tribe-editable-text], [data-tribe-editable-number]
   > div
-    min-height: 40px
+    padding: 10px 0
     position: relative
     min-width: $width * 2
     display: flex

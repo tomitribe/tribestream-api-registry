@@ -461,8 +461,8 @@ angular.module('tribe-endpoints-details', [
             template: require('../templates/app_endpoints_details_see.jade'),
             scope: {
                 'endpoint': '=',
-                'onEditModeOn': '&',
-                'onEditModeOff': '&'
+                'onEditModeOn': '=',
+                'onEditModeOff': '='
             },
             controller: ['$scope', function ($scope) {
                 this['addLink'] = function () {
