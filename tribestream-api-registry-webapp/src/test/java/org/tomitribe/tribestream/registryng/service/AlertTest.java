@@ -23,6 +23,7 @@ import com.icegreen.greenmail.util.ServerSetup;
 import org.apache.openejb.testing.ContainerProperties;
 import org.apache.openejb.testing.RandomPort;
 import org.apache.openejb.util.NetworkUtil;
+import org.apache.tomee.embedded.TomEEEmbeddedApplicationRunner;
 import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
 import org.junit.Rule;
 import org.junit.Test;
@@ -93,7 +94,7 @@ public class AlertTest {
             @ContainerProperties.Property(name = "tribe.registry.monitoring.alerter.mail.port", value = "${test.mail.port}"),
             @ContainerProperties.Property(name = "tribe.registry.monitoring.startup-silent-period", value = "0")
     })
-    @TomEEEmbeddedSingleRunner.LifecycleTasks(LoggingSetup.class)
+    @TomEEEmbeddedApplicationRunner.LifecycleTasks(LoggingSetup.class)
     public static class App {
         @RandomPort("http")
         private int port;

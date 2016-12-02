@@ -27,7 +27,7 @@ import org.apache.catalina.realm.RealmBase;
 import org.apache.openejb.testing.ContainerProperties;
 import org.apache.openejb.testing.RandomPort;
 import org.apache.openejb.testing.WebResource;
-import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
+import org.apache.tomee.embedded.TomEEEmbeddedApplicationRunner;
 import org.apache.tomee.loader.TomcatHelper;
 import org.openqa.selenium.WebDriver;
 import org.tomitribe.tribestream.registryng.bootstrap.Provisioning;
@@ -83,7 +83,7 @@ import static org.tomitribe.util.Join.join;
 })
 @WebResource("target/tests-webapp")
 @org.apache.openejb.testing.Application
-@TomEEEmbeddedSingleRunner.LifecycleTasks({LoggingSetup.class, PrepareResources.class, Elasticsearch.class, PhantomJsLifecycle.Task.class})
+@TomEEEmbeddedApplicationRunner.LifecycleTasks({LoggingSetup.class, PrepareResources.class, Elasticsearch.class, PhantomJsLifecycle.Task.class})
 public class Registry {
     public static final String TESTUSER = "utest";
     public static final String TESTPASSWORD = "ptest";

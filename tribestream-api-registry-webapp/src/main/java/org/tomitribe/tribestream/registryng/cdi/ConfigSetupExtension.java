@@ -18,7 +18,6 @@
  */
 package org.tomitribe.tribestream.registryng.cdi;
 
-import org.apache.deltaspike.core.api.config.ConfigProperty;
 import org.apache.deltaspike.core.api.config.ConfigResolver;
 import org.apache.deltaspike.core.spi.config.ConfigFilter;
 
@@ -51,10 +50,6 @@ public class ConfigSetupExtension implements Extension {
 
         @Override
         public String filterValue(final String key, final String value) {
-            if (ConfigProperty.NULL.equals(value)) {
-                return null;
-            }
-
             try {
                 return String.class.cast(DECIPHERING_METHOD.invoke(null, value));
             } catch (final IllegalAccessException e) {
