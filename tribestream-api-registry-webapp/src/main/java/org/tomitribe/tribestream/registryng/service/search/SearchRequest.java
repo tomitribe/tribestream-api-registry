@@ -74,7 +74,7 @@ public class SearchRequest {
 
     private static String encode(final String s) {
         try {
-            return URLEncoder.encode(s, "UTF-8");
+            return s != null ? URLEncoder.encode(s, "UTF-8") : null;
         } catch (final UnsupportedEncodingException e) {
             return s;
         }

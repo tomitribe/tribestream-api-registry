@@ -26,6 +26,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
@@ -141,7 +142,7 @@ public class ElasticsearchClient {
     public JsonObject search(final JsonObject query, final long from, final long size) {
         try {
             WebTarget target = client.target(base).path("{index}/_search")
-                    .resolveTemplate("index", index);
+                                     .resolveTemplate("index", index);
             if (from >= 0) {
                 target = target.queryParam("from", from);
             }
@@ -149,9 +150,15 @@ public class ElasticsearchClient {
                 target = target.queryParam("size", size);
             }
             final Invocation.Builder builder = target.request(APPLICATION_JSON_TYPE);
-            return query == null ? builder.get(JsonObject.class) : builder.post(entity(query, APPLICATION_JSON_TYPE), JsonObject.class);
+            return query == null ?
+                   builder.get(JsonObject.class) :
+                   builder.post(entity(query, APPLICATION_JSON_TYPE), JsonObject.class);
+        } catch (final NotFoundException e) {
+            return Json.createObjectBuilder().add("hits", Json.createObjectBuilder().add("total", 0).build()).build();
         } catch (final WebApplicationException wae) {
-            log.log(SEVERE, wae.getMessage() + ": " + ofNullable(wae.getResponse()).map(r -> r.readEntity(String.class)).orElse("-"), wae);
+            log.log(SEVERE, wae.getMessage() +
+                            ": " +
+                            ofNullable(wae.getResponse()).map(r -> r.readEntity(String.class)).orElse("-"), wae);
             throw wae;
         }
     }

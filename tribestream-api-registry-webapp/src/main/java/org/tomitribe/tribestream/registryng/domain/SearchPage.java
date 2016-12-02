@@ -23,6 +23,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.tomitribe.tribestream.registryng.domain.search.SearchResult;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -38,4 +39,16 @@ public class SearchPage {
     private Collection<CloudItem> categories;
     private Collection<CloudItem> tags;
     private Collection<CloudItem> roles;
+
+    public static SearchPage empty() {
+        final SearchPage searchPage = new SearchPage();
+        searchPage.setResults(new ArrayList<>());
+        searchPage.setTotal(0);
+        searchPage.setCurrent(0);
+        searchPage.setApplications(new ArrayList<>());
+        searchPage.setCategories(new ArrayList<>());
+        searchPage.setTags(new ArrayList<>());
+        searchPage.setRoles(new ArrayList<>());
+        return searchPage;
+    }
 }

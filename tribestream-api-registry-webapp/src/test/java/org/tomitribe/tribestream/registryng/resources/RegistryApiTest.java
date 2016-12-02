@@ -21,6 +21,7 @@ package org.tomitribe.tribestream.registryng.resources;
 import io.swagger.models.Info;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
+import org.apache.deltaspike.core.api.config.ConfigProperty;
 import org.apache.openejb.testing.Application;
 import org.apache.tomee.embedded.junit.TomEEEmbeddedSingleRunner;
 import org.junit.After;
@@ -43,6 +44,7 @@ import javax.json.JsonReader;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 import java.io.StringReader;
 import java.net.URLEncoder;
@@ -80,9 +82,28 @@ public class RegistryApiTest {
     @Inject
     private ElasticsearchClient elasticsearch;
 
+    @Inject
+    @ConfigProperty(name = "tribe.registry.elasticsearch.base", defaultValue = "http://localhost:9200")
+    private String base;
+
+    @Inject
+    @ConfigProperty(name = "tribe.registry.elasticsearch.index", defaultValue = "tribestream-api-registry")
+    private String index;
+
     @After
     public void reset() {
         registry.restoreData();
+    }
+
+    @Test
+    public void testEmpty() throws Exception {
+        final Response delete = ClientBuilder.newBuilder().build().target(base).path(index).request().delete();
+        assertEquals(OK.getStatusCode(), delete.getStatus());
+
+        final SearchRequest searchRequest = new SearchRequest(null, null, null, null, null, 0, 0);
+        final SearchPage searchPage = engine.search(searchRequest);
+        assertNotNull(searchPage);
+        assertEquals(0, searchPage.getTotal());
     }
 
     @Test
