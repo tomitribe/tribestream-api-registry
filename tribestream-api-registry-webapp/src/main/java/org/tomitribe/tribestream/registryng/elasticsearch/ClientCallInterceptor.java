@@ -25,8 +25,14 @@ import java.net.ConnectException;
 
 @Interceptor
 @ClientCall
+/**
+ * It wraps method calls that use the elasticsearch remote client. In case we have a ConnectException we should let
+ * the system know that this is related to elastic search only. Throw custom
+ * org.tomitribe.tribestream.registryng.elasticsearch.UnreachableException
+ */
 public class ClientCallInterceptor {
 
+    // It can be deep in the stacktrace. Check if the target exception is in there.
     private boolean isConnectException(Throwable original) {
         if (ConnectException.class.isInstance(original)) {
             return true;

@@ -27,6 +27,11 @@ import javax.ws.rs.core.Response;
 
 @Interceptor
 @WithElasticSearchCall
+/**
+ * It wraps rest api method calls that might throw
+ * org.tomitribe.tribestream.registryng.elasticsearch.UnreachableException. In case this exception is detected, return
+ * a custom json stating the problem. It will be managed at the client side.
+ */
 public class WithElasticSearchCallInterceptor {
 
     private boolean isUnreachableException(Throwable original) {
