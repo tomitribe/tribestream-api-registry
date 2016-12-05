@@ -20,4 +20,8 @@
   -->
 
 <beans>
+  <interceptors>
+    <class>org.tomitribe.tribestream.registryng.elasticsearch.ClientCallInterceptor</class>
+    <class>org.tomitribe.tribestream.registryng.resources.WithElasticSearchCallInterceptor</class>
+  </interceptors>
 </beans>

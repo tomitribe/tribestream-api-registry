@@ -121,8 +121,8 @@ angular.module('tribe-main', [
     ])
 
     // should never be used cause we force the user to being logged to use the console
-    .factory('httpInterceptor', ['$q', '$window', '$location', 'currentAuthProvider',
-        function ($q, $window, $location, currentAuthProvider) {
+    .factory('httpInterceptor', ['$q', '$window', '$location', 'currentAuthProvider', 'systemMessagesService',
+        function ($q, $window, $location, currentAuthProvider, messages) {
             return {
                 'request': function(config) {
                     // avoiding rest api caching [from http://stackoverflow.com/a/19771501]
@@ -140,6 +140,10 @@ angular.module('tribe-main', [
                 'responseError': function (response) {
                     if (response.status === 401) {
                         $location.url('/login');
+                    }
+                    if(response.status === 503 && response['data']['key'] === 'elasticsearch.unavailable.exception') {
+                        messages.error('Elasticsearch unreachable', 3000);
+                        return;
                     }
                     return $q.reject(response);
                 }
