@@ -34,6 +34,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
 
@@ -42,11 +43,12 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 @NoArgsConstructor(force = true)
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
+@WithElasticSearchCall
 public class RegistryResource {
     private final SearchEngine searchEngine;
 
     @GET
-    public SearchPage getSearchPage(@Context final UriInfo uriInfo, @Context final HttpHeaders headers,
+    public Response getSearchPage(@Context final UriInfo uriInfo, @Context final HttpHeaders headers,
                                     @QueryParam("query") @DefaultValue("*") final String query,
                                     @QueryParam("tag") final List<String> tags,
                                     @QueryParam("category") final List<String> categories,
@@ -71,7 +73,7 @@ public class RegistryResource {
         });
 
 
-        return searchPage;
+        return Response.ok(searchPage).build();
     }
 
 }

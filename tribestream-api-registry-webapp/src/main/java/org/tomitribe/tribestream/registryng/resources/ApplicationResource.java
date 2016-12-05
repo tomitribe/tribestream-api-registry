@@ -49,6 +49,7 @@ import static java.util.stream.Collectors.toList;
 @ApplicationScoped
 @Produces(MediaType.APPLICATION_JSON)
 @NoArgsConstructor(force = true)
+@WithElasticSearchCall
 public class ApplicationResource {
 
     private final Repository repository;

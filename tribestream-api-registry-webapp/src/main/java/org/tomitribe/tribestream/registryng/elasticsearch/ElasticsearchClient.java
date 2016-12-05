@@ -43,6 +43,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 
 @Log
 @ApplicationScoped
+@ClientCall
 public class ElasticsearchClient {
     @Inject
     @Description("Elasticsearch base URL")

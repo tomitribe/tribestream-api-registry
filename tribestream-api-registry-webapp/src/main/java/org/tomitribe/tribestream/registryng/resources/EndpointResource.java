@@ -50,6 +50,7 @@ import java.util.Optional;
 @Produces(MediaType.APPLICATION_JSON)
 @NoArgsConstructor(force = true)
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
+@WithElasticSearchCall
 public class EndpointResource {
     private final Repository repository;
     private final Linker linker;
